@@ -1,4 +1,4 @@
-# PokeIdle: Infinite Journey
+# PokeIdle — Master of Clicks
 
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
@@ -7,7 +7,7 @@
 
 ## Overview
 
-**PokeIdle: Infinite Journey** is a high-performance, responsive incremental/idle game built with modern web technologies. Become the ultimate Pokémon Master by utilizing the power of clicks, accumulating resources, hiring trainers, and expanding your Pokédex dynamically.
+**PokeIdle — Master of Clicks** is a high-performance, responsive incremental/idle game built with modern web technologies. Become the ultimate Pokémon Master by utilizing the power of clicks, accumulating resources, hiring trainers, and expanding your Pokédex dynamically.
 
 The game relies heavily on exponential mathematical scaling to provide a continuous loop of progression, and features a clean UI built with Tailwind CSS that balances modern aesthetics with classic pixel-art nostalgia.
 
