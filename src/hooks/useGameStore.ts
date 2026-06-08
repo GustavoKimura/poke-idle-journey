@@ -1,15 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { GameState } from "../types/game";
+import type { GameState, Upgrade } from "../types/game";
 
-const initialUpgrades = [
+const initialUpgrades: Upgrade[] = [
   {
     id: "1",
     name: "Extra Pokeball",
     baseCost: 10,
     costMultiplier: 1.15,
     count: 0,
-    type: "active" as const,
+    type: "active",
     effect: 1,
   },
   {
@@ -18,7 +18,7 @@ const initialUpgrades = [
     baseCost: 50,
     costMultiplier: 1.15,
     count: 0,
-    type: "passive" as const,
+    type: "passive",
     effect: 2,
   },
   {
@@ -27,7 +27,7 @@ const initialUpgrades = [
     baseCost: 500,
     costMultiplier: 1.15,
     count: 0,
-    type: "passive" as const,
+    type: "passive",
     effect: 25,
   },
   {
@@ -36,7 +36,7 @@ const initialUpgrades = [
     baseCost: 5000,
     costMultiplier: 1.15,
     count: 0,
-    type: "passive" as const,
+    type: "passive",
     effect: 150,
   },
   {
@@ -45,7 +45,7 @@ const initialUpgrades = [
     baseCost: 50000,
     costMultiplier: 1.18,
     count: 0,
-    type: "active" as const,
+    type: "active",
     effect: 500,
   },
   {
@@ -54,7 +54,7 @@ const initialUpgrades = [
     baseCost: 1000000,
     costMultiplier: 1.2,
     count: 0,
-    type: "passive" as const,
+    type: "passive",
     effect: 10000,
   },
 ];
@@ -151,6 +151,71 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
+      version: 1,
+      migrate: (persistedState: unknown) => {
+        const state = {
+          ...(persistedState as Record<string, unknown>),
+        } as Partial<GameState>;
+
+        if (typeof state.score !== "number" || Number.isNaN(state.score))
+          state.score = 0;
+        if (
+          typeof state.clickPower !== "number" ||
+          Number.isNaN(state.clickPower)
+        )
+          state.clickPower = 1;
+        if (
+          typeof state.passiveIncome !== "number" ||
+          Number.isNaN(state.passiveIncome)
+        )
+          state.passiveIncome = 0;
+        if (
+          typeof state.multiplier !== "number" ||
+          Number.isNaN(state.multiplier)
+        )
+          state.multiplier = 1;
+        if (
+          typeof state.rareCandies !== "number" ||
+          Number.isNaN(state.rareCandies)
+        )
+          state.rareCandies = 0;
+        if (
+          typeof state.currentPokemonId !== "number" ||
+          Number.isNaN(state.currentPokemonId)
+        )
+          state.currentPokemonId = 1;
+        if (!Array.isArray(state.unlockedPokemonIds))
+          state.unlockedPokemonIds = [1];
+
+        if (Array.isArray(state.upgrades)) {
+          state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {
+            const initialMatch = initialUpgrades.find(
+              (init) => init.id === u.id,
+            );
+            if (!initialMatch) return u as Upgrade;
+            return {
+              ...initialMatch,
+              ...u,
+              count:
+                typeof u.count !== "number" || Number.isNaN(u.count)
+                  ? 0
+                  : u.count,
+            };
+          });
+
+          initialUpgrades.forEach((init) => {
+            if (!state.upgrades!.find((u: Upgrade) => u.id === init.id)) {
+              state.upgrades!.push(init);
+            }
+          });
+        } else {
+          state.upgrades = initialUpgrades;
+        }
+
+        state.isPokedexOpen = false;
+
+        return state as GameState;
+      },
     },
   ),
 );

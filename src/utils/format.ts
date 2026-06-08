@@ -14,6 +14,7 @@ const SUFFIXES = [
 ];
 
 export function formatNumber(value: number): string {
+  if (typeof value !== "number" || isNaN(value)) return "0";
   if (value < 1000) return Math.floor(value).toString();
   const tier = Math.floor(Math.log10(value) / 3);
   if (tier === 0) return Math.floor(value).toString();
