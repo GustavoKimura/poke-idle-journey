@@ -43,14 +43,18 @@ export function useMainStageVM() {
   const intervalRef = useRef<number | null>(null);
   const prevPokemonId = useRef(currentPokemonId);
 
+  const comboRef = useRef(0);
+  const comboTimeoutRef = useRef<number | null>(null);
+
   const [isCatching, setIsCatching] = useState(false);
   const [spawnFlash, setSpawnFlash] = useState(false);
 
   useEffect(() => {
     return () => {
-      if (intervalRef.current !== null) {
+      if (intervalRef.current !== null)
         window.clearInterval(intervalRef.current);
-      }
+      if (comboTimeoutRef.current !== null)
+        window.clearTimeout(comboTimeoutRef.current);
     };
   }, []);
 
@@ -76,6 +80,10 @@ export function useMainStageVM() {
       const isCritical = Math.random() < GAME_CONFIG.CRIT_CHANCE;
       const critMultiplier = isCritical ? GAME_CONFIG.CRIT_MULTIPLIER : 1;
 
+      comboRef.current += 1;
+      const currentCombo = comboRef.current;
+      const comboMultiplier = 1 + currentCombo * 0.02;
+
       const partyMult =
         1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
       const gainedValue =
@@ -83,9 +91,51 @@ export function useMainStageVM() {
         state.multiplier *
         partyMult *
         (1 + state.rareCandies) *
-        critMultiplier;
+        critMultiplier *
+        comboMultiplier;
 
-      state.click(critMultiplier);
+      if (comboTimeoutRef.current) window.clearTimeout(comboTimeoutRef.current);
+      comboTimeoutRef.current = window.setTimeout(() => {
+        comboRef.current = 0;
+        const comboEl = document.getElementById("combo-meter");
+        if (comboEl) {
+          comboEl.style.opacity = "0";
+          comboEl.style.transform = "scale(0.8) translateY(-50%)";
+        }
+      }, 2000);
+
+      const comboEl = document.getElementById("combo-meter");
+      const comboText = document.getElementById("combo-text");
+      const comboFill = document.getElementById("combo-fill");
+      const comboMultText = document.getElementById("combo-mult");
+
+      if (
+        comboEl &&
+        comboText &&
+        comboFill &&
+        comboMultText &&
+        currentCombo >= 5
+      ) {
+        comboEl.style.opacity = "1";
+        comboEl.style.transform = "scale(1) translateY(-50%)";
+        comboText.textContent = `${currentCombo}`;
+        comboMultText.textContent = `x${comboMultiplier.toFixed(2)}`;
+
+        comboText.classList.remove("animate-shake");
+        void comboText.offsetWidth;
+        comboText.classList.add("animate-shake");
+
+        comboFill.style.transition = "none";
+        comboFill.style.height = "100%";
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            comboFill.style.transition = "height 2s linear";
+            comboFill.style.height = "0%";
+          });
+        });
+      }
+
+      state.click(critMultiplier, comboMultiplier);
       playClickSound(isCritical);
 
       if (state.isVfxEnabled) {

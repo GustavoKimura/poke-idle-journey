@@ -42,7 +42,7 @@ export interface GameState {
   startBossFight: () => void;
   damageBoss: (amount: number) => void;
   tickBoss: (deltaTime: number) => void;
-  click: (critMultiplier?: number) => void;
+  click: (critMultiplier?: number, comboMultiplier?: number) => void;
   buyUpgrade: (id: string, amount?: number) => void;
   addPassiveIncome: (amount: number) => void;
   unlockNextPokemon: () => void;

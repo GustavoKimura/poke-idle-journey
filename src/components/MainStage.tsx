@@ -44,6 +44,45 @@ export function MainStage() {
 
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
 
+      <div
+        id="combo-meter"
+        className="absolute left-8 sm:left-16 top-1/2 flex flex-col items-center gap-1 opacity-0 transition-all duration-300 pointer-events-none z-20"
+        style={{
+          transform: "scale(0.8) translateY(-50%)",
+          transformOrigin: "left center",
+        }}
+      >
+        <span className="text-pokeYellow font-black uppercase tracking-widest drop-shadow-md text-sm sm:text-base animate-pulse">
+          Combo!
+        </span>
+        <div className="flex items-baseline gap-1">
+          <span
+            id="combo-text"
+            className="text-5xl sm:text-7xl font-black text-white drop-shadow-[0_0_15px_rgba(255,222,0,0.8)] italic"
+          >
+            0
+          </span>
+          <span className="text-3xl sm:text-4xl font-black text-pokeYellow italic">
+            x
+          </span>
+        </div>
+        <div className="bg-black/50 px-3 py-1 rounded-full border border-white/10 mt-1">
+          <span
+            id="combo-mult"
+            className="text-xs sm:text-sm font-bold text-green-400 uppercase tracking-wider drop-shadow"
+          >
+            x1.00
+          </span>
+        </div>
+        <div className="h-32 w-3 sm:w-4 bg-black/80 rounded-full border border-white/20 overflow-hidden relative mt-3 shadow-lg">
+          <div
+            id="combo-fill"
+            className="absolute bottom-0 w-full bg-gradient-to-t from-orange-600 to-pokeYellow shadow-[0_0_10px_rgba(255,222,0,0.8)]"
+            style={{ height: "0%" }}
+          />
+        </div>
+      </div>
+
       <div className="absolute top-8 flex flex-col items-center gap-2 z-10 w-full px-8">
         <span
           className={`font-bold tracking-widest uppercase ${isBossLevel ? "text-pokeRed" : "text-gray-400"}`}

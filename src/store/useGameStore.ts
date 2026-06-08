@@ -141,7 +141,7 @@ export const useGameStore = create<GameState>()(
             rareCandies: state.rareCandies + achievement.reward,
           };
         }),
-      click: (critMultiplier = 1) =>
+      click: (critMultiplier = 1, comboMultiplier = 1) =>
         set((state) => {
           const partyMult =
             1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
@@ -150,7 +150,8 @@ export const useGameStore = create<GameState>()(
             state.multiplier *
             partyMult *
             (1 + state.rareCandies) *
-            critMultiplier;
+            critMultiplier *
+            comboMultiplier;
 
           const newState: Partial<GameState> = {
             score: state.score + amount,
