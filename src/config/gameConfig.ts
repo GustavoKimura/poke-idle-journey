@@ -83,3 +83,20 @@ export const calculateNextPokemonCost = (currentId: number): number => {
       Math.pow(GAME_CONFIG.POKEMON_COST_MULTIPLIER, currentId - 1),
   );
 };
+
+export const getMilestoneMultiplier = (count: number): number => {
+  let mult = 1;
+  if (count >= 10) mult *= 2;
+  if (count >= 25) mult *= 2;
+  if (count >= 50) mult *= 2;
+  if (count >= 100) mult *= 2;
+  return mult;
+};
+
+export const getNextMilestone = (count: number): number | null => {
+  if (count < 10) return 10;
+  if (count < 25) return 25;
+  if (count < 50) return 50;
+  if (count < 100) return 100;
+  return null;
+};

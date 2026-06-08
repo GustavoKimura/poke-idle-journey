@@ -6,7 +6,22 @@ import {
   INITIAL_UPGRADES,
   calculateUpgradeCost,
   calculateNextPokemonCost,
+  getMilestoneMultiplier,
 } from "../config/gameConfig";
+
+const recalculateTotals = (upgrades: Upgrade[]) => {
+  let clickPower = 1;
+  let passiveIncome = 0;
+  upgrades.forEach((u) => {
+    const mult = getMilestoneMultiplier(u.count);
+    if (u.type === "active") {
+      clickPower += u.count * u.effect * mult;
+    } else {
+      passiveIncome += u.count * u.effect * mult;
+    }
+  });
+  return { clickPower, passiveIncome };
+};
 
 export const useGameStore = create<GameState>()(
   persist(
@@ -50,20 +65,13 @@ export const useGameStore = create<GameState>()(
           const newUpgrades = [...state.upgrades];
           newUpgrades[upgradeIndex] = { ...upgrade, count: upgrade.count + 1 };
 
-          let newClickPower = state.clickPower;
-          let newPassiveIncome = state.passiveIncome;
-
-          if (upgrade.type === "active") {
-            newClickPower += upgrade.effect;
-          } else {
-            newPassiveIncome += upgrade.effect;
-          }
+          const { clickPower, passiveIncome } = recalculateTotals(newUpgrades);
 
           return {
             score: state.score - currentCost,
             upgrades: newUpgrades,
-            clickPower: newClickPower,
-            passiveIncome: newPassiveIncome,
+            clickPower,
+            passiveIncome,
           };
         }),
       addPassiveIncome: (amount) =>
@@ -134,7 +142,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 3,
+      version: 4,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -142,16 +150,6 @@ export const useGameStore = create<GameState>()(
 
         if (typeof state.score !== "number" || Number.isNaN(state.score))
           state.score = 0;
-        if (
-          typeof state.clickPower !== "number" ||
-          Number.isNaN(state.clickPower)
-        )
-          state.clickPower = 1;
-        if (
-          typeof state.passiveIncome !== "number" ||
-          Number.isNaN(state.passiveIncome)
-        )
-          state.passiveIncome = 0;
         if (
           typeof state.multiplier !== "number" ||
           Number.isNaN(state.multiplier)
@@ -205,6 +203,9 @@ export const useGameStore = create<GameState>()(
           state.upgrades = INITIAL_UPGRADES.map((u) => ({ ...u }));
         }
 
+        const totals = recalculateTotals(state.upgrades!);
+        state.clickPower = totals.clickPower;
+        state.passiveIncome = totals.passiveIncome;
         state.isPokedexOpen = false;
 
         return state as GameState;
