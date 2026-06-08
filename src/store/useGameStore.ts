@@ -5,7 +5,7 @@ import {
   GAME_CONFIG,
   INITIAL_UPGRADES,
   ACHIEVEMENTS,
-  calculateUpgradeCost,
+  calculateMultipleUpgradeCost,
   calculateNextPokemonCost,
   getMilestoneMultiplier,
   calculatePrestigeReward,
@@ -179,27 +179,31 @@ export const useGameStore = create<GameState>()(
 
           return newState;
         }),
-      buyUpgrade: (id) =>
+      buyUpgrade: (id, amount = 1) =>
         set((state) => {
           const upgradeIndex = state.upgrades.findIndex((u) => u.id === id);
-          if (upgradeIndex === -1) return state;
+          if (upgradeIndex === -1 || amount <= 0) return state;
 
           const upgrade = state.upgrades[upgradeIndex];
-          const currentCost = calculateUpgradeCost(
+          const totalCost = calculateMultipleUpgradeCost(
             upgrade.baseCost,
             upgrade.costMultiplier,
             upgrade.count,
+            amount,
           );
 
-          if (state.score < currentCost) return state;
+          if (state.score < totalCost) return state;
 
           const newUpgrades = [...state.upgrades];
-          newUpgrades[upgradeIndex] = { ...upgrade, count: upgrade.count + 1 };
+          newUpgrades[upgradeIndex] = {
+            ...upgrade,
+            count: upgrade.count + amount,
+          };
 
           const { clickPower, passiveIncome } = recalculateTotals(newUpgrades);
 
           return {
-            score: state.score - currentCost,
+            score: state.score - totalCost,
             upgrades: newUpgrades,
             clickPower,
             passiveIncome,
@@ -300,7 +304,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 10,
+      version: 11,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),

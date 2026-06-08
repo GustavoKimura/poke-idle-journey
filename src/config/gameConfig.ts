@@ -163,12 +163,57 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
 ];
 
+export const calculateMultipleUpgradeCost = (
+  baseCost: number,
+  costMultiplier: number,
+  count: number,
+  amount: number,
+): number => {
+  if (amount <= 0) return 0;
+  if (amount === 1)
+    return Math.floor(baseCost * Math.pow(costMultiplier, count));
+  const c = baseCost * Math.pow(costMultiplier, count);
+  return Math.floor(
+    (c * (Math.pow(costMultiplier, amount) - 1)) / (costMultiplier - 1),
+  );
+};
+
+export const calculateMaxAffordable = (
+  score: number,
+  baseCost: number,
+  costMultiplier: number,
+  count: number,
+): { maxAmount: number; totalCost: number } => {
+  const c = baseCost * Math.pow(costMultiplier, count);
+  if (score < Math.floor(c)) return { maxAmount: 0, totalCost: 0 };
+  const maxAmount = Math.floor(
+    Math.log((score * (costMultiplier - 1)) / c + 1) / Math.log(costMultiplier),
+  );
+  let safeAmount = maxAmount;
+  let safeCost = calculateMultipleUpgradeCost(
+    baseCost,
+    costMultiplier,
+    count,
+    safeAmount,
+  );
+  while (safeCost > score && safeAmount > 0) {
+    safeAmount--;
+    safeCost = calculateMultipleUpgradeCost(
+      baseCost,
+      costMultiplier,
+      count,
+      safeAmount,
+    );
+  }
+  return { maxAmount: safeAmount, totalCost: safeCost };
+};
+
 export const calculateUpgradeCost = (
   baseCost: number,
   costMultiplier: number,
   count: number,
 ): number => {
-  return Math.floor(baseCost * Math.pow(costMultiplier, count));
+  return calculateMultipleUpgradeCost(baseCost, costMultiplier, count, 1);
 };
 
 export const calculateNextPokemonCost = (currentId: number): number => {

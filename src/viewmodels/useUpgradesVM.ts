@@ -1,31 +1,65 @@
 import { useGameStore } from "../store/useGameStore";
 import { playUpgradeSound } from "../utils/audio";
-import { calculateUpgradeCost } from "../config/gameConfig";
+import {
+  calculateMultipleUpgradeCost,
+  calculateMaxAffordable,
+} from "../config/gameConfig";
 
-export function useUpgradeItemVM(id: string) {
+export type BuyMultiplierOption = 1 | 10 | 100 | "max";
+
+export function useUpgradeItemVM(
+  id: string,
+  buyMultiplier: BuyMultiplierOption,
+) {
   const upgrade = useGameStore(
     (state) => state.upgrades.find((u) => u.id === id)!,
   );
+  const buyUpgrade = useGameStore((state) => state.buyUpgrade);
 
-  const currentCost = calculateUpgradeCost(
-    upgrade.baseCost,
-    upgrade.costMultiplier,
-    upgrade.count,
+  const fixedCost =
+    buyMultiplier !== "max"
+      ? calculateMultipleUpgradeCost(
+          upgrade.baseCost,
+          upgrade.costMultiplier,
+          upgrade.count,
+          buyMultiplier,
+        )
+      : 0;
+
+  const canAffordFixed = useGameStore((state) =>
+    buyMultiplier !== "max" ? state.score >= fixedCost : false,
+  );
+  const rawScore = useGameStore((state) =>
+    buyMultiplier === "max" ? state.score : 0,
   );
 
-  const canAfford = useGameStore((state) => state.score >= currentCost);
-  const buyUpgrade = useGameStore((state) => state.buyUpgrade);
+  let actualCost = fixedCost;
+  let actualAmount = buyMultiplier !== "max" ? buyMultiplier : 0;
+  let canAfford = canAffordFixed;
+
+  if (buyMultiplier === "max") {
+    const affordable = calculateMaxAffordable(
+      rawScore,
+      upgrade.baseCost,
+      upgrade.costMultiplier,
+      upgrade.count,
+    );
+    actualCost = affordable.totalCost;
+    actualAmount = affordable.maxAmount;
+    canAfford = actualAmount > 0;
+  }
 
   const handleBuy = () => {
     if (canAfford) {
-      buyUpgrade(upgrade.id);
+      buyUpgrade(upgrade.id, actualAmount);
       playUpgradeSound();
     }
   };
 
   return {
     upgrade,
-    currentCost,
+    currentCost: actualCost,
+    amountToBuy: actualAmount,
     canAfford,
     handleBuy,
   };
