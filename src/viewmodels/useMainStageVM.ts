@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { usePokeAPI } from "../hooks/usePokeAPI";
 import {
@@ -7,14 +7,7 @@ import {
   playPrestigeSound,
 } from "../utils/audio";
 import { GAME_CONFIG, calculateNextPokemonCost } from "../config/gameConfig";
-
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  isCritical: boolean;
-  value: number;
-}
+import { formatNumber } from "../utils/format";
 
 export function useMainStageVM() {
   const {
@@ -27,9 +20,6 @@ export function useMainStageVM() {
     unlockNextPokemon,
     prestige,
   } = useGameStore();
-
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const [particleCounter, setParticleCounter] = useState(0);
 
   const { data: pokemon, isLoading } = usePokeAPI(currentPokemonId);
 
@@ -52,22 +42,47 @@ export function useMainStageVM() {
       click(critMultiplier);
       playClickSound(isCritical);
 
-      const newParticle = {
-        id: particleCounter,
-        x: e.clientX,
-        y: e.clientY,
-        isCritical,
-        value: gainedValue,
-      };
+      if (isCritical) {
+        const imgElement = e.currentTarget.querySelector("img");
+        if (imgElement) {
+          imgElement.classList.remove("animate-shake");
+          void imgElement.offsetWidth;
+          imgElement.classList.add("animate-shake");
+        }
+      }
 
-      setParticles((prev) => [...prev, newParticle]);
-      setParticleCounter((prev) => prev + 1);
+      const particle = document.createElement("div");
+      particle.className = "fixed z-50 pointer-events-none";
+      particle.style.left = `${e.clientX}px`;
+      particle.style.top = `${e.clientY}px`;
+      particle.style.transform = "translate(-50%, -50%)";
+
+      const textSpan = document.createElement("span");
+      textSpan.className = `font-black animate-float-up drop-shadow-lg flex flex-col items-center ${
+        isCritical ? "text-5xl text-pokeRed" : "text-3xl text-pokeYellow"
+      }`;
+
+      if (isCritical) {
+        const critSpan = document.createElement("span");
+        critSpan.className =
+          "text-xl block -mt-6 mb-1 text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(238,21,21,0.8)]";
+        critSpan.textContent = "Critical!";
+        textSpan.appendChild(critSpan);
+      }
+
+      const valueNode = document.createTextNode(
+        `+${formatNumber(gainedValue)}`,
+      );
+      textSpan.appendChild(valueNode);
+
+      particle.appendChild(textSpan);
+      document.body.appendChild(particle);
 
       setTimeout(() => {
-        setParticles((prev) => prev.filter((p) => p.id !== newParticle.id));
+        particle.remove();
       }, 1000);
     },
-    [click, clickPower, multiplier, rareCandies, particleCounter],
+    [click, clickPower, multiplier, rareCandies],
   );
 
   const handleCatch = () => {
@@ -91,7 +106,6 @@ export function useMainStageVM() {
   return {
     pokemon,
     isLoading,
-    particles,
     currentPokemonId,
     nextPokemonCost,
     canUnlock,

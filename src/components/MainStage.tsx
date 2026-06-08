@@ -7,7 +7,6 @@ export function MainStage() {
   const {
     pokemon,
     isLoading,
-    particles,
     currentPokemonId,
     nextPokemonCost,
     canUnlock,
@@ -43,7 +42,7 @@ export function MainStage() {
           <img
             src={pokemon.sprite}
             alt={pokemon.name}
-            className="w-80 h-80 drop-shadow-2xl select-none"
+            className="w-80 h-80 drop-shadow-2xl select-none hover:brightness-125 transition-all duration-200"
             draggable="false"
           />
         )}
@@ -76,29 +75,6 @@ export function MainStage() {
           </>
         )}
       </div>
-
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="fixed z-50 pointer-events-none"
-          style={{ left: p.x, top: p.y, transform: "translate(-50%, -50%)" }}
-        >
-          <span
-            className={`font-black animate-float-up drop-shadow-lg flex flex-col items-center ${
-              p.isCritical
-                ? "text-5xl text-pokeRed"
-                : "text-3xl text-pokeYellow"
-            }`}
-          >
-            {p.isCritical && (
-              <span className="text-xl block -mt-6 mb-1 text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(238,21,21,0.8)]">
-                Critical!
-              </span>
-            )}
-            +{formatNumber(p.value)}
-          </span>
-        </div>
-      ))}
     </main>
   );
 }
