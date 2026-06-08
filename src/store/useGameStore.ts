@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import { GameState } from "../types/game";
+import type { GameState } from "../types/game";
 
 const initialUpgrades = [
   {
     id: "1",
-    name: "Pokébola Extra",
+    name: "Extra Pokeball",
     baseCost: 10,
     costMultiplier: 1.15,
     count: 0,
@@ -13,7 +13,7 @@ const initialUpgrades = [
   },
   {
     id: "2",
-    name: "Jovem Treinador",
+    name: "Youngster Trainer",
     baseCost: 50,
     costMultiplier: 1.15,
     count: 0,
@@ -22,7 +22,7 @@ const initialUpgrades = [
   },
   {
     id: "3",
-    name: "Ginásio Local",
+    name: "Local Gym",
     baseCost: 500,
     costMultiplier: 1.15,
     count: 0,

@@ -7,7 +7,7 @@ export function Header() {
     <header className="flex justify-between items-center p-6 bg-pokeDarkBlue border-b-4 border-pokeYellow/20 shadow-lg z-10">
       <div className="flex flex-col">
         <span className="text-pokeYellow font-bold text-xl uppercase tracking-wider">
-          Pokédollars
+          PokeDollars
         </span>
         <span className="text-5xl font-black text-white drop-shadow-md">
           {Math.floor(score)}
@@ -16,7 +16,7 @@ export function Header() {
       <div className="flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10">
         <div className="flex flex-col items-center">
           <span className="text-gray-400 text-sm font-semibold uppercase">
-            Renda Passiva
+            Passive Income
           </span>
           <span className="text-2xl font-bold text-green-400">
             +{passiveIncome}/s
@@ -24,7 +24,7 @@ export function Header() {
         </div>
         <div className="flex flex-col items-center">
           <span className="text-gray-400 text-sm font-semibold uppercase">
-            Multiplicador
+            Multiplier
           </span>
           <span className="text-2xl font-bold text-blue-400">
             x{multiplier}

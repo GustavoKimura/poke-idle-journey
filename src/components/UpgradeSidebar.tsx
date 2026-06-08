@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useGameStore } from "../store/useGameStore";
-import { Upgrade } from "../types/game";
+import type { Upgrade } from "../types/game";
 
 function UpgradeItem({ upgrade }: { upgrade: Upgrade }) {
   const score = useGameStore((state) => state.score);
