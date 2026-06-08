@@ -148,6 +148,18 @@ export const useGameStore = create<GameState>()(
             currentPokemonId: 1,
           };
         }),
+      hardReset: () =>
+        set(() => ({
+          score: 0,
+          clickPower: 1,
+          passiveIncome: 0,
+          multiplier: 1,
+          rareCandies: 0,
+          upgrades: initialUpgrades,
+          unlockedPokemonIds: [1],
+          currentPokemonId: 1,
+          isPokedexOpen: false,
+        })),
     }),
     {
       name: "poke-idle-storage",

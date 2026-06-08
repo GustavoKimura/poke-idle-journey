@@ -24,4 +24,5 @@ export interface GameState {
   addPassiveIncome: (amount: number) => void;
   unlockNextPokemon: () => void;
   prestige: () => void;
+  hardReset: () => void;
 }
