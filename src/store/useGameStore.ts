@@ -1,63 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { GameState, Upgrade } from "../types/game";
-
-const initialUpgrades: Upgrade[] = [
-  {
-    id: "1",
-    name: "Extra Pokeball",
-    baseCost: 10,
-    costMultiplier: 1.15,
-    count: 0,
-    type: "active",
-    effect: 1,
-  },
-  {
-    id: "2",
-    name: "Youngster Trainer",
-    baseCost: 50,
-    costMultiplier: 1.15,
-    count: 0,
-    type: "passive",
-    effect: 2,
-  },
-  {
-    id: "3",
-    name: "Local Gym",
-    baseCost: 500,
-    costMultiplier: 1.15,
-    count: 0,
-    type: "passive",
-    effect: 25,
-  },
-  {
-    id: "4",
-    name: "Pokemon Daycare",
-    baseCost: 5000,
-    costMultiplier: 1.15,
-    count: 0,
-    type: "passive",
-    effect: 150,
-  },
-  {
-    id: "5",
-    name: "Silph Co. Scope",
-    baseCost: 50000,
-    costMultiplier: 1.18,
-    count: 0,
-    type: "active",
-    effect: 500,
-  },
-  {
-    id: "6",
-    name: "Master Ball Factory",
-    baseCost: 1000000,
-    costMultiplier: 1.2,
-    count: 0,
-    type: "passive",
-    effect: 10000,
-  },
-];
+import {
+  GAME_CONFIG,
+  INITIAL_UPGRADES,
+  calculateUpgradeCost,
+  calculateNextPokemonCost,
+} from "../config/gameConfig";
 
 export const useGameStore = create<GameState>()(
   persist(
@@ -67,7 +16,7 @@ export const useGameStore = create<GameState>()(
       passiveIncome: 0,
       multiplier: 1,
       rareCandies: 0,
-      upgrades: initialUpgrades.map((u) => ({ ...u })),
+      upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
       unlockedPokemonIds: [1],
       currentPokemonId: 1,
       isPokedexOpen: false,
@@ -90,8 +39,10 @@ export const useGameStore = create<GameState>()(
           if (upgradeIndex === -1) return state;
 
           const upgrade = state.upgrades[upgradeIndex];
-          const currentCost = Math.floor(
-            upgrade.baseCost * Math.pow(upgrade.costMultiplier, upgrade.count),
+          const currentCost = calculateUpgradeCost(
+            upgrade.baseCost,
+            upgrade.costMultiplier,
+            upgrade.count,
           );
 
           if (state.score < currentCost) return state;
@@ -122,30 +73,31 @@ export const useGameStore = create<GameState>()(
       unlockNextPokemon: () =>
         set((state) => {
           const nextId = state.currentPokemonId + 1;
-          if (state.currentPokemonId >= 151) return state;
+          if (state.currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID)
+            return state;
 
-          const cost = Math.floor(
-            1000 * Math.pow(1.25, state.currentPokemonId - 1),
-          );
+          const cost = calculateNextPokemonCost(state.currentPokemonId);
 
           return {
             score: state.score - cost,
             currentPokemonId: nextId,
             unlockedPokemonIds: [...state.unlockedPokemonIds, nextId],
-            multiplier: state.multiplier + 0.1 * state.currentPokemonId,
+            multiplier:
+              state.multiplier +
+              GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId,
           };
         }),
       prestige: () =>
         set((state) => {
-          if (state.currentPokemonId < 151) return state;
+          if (state.currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID) return state;
 
           return {
             score: 0,
             clickPower: 1,
             passiveIncome: 0,
             multiplier: 1,
-            rareCandies: state.rareCandies + 1,
-            upgrades: initialUpgrades.map((u) => ({ ...u })),
+            rareCandies: state.rareCandies + GAME_CONFIG.PRESTIGE_REWARD,
+            upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
             unlockedPokemonIds: [1],
             currentPokemonId: 1,
             offlineEarnings: 0,
@@ -159,7 +111,7 @@ export const useGameStore = create<GameState>()(
           passiveIncome: 0,
           multiplier: 1,
           rareCandies: 0,
-          upgrades: initialUpgrades.map((u) => ({ ...u })),
+          upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
           unlockedPokemonIds: [1],
           currentPokemonId: 1,
           isPokedexOpen: false,
@@ -230,7 +182,7 @@ export const useGameStore = create<GameState>()(
 
         if (Array.isArray(state.upgrades)) {
           state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {
-            const initialMatch = initialUpgrades.find(
+            const initialMatch = INITIAL_UPGRADES.find(
               (init) => init.id === u.id,
             );
             if (!initialMatch) return u as Upgrade;
@@ -244,13 +196,13 @@ export const useGameStore = create<GameState>()(
             };
           });
 
-          initialUpgrades.forEach((init) => {
+          INITIAL_UPGRADES.forEach((init) => {
             if (!state.upgrades!.find((u: Upgrade) => u.id === init.id)) {
               state.upgrades!.push({ ...init });
             }
           });
         } else {
-          state.upgrades = initialUpgrades.map((u) => ({ ...u }));
+          state.upgrades = INITIAL_UPGRADES.map((u) => ({ ...u }));
         }
 
         state.isPokedexOpen = false;

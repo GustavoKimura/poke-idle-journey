@@ -1,7 +1,7 @@
-import { GameContainer } from "./components/GameContainer";
+import { Game } from "./pages/Game";
 
 function App() {
-  return <GameContainer />;
+  return <Game />;
 }
 
 export default App;

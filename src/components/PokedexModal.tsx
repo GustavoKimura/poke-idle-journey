@@ -1,6 +1,8 @@
 import { useGameStore } from "../store/useGameStore";
 import { usePokeAPI } from "../hooks/usePokeAPI";
-import { X, Sparkles, Scale } from "lucide-react";
+import { Sparkles, Scale } from "lucide-react";
+import { GAME_CONFIG } from "../config/gameConfig";
+import { Modal } from "./ui/Modal";
 
 function PokedexEntry({ id }: { id: number }) {
   const { data, isLoading } = usePokeAPI(id);
@@ -66,33 +68,25 @@ export function PokedexModal() {
   const togglePokedex = useGameStore((state) => state.togglePokedex);
   const unlockedPokemonIds = useGameStore((state) => state.unlockedPokemonIds);
 
-  if (!isPokedexOpen) return null;
+  const headerRight = (
+    <span className="px-3 py-1 bg-pokeYellow/20 text-pokeYellow font-bold rounded-full text-xs sm:text-sm border border-pokeYellow/30 whitespace-nowrap ml-4">
+      {unlockedPokemonIds.length} / {GAME_CONFIG.MAX_POKEMON_ID} Captured
+    </span>
+  );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6">
-      <div className="bg-gradient-to-b from-pokeDarkBlue to-black border-2 border-pokeYellow rounded-3xl w-full max-w-7xl h-[90vh] flex flex-col shadow-[0_0_50px_rgba(255,222,0,0.15)] overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="p-4 sm:p-6 flex justify-between items-center border-b border-white/10 bg-black/20">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl sm:text-3xl font-black uppercase tracking-widest text-white drop-shadow-md">
-              Pokédex
-            </h2>
-            <span className="px-3 py-1 bg-pokeYellow/20 text-pokeYellow font-bold rounded-full text-xs sm:text-sm border border-pokeYellow/30 whitespace-nowrap">
-              {unlockedPokemonIds.length} / 151 Captured
-            </span>
-          </div>
-          <button
-            onClick={togglePokedex}
-            className="text-gray-400 hover:text-pokeRed transition-colors cursor-pointer"
-          >
-            <X size={32} />
-          </button>
-        </div>
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 custom-scrollbar">
-          {unlockedPokemonIds.map((id) => (
-            <PokedexEntry key={id} id={id} />
-          ))}
-        </div>
+    <Modal
+      isOpen={isPokedexOpen}
+      onClose={togglePokedex}
+      title="Pokédex"
+      maxWidth="7xl"
+      headerRight={headerRight}
+    >
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+        {unlockedPokemonIds.map((id) => (
+          <PokedexEntry key={id} id={id} />
+        ))}
       </div>
-    </div>
+    </Modal>
   );
 }

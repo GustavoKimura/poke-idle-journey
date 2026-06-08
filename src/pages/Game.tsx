@@ -1,11 +1,11 @@
-import { Header } from "./Header";
-import { MainStage } from "./MainStage";
-import { UpgradeSidebar } from "./UpgradeSidebar";
-import { PokedexModal } from "./PokedexModal";
-import { OfflineModal } from "./OfflineModal";
+import { Header } from "../components/Header";
+import { MainStage } from "../components/MainStage";
+import { UpgradeSidebar } from "../components/UpgradeSidebar";
+import { PokedexModal } from "../components/PokedexModal";
+import { OfflineModal } from "../components/OfflineModal";
 import { useGameLoop } from "../hooks/useGameLoop";
 
-export function GameContainer() {
+export function Game() {
   useGameLoop();
 
   return (

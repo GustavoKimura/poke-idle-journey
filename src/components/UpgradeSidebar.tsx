@@ -1,27 +1,12 @@
-import { useMemo } from "react";
-import { useGameStore } from "../store/useGameStore";
-import { playUpgradeSound } from "../utils/audio";
 import { formatNumber } from "../utils/format";
+import {
+  useUpgradeItemVM,
+  useUpgradesListVM,
+} from "../viewmodels/useUpgradesVM";
 import type { Upgrade } from "../types/game";
 
 function UpgradeItem({ upgrade }: { upgrade: Upgrade }) {
-  const score = useGameStore((state) => state.score);
-  const buyUpgrade = useGameStore((state) => state.buyUpgrade);
-
-  const currentCost = useMemo(() => {
-    return Math.floor(
-      upgrade.baseCost * Math.pow(upgrade.costMultiplier, upgrade.count),
-    );
-  }, [upgrade.baseCost, upgrade.costMultiplier, upgrade.count]);
-
-  const canAfford = score >= currentCost;
-
-  const handleBuy = () => {
-    if (canAfford) {
-      buyUpgrade(upgrade.id);
-      playUpgradeSound();
-    }
-  };
+  const { currentCost, canAfford, handleBuy } = useUpgradeItemVM(upgrade);
 
   return (
     <button
@@ -63,7 +48,7 @@ function UpgradeItem({ upgrade }: { upgrade: Upgrade }) {
 }
 
 export function UpgradeSidebar() {
-  const upgrades = useGameStore((state) => state.upgrades);
+  const { upgrades } = useUpgradesListVM();
 
   return (
     <aside className="w-96 bg-pokeDarkBlue border-l-4 border-pokeYellow/20 flex flex-col h-full shadow-2xl z-10">

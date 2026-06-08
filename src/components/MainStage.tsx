@@ -1,80 +1,21 @@
-import { useState, useCallback, useMemo } from "react";
-import { useGameStore } from "../store/useGameStore";
-import { usePokeAPI } from "../hooks/usePokeAPI";
-import {
-  playClickSound,
-  playCatchSound,
-  playPrestigeSound,
-} from "../utils/audio";
 import { formatNumber } from "../utils/format";
-
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  isCritical: boolean;
-}
+import { useMainStageVM } from "../viewmodels/useMainStageVM";
+import { Button } from "./ui/Button";
+import { GAME_CONFIG } from "../config/gameConfig";
 
 export function MainStage() {
-  const click = useGameStore((state) => state.click);
-  const clickPower = useGameStore((state) => state.clickPower);
-  const multiplier = useGameStore((state) => state.multiplier);
-  const rareCandies = useGameStore((state) => state.rareCandies);
-  const score = useGameStore((state) => state.score);
-  const currentPokemonId = useGameStore((state) => state.currentPokemonId);
-  const unlockNextPokemon = useGameStore((state) => state.unlockNextPokemon);
-  const prestige = useGameStore((state) => state.prestige);
-
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const [particleCounter, setParticleCounter] = useState(0);
-
-  const { data: pokemon, isLoading } = usePokeAPI(currentPokemonId);
-
-  const nextPokemonCost = useMemo(() => {
-    return Math.floor(1000 * Math.pow(1.25, currentPokemonId - 1));
-  }, [currentPokemonId]);
-
-  const handleMainClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const x = e.clientX;
-      const y = e.clientY;
-
-      const isCritical = Math.random() < 0.05;
-      const critMultiplier = isCritical ? 3 : 1;
-
-      click(critMultiplier);
-      playClickSound(isCritical);
-
-      const newParticle = { id: particleCounter, x, y, isCritical };
-      setParticles((prev) => [...prev, newParticle]);
-      setParticleCounter((prev) => prev + 1);
-
-      setTimeout(() => {
-        setParticles((prev) => prev.filter((p) => p.id !== newParticle.id));
-      }, 1000);
-    },
-    [click, particleCounter],
-  );
-
-  const canUnlock = score >= nextPokemonCost && currentPokemonId < 151;
-
-  const handleCatch = () => {
-    if (canUnlock) {
-      unlockNextPokemon();
-      playCatchSound();
-    }
-  };
-
-  const handlePrestige = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive 1 Rare Candy (+100% global multiplier permanently)!",
-      )
-    ) {
-      prestige();
-      playPrestigeSound();
-    }
-  };
+  const {
+    pokemon,
+    isLoading,
+    particles,
+    currentPokemonId,
+    nextPokemonCost,
+    canUnlock,
+    isMaxLevel,
+    handleMainClick,
+    handleCatch,
+    handlePrestige,
+  } = useMainStageVM();
 
   return (
     <main className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-b from-pokeDarkBlue to-black overflow-hidden">
@@ -108,49 +49,39 @@ export function MainStage() {
         )}
       </div>
 
-      {currentPokemonId < 151 ? (
-        <div className="absolute bottom-12 flex flex-col items-center gap-4 z-10">
-          <span className="text-sm text-gray-400 font-semibold uppercase">
-            Next Capture:{" "}
-            <span className="text-pokeRed font-bold">
-              ${formatNumber(nextPokemonCost)}
+      <div className="absolute bottom-12 flex flex-col items-center gap-4 z-10">
+        {!isMaxLevel ? (
+          <>
+            <span className="text-sm text-gray-400 font-semibold uppercase">
+              Next Capture:{" "}
+              <span className="text-pokeRed font-bold">
+                ${formatNumber(nextPokemonCost)}
+              </span>
             </span>
-          </span>
-          <button
-            onClick={handleCatch}
-            disabled={!canUnlock}
-            className={`px-8 py-3 rounded-full font-bold uppercase tracking-widest transition-all ${
-              canUnlock
-                ? "bg-pokeYellow text-black hover:scale-105 shadow-[0_0_15px_rgba(255,222,0,0.5)] cursor-pointer"
-                : "bg-black/50 text-gray-500 border border-white/10 cursor-not-allowed"
-            }`}
-          >
-            Catch Next Pokemon
-          </button>
-        </div>
-      ) : (
-        <div className="absolute bottom-12 flex flex-col items-center gap-4 z-10">
-          <span className="text-sm text-pink-400 font-black uppercase tracking-widest animate-pulse">
-            Maximum Level Reached!
-          </span>
-          <button
-            onClick={handlePrestige}
-            className="px-8 py-3 rounded-full font-black uppercase tracking-widest transition-all bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:scale-105 shadow-[0_0_20px_rgba(236,72,153,0.6)] cursor-pointer border-2 border-pink-300"
-          >
-            Prestige (+1 Rare Candy)
-          </button>
-        </div>
-      )}
+            <Button onClick={handleCatch} disabled={!canUnlock}>
+              Catch Next Pokemon
+            </Button>
+          </>
+        ) : (
+          <>
+            <span className="text-sm text-pink-400 font-black uppercase tracking-widest animate-pulse">
+              Maximum Level Reached!
+            </span>
+            <Button
+              onClick={handlePrestige}
+              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white border-2 border-pink-300 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
+            >
+              Prestige (+{GAME_CONFIG.PRESTIGE_REWARD} Rare Candy)
+            </Button>
+          </>
+        )}
+      </div>
 
       {particles.map((p) => (
         <div
           key={p.id}
           className="fixed z-50 pointer-events-none"
-          style={{
-            left: p.x,
-            top: p.y,
-            transform: "translate(-50%, -50%)",
-          }}
+          style={{ left: p.x, top: p.y, transform: "translate(-50%, -50%)" }}
         >
           <span
             className={`font-black animate-float-up drop-shadow-lg flex flex-col items-center ${
@@ -164,13 +95,7 @@ export function MainStage() {
                 Critical!
               </span>
             )}
-            +
-            {formatNumber(
-              clickPower *
-                multiplier *
-                (1 + rareCandies) *
-                (p.isCritical ? 3 : 1),
-            )}
+            +{formatNumber(p.value)}
           </span>
         </div>
       ))}

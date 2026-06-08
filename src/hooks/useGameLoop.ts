@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useGameStore } from "../store/useGameStore";
+import { GAME_CONFIG } from "../config/gameConfig";
 
 export function useGameLoop() {
   const requestRef = useRef<number>(0);
@@ -10,7 +11,10 @@ export function useGameLoop() {
     const now = Date.now();
     const timeDiffSeconds = (now - state.lastSaveTime) / 1000;
 
-    if (timeDiffSeconds > 5 && state.passiveIncome > 0) {
+    if (
+      timeDiffSeconds > GAME_CONFIG.OFFLINE_MIN_SECONDS &&
+      state.passiveIncome > 0
+    ) {
       const earned =
         state.passiveIncome *
         state.multiplier *
@@ -23,7 +27,7 @@ export function useGameLoop() {
 
     const saveInterval = setInterval(() => {
       useGameStore.getState().updateSaveTime();
-    }, 10000);
+    }, GAME_CONFIG.SAVE_INTERVAL_MS);
 
     const loop = (time: number) => {
       if (lastTimeRef.current === 0) {
