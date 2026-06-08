@@ -36,9 +36,8 @@ export function MainStage() {
 
   const handleMainClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const x = e.clientX;
+      const y = e.clientY;
 
       const isCritical = Math.random() < 0.05;
       const critMultiplier = isCritical ? 3 : 1;
@@ -144,26 +143,36 @@ export function MainStage() {
       )}
 
       {particles.map((p) => (
-        <span
+        <div
           key={p.id}
-          className={`absolute font-black pointer-events-none animate-float-up drop-shadow-lg z-20 flex flex-col items-center ${
-            p.isCritical ? "text-5xl text-pokeRed" : "text-3xl text-pokeYellow"
-          }`}
-          style={{ left: p.x, top: p.y }}
+          className="fixed z-50 pointer-events-none"
+          style={{
+            left: p.x,
+            top: p.y,
+            transform: "translate(-50%, -50%)",
+          }}
         >
-          {p.isCritical && (
-            <span className="text-xl block -mt-6 mb-1 text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(238,21,21,0.8)]">
-              Critical!
-            </span>
-          )}
-          +
-          {formatNumber(
-            clickPower *
-              multiplier *
-              (1 + rareCandies) *
-              (p.isCritical ? 3 : 1),
-          )}
-        </span>
+          <span
+            className={`font-black animate-float-up drop-shadow-lg flex flex-col items-center ${
+              p.isCritical
+                ? "text-5xl text-pokeRed"
+                : "text-3xl text-pokeYellow"
+            }`}
+          >
+            {p.isCritical && (
+              <span className="text-xl block -mt-6 mb-1 text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(238,21,21,0.8)]">
+                Critical!
+              </span>
+            )}
+            +
+            {formatNumber(
+              clickPower *
+                multiplier *
+                (1 + rareCandies) *
+                (p.isCritical ? 3 : 1),
+            )}
+          </span>
+        </div>
       ))}
     </main>
   );

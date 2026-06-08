@@ -2,17 +2,10 @@ import { useEffect, useRef } from "react";
 import { useGameStore } from "../store/useGameStore";
 
 export function useGameLoop() {
-  const addPassiveIncome = useGameStore((state) => state.addPassiveIncome);
-  const passiveIncome = useGameStore((state) => state.passiveIncome);
-  const multiplier = useGameStore((state) => state.multiplier);
-  const rareCandies = useGameStore((state) => state.rareCandies);
-
-  const lastTimeRef = useRef<number>(0);
   const requestRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    if (passiveIncome === 0) return;
-
     const loop = (time: number) => {
       if (lastTimeRef.current === 0) {
         lastTimeRef.current = time;
@@ -22,9 +15,15 @@ export function useGameLoop() {
       lastTimeRef.current = time;
 
       if (deltaTime > 0) {
-        addPassiveIncome(
-          passiveIncome * multiplier * (1 + rareCandies) * deltaTime,
-        );
+        const state = useGameStore.getState();
+        if (state.passiveIncome > 0) {
+          state.addPassiveIncome(
+            state.passiveIncome *
+              state.multiplier *
+              (1 + state.rareCandies) *
+              deltaTime,
+          );
+        }
       }
 
       requestRef.current = requestAnimationFrame(loop);
@@ -34,5 +33,5 @@ export function useGameLoop() {
     requestRef.current = requestAnimationFrame(loop);
 
     return () => cancelAnimationFrame(requestRef.current);
-  }, [passiveIncome, multiplier, rareCandies, addPassiveIncome]);
+  }, []);
 }
