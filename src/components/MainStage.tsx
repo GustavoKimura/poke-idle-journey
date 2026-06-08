@@ -1,11 +1,14 @@
 import { useState, useCallback, useMemo } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { usePokeAPI } from "../hooks/usePokeAPI";
+import { playClickSound, playCatchSound } from "../utils/audio";
+import { formatNumber } from "../utils/format";
 
 interface Particle {
   id: number;
   x: number;
   y: number;
+  isCritical: boolean;
 }
 
 export function MainStage() {
@@ -22,7 +25,7 @@ export function MainStage() {
   const { data: pokemon, isLoading } = usePokeAPI(currentPokemonId);
 
   const nextPokemonCost = useMemo(() => {
-    return Math.floor(1000 * Math.pow(1.5, currentPokemonId - 1));
+    return Math.floor(1000 * Math.pow(1.25, currentPokemonId - 1));
   }, [currentPokemonId]);
 
   const handleMainClick = useCallback(
@@ -31,9 +34,13 @@ export function MainStage() {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      click();
+      const isCritical = Math.random() < 0.05;
+      const critMultiplier = isCritical ? 3 : 1;
 
-      const newParticle = { id: particleCounter, x, y };
+      click(critMultiplier);
+      playClickSound(isCritical);
+
+      const newParticle = { id: particleCounter, x, y, isCritical };
       setParticles((prev) => [...prev, newParticle]);
       setParticleCounter((prev) => prev + 1);
 
@@ -45,6 +52,13 @@ export function MainStage() {
   );
 
   const canUnlock = score >= nextPokemonCost && currentPokemonId < 151;
+
+  const handleCatch = () => {
+    if (canUnlock) {
+      unlockNextPokemon();
+      playCatchSound();
+    }
+  };
 
   return (
     <main className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-b from-pokeDarkBlue to-black overflow-hidden">
@@ -83,11 +97,11 @@ export function MainStage() {
           <span className="text-sm text-gray-400 font-semibold uppercase">
             Next Capture:{" "}
             <span className="text-pokeRed font-bold">
-              ${nextPokemonCost.toLocaleString()}
+              ${formatNumber(nextPokemonCost)}
             </span>
           </span>
           <button
-            onClick={unlockNextPokemon}
+            onClick={handleCatch}
             disabled={!canUnlock}
             className={`px-8 py-3 rounded-full font-bold uppercase tracking-widest transition-all ${
               canUnlock
@@ -103,10 +117,17 @@ export function MainStage() {
       {particles.map((p) => (
         <span
           key={p.id}
-          className="absolute text-3xl font-black text-pokeYellow pointer-events-none animate-float-up drop-shadow-lg z-20"
+          className={`absolute font-black pointer-events-none animate-float-up drop-shadow-lg z-20 flex flex-col items-center ${
+            p.isCritical ? "text-5xl text-pokeRed" : "text-3xl text-pokeYellow"
+          }`}
           style={{ left: p.x, top: p.y }}
         >
-          +{clickPower * multiplier}
+          {p.isCritical && (
+            <span className="text-xl block -mt-6 mb-1 text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(238,21,21,0.8)]">
+              Critical!
+            </span>
+          )}
+          +{formatNumber(clickPower * multiplier * (p.isCritical ? 3 : 1))}
         </span>
       ))}
     </main>

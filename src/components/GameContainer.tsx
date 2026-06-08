@@ -1,6 +1,7 @@
 import { Header } from "./Header";
 import { MainStage } from "./MainStage";
 import { UpgradeSidebar } from "./UpgradeSidebar";
+import { PokedexModal } from "./PokedexModal";
 import { useGameLoop } from "../hooks/useGameLoop";
 
 export function GameContainer() {
@@ -13,6 +14,7 @@ export function GameContainer() {
         <MainStage />
         <UpgradeSidebar />
       </div>
+      <PokedexModal />
     </div>
   );
 }

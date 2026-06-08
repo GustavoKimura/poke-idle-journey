@@ -42,9 +42,13 @@ export const useGameStore = create<GameState>()(
       upgrades: initialUpgrades,
       unlockedPokemonIds: [1],
       currentPokemonId: 1,
-      click: () =>
+      isPokedexOpen: false,
+      togglePokedex: () =>
+        set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
+      click: (critMultiplier = 1) =>
         set((state) => ({
-          score: state.score + state.clickPower * state.multiplier,
+          score:
+            state.score + state.clickPower * state.multiplier * critMultiplier,
         })),
       buyUpgrade: (id) =>
         set((state) => {
@@ -85,13 +89,16 @@ export const useGameStore = create<GameState>()(
         set((state) => {
           const nextId = state.currentPokemonId + 1;
           if (nextId > 151) return state;
+
+          const cost = Math.floor(
+            1000 * Math.pow(1.25, state.currentPokemonId - 1),
+          );
+
           return {
-            score:
-              state.score -
-              Math.floor(1000 * Math.pow(1.5, state.currentPokemonId - 1)),
+            score: state.score - cost,
             currentPokemonId: nextId,
             unlockedPokemonIds: [...state.unlockedPokemonIds, nextId],
-            multiplier: state.multiplier + 0.5,
+            multiplier: state.multiplier + 0.1 * state.currentPokemonId,
           };
         }),
     }),

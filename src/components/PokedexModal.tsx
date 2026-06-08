@@ -1,0 +1,96 @@
+import { useGameStore } from "../store/useGameStore";
+import { usePokeAPI } from "../hooks/usePokeAPI";
+import { X, Sparkles, Scale } from "lucide-react";
+
+function PokedexEntry({ id }: { id: number }) {
+  const { data, isLoading } = usePokeAPI(id);
+
+  if (isLoading || !data) {
+    return (
+      <div className="h-48 bg-white/5 animate-pulse rounded-xl border border-white/10" />
+    );
+  }
+
+  return (
+    <div className="relative group flex flex-col items-center p-4 bg-black/40 rounded-xl border border-white/10 hover:border-pokeYellow transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-pokeYellow/20 overflow-hidden">
+      <span className="absolute top-2 left-2 text-xs font-black text-gray-500 bg-black/50 px-2 py-1 rounded">
+        #{id.toString().padStart(3, "0")}
+      </span>
+
+      <div className="relative w-24 h-24 mt-4">
+        <img
+          src={data.sprite}
+          alt={data.name}
+          className="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 group-hover:opacity-0"
+        />
+        {data.shinySprite && (
+          <img
+            src={data.shinySprite}
+            alt={`${data.name} shiny`}
+            className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          />
+        )}
+      </div>
+
+      <span className="mt-2 font-bold capitalize text-white">{data.name}</span>
+
+      <div className="flex gap-1 mt-2">
+        {data.types.map((type) => (
+          <span
+            key={type}
+            className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-pokeDarkBlue text-gray-300 border border-white/10"
+          >
+            {type}
+          </span>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-1 mt-3 text-xs text-gray-400">
+        <Scale size={12} />
+        <span>{(data.weight / 10).toFixed(1)} kg</span>
+      </div>
+
+      {data.shinySprite && (
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Sparkles size={14} className="text-pokeYellow" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function PokedexModal() {
+  const isPokedexOpen = useGameStore((state) => state.isPokedexOpen);
+  const togglePokedex = useGameStore((state) => state.togglePokedex);
+  const unlockedPokemonIds = useGameStore((state) => state.unlockedPokemonIds);
+
+  if (!isPokedexOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
+      <div className="bg-gradient-to-b from-pokeDarkBlue to-black border-2 border-pokeYellow rounded-3xl w-full max-w-6xl h-[85vh] flex flex-col shadow-[0_0_50px_rgba(255,222,0,0.15)] overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="p-6 flex justify-between items-center border-b border-white/10 bg-black/20">
+          <div className="flex items-center gap-4">
+            <h2 className="text-3xl font-black uppercase tracking-widest text-white drop-shadow-md">
+              Pokédex
+            </h2>
+            <span className="px-3 py-1 bg-pokeYellow/20 text-pokeYellow font-bold rounded-full text-sm border border-pokeYellow/30">
+              {unlockedPokemonIds.length} / 151 Captured
+            </span>
+          </div>
+          <button
+            onClick={togglePokedex}
+            className="text-gray-400 hover:text-pokeRed transition-colors cursor-pointer"
+          >
+            <X size={32} />
+          </button>
+        </div>
+        <div className="p-6 overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 custom-scrollbar">
+          {unlockedPokemonIds.map((id) => (
+            <PokedexEntry key={id} id={id} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

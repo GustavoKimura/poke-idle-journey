@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react";
 
-interface PokemonData {
+export interface PokemonData {
   name: string;
   sprite: string;
+  shinySprite: string;
+  types: string[];
+  weight: number;
+}
+
+interface PokeAPIType {
+  type: {
+    name: string;
+  };
 }
 
 const cache: Record<number, PokemonData> = {};
@@ -33,6 +42,11 @@ export function usePokeAPI(pokemonId: number) {
           sprite:
             result.sprites.other["official-artwork"].front_default ||
             result.sprites.front_default,
+          shinySprite:
+            result.sprites.front_shiny ||
+            result.sprites.other["official-artwork"].front_shiny,
+          types: result.types.map((t: PokeAPIType) => t.type.name),
+          weight: result.weight,
         };
 
         cache[pokemonId] = pokemonData;

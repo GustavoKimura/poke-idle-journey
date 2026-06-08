@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { useGameStore } from "../store/useGameStore";
+import { playUpgradeSound } from "../utils/audio";
+import { formatNumber } from "../utils/format";
 import type { Upgrade } from "../types/game";
 
 function UpgradeItem({ upgrade }: { upgrade: Upgrade }) {
@@ -14,9 +16,16 @@ function UpgradeItem({ upgrade }: { upgrade: Upgrade }) {
 
   const canAfford = score >= currentCost;
 
+  const handleBuy = () => {
+    if (canAfford) {
+      buyUpgrade(upgrade.id);
+      playUpgradeSound();
+    }
+  };
+
   return (
     <button
-      onClick={() => buyUpgrade(upgrade.id)}
+      onClick={handleBuy}
       disabled={!canAfford}
       className={`w-full p-4 flex flex-col gap-2 rounded-xl border-2 transition-all duration-200 text-left ${
         canAfford
@@ -41,11 +50,12 @@ function UpgradeItem({ upgrade }: { upgrade: Upgrade }) {
           <span
             className={canAfford ? "text-white" : "text-pokeRed font-semibold"}
           >
-            {currentCost.toLocaleString()}
+            {formatNumber(currentCost)}
           </span>
         </div>
         <span className="text-sm text-blue-300 font-medium">
-          +{upgrade.effect} {upgrade.type === "active" ? "/ click" : "/ sec"}
+          +{formatNumber(upgrade.effect)}{" "}
+          {upgrade.type === "active" ? "/ click" : "/ sec"}
         </span>
       </div>
     </button>
@@ -62,7 +72,7 @@ export function UpgradeSidebar() {
           Upgrades
         </h2>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
         {upgrades.map((upgrade) => (
           <UpgradeItem key={upgrade.id} upgrade={upgrade} />
         ))}
