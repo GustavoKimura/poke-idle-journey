@@ -7,17 +7,23 @@ function PokedexEntry({ id }: { id: number }) {
 
   if (isLoading || !data) {
     return (
-      <div className="h-56 bg-white/5 animate-pulse rounded-xl border border-white/10" />
+      <div className="h-48 bg-white/5 animate-pulse rounded-xl border border-white/10" />
     );
   }
 
   return (
-    <div className="relative group flex flex-col items-center justify-between p-4 bg-black/40 rounded-xl border border-white/10 hover:border-pokeYellow transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-pokeYellow/20 overflow-hidden min-h-[220px]">
-      <span className="absolute top-2 left-2 text-xs font-black text-gray-500 bg-black/50 px-2 py-1 rounded">
+    <div className="relative group flex flex-col items-center p-3 bg-black/40 rounded-xl border border-white/10 hover:border-pokeYellow transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-pokeYellow/20 overflow-hidden h-48">
+      <span className="absolute top-2 left-2 text-[10px] font-black text-gray-400 bg-black/60 px-1.5 py-0.5 rounded">
         #{id.toString().padStart(3, "0")}
       </span>
 
-      <div className="relative w-full aspect-square max-w-[100px] mt-6 mb-3">
+      {data.shinySprite && (
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Sparkles size={12} className="text-pokeYellow" />
+        </div>
+      )}
+
+      <div className="relative w-20 h-20 mt-4 mb-2 shrink-0">
         <img
           src={data.sprite}
           alt={data.name}
@@ -32,31 +38,25 @@ function PokedexEntry({ id }: { id: number }) {
         )}
       </div>
 
-      <span className="font-bold capitalize text-white text-center w-full truncate text-sm">
+      <span className="font-bold capitalize text-white text-center w-full truncate text-sm mb-1">
         {data.name}
       </span>
 
-      <div className="flex flex-wrap justify-center gap-1 mt-2">
+      <div className="flex flex-wrap justify-center gap-1 mb-2">
         {data.types.map((type) => (
           <span
             key={type}
-            className="text-[9px] uppercase font-black px-2 py-0.5 rounded-full bg-pokeDarkBlue text-gray-300 border border-white/10"
+            className="text-[9px] uppercase font-black px-1.5 py-0.5 rounded-full bg-pokeDarkBlue text-gray-300 border border-white/10"
           >
             {type}
           </span>
         ))}
       </div>
 
-      <div className="flex items-center gap-1 mt-3 text-xs text-gray-400">
-        <Scale size={12} />
+      <div className="flex items-center gap-1 mt-auto text-[10px] text-gray-400">
+        <Scale size={10} />
         <span>{(data.weight / 10).toFixed(1)} kg</span>
       </div>
-
-      {data.shinySprite && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Sparkles size={14} className="text-pokeYellow" />
-        </div>
-      )}
     </div>
   );
 }
