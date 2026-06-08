@@ -56,10 +56,15 @@ export function useMainStageVM() {
 
   useEffect(() => {
     if (currentPokemonId > prevPokemonId.current) {
-      setSpawnFlash(true);
-      const timer = setTimeout(() => setSpawnFlash(false), 500);
       prevPokemonId.current = currentPokemonId;
-      return () => clearTimeout(timer);
+      if (useGameStore.getState().isVfxEnabled) {
+        const startTimer = window.setTimeout(() => setSpawnFlash(true), 0);
+        const endTimer = window.setTimeout(() => setSpawnFlash(false), 500);
+        return () => {
+          clearTimeout(startTimer);
+          clearTimeout(endTimer);
+        };
+      }
     } else if (currentPokemonId < prevPokemonId.current) {
       prevPokemonId.current = currentPokemonId;
     }
@@ -83,47 +88,49 @@ export function useMainStageVM() {
       state.click(critMultiplier);
       playClickSound(isCritical);
 
-      if (isCritical && targetElem) {
-        const imgElement = targetElem.querySelector("img");
-        if (imgElement) {
-          imgElement.classList.remove("animate-shake");
-          void imgElement.offsetWidth;
-          imgElement.classList.add("animate-shake");
+      if (state.isVfxEnabled) {
+        if (isCritical && targetElem) {
+          const imgElement = targetElem.querySelector("img");
+          if (imgElement) {
+            imgElement.classList.remove("animate-shake");
+            void imgElement.offsetWidth;
+            imgElement.classList.add("animate-shake");
+          }
         }
+
+        const particle = document.createElement("div");
+        particle.className = "fixed z-50 pointer-events-none";
+        particle.style.left = `${clientX}px`;
+        particle.style.top = `${clientY}px`;
+        particle.style.transform = "translate(-50%, -50%)";
+
+        let textColorClass = "text-3xl text-pokeYellow";
+        if (state.isBossActive) textColorClass = "text-3xl text-orange-400";
+        if (isCritical) textColorClass = "text-5xl text-pokeRed";
+
+        const textSpan = document.createElement("span");
+        textSpan.className = `font-black animate-float-up drop-shadow-lg flex flex-col items-center ${textColorClass}`;
+
+        if (isCritical) {
+          const critSpan = document.createElement("span");
+          critSpan.className =
+            "text-xl block -mt-6 mb-1 text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(238,21,21,0.8)]";
+          critSpan.textContent = "Critical!";
+          textSpan.appendChild(critSpan);
+        }
+
+        const valueNode = document.createTextNode(
+          `+${formatNumber(gainedValue)}`,
+        );
+        textSpan.appendChild(valueNode);
+
+        particle.appendChild(textSpan);
+        document.body.appendChild(particle);
+
+        setTimeout(() => {
+          particle.remove();
+        }, 1000);
       }
-
-      const particle = document.createElement("div");
-      particle.className = "fixed z-50 pointer-events-none";
-      particle.style.left = `${clientX}px`;
-      particle.style.top = `${clientY}px`;
-      particle.style.transform = "translate(-50%, -50%)";
-
-      let textColorClass = "text-3xl text-pokeYellow";
-      if (state.isBossActive) textColorClass = "text-3xl text-orange-400";
-      if (isCritical) textColorClass = "text-5xl text-pokeRed";
-
-      const textSpan = document.createElement("span");
-      textSpan.className = `font-black animate-float-up drop-shadow-lg flex flex-col items-center ${textColorClass}`;
-
-      if (isCritical) {
-        const critSpan = document.createElement("span");
-        critSpan.className =
-          "text-xl block -mt-6 mb-1 text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(238,21,21,0.8)]";
-        critSpan.textContent = "Critical!";
-        textSpan.appendChild(critSpan);
-      }
-
-      const valueNode = document.createTextNode(
-        `+${formatNumber(gainedValue)}`,
-      );
-      textSpan.appendChild(valueNode);
-
-      particle.appendChild(textSpan);
-      document.body.appendChild(particle);
-
-      setTimeout(() => {
-        particle.remove();
-      }, 1000);
     },
     [],
   );
@@ -162,12 +169,17 @@ export function useMainStageVM() {
 
   const handleCatch = () => {
     if (canUnlock && !isCatching) {
-      setIsCatching(true);
-      playCatchSound();
-      setTimeout(() => {
+      if (useGameStore.getState().isVfxEnabled) {
+        setIsCatching(true);
+        playCatchSound();
+        setTimeout(() => {
+          useGameStore.getState().unlockNextPokemon();
+          setIsCatching(false);
+        }, 800);
+      } else {
         useGameStore.getState().unlockNextPokemon();
-        setIsCatching(false);
-      }, 800);
+        playCatchSound();
+      }
     }
   };
 

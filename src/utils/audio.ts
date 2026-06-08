@@ -1,3 +1,5 @@
+import { useGameStore } from "../store/useGameStore";
+
 let audioCtx: AudioContext | null = null;
 
 function initAudio() {
@@ -16,6 +18,7 @@ function initAudio() {
 }
 
 export function playClickSound(isCritical: boolean = false) {
+  if (!useGameStore.getState().isSoundEnabled) return;
   initAudio();
   const ctx = audioCtx;
   if (!ctx) return;
@@ -60,6 +63,7 @@ export function playClickSound(isCritical: boolean = false) {
 }
 
 export function playCatchSound() {
+  if (!useGameStore.getState().isSoundEnabled) return;
   initAudio();
   const ctx = audioCtx;
   if (!ctx) return;
@@ -84,6 +88,7 @@ export function playCatchSound() {
 }
 
 export function playUpgradeSound() {
+  if (!useGameStore.getState().isSoundEnabled) return;
   initAudio();
   const ctx = audioCtx;
   if (!ctx) return;
@@ -106,6 +111,7 @@ export function playUpgradeSound() {
 }
 
 export function playPrestigeSound() {
+  if (!useGameStore.getState().isSoundEnabled) return;
   initAudio();
   const ctx = audioCtx;
   if (!ctx) return;

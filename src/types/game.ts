@@ -23,6 +23,8 @@ export interface GameState {
   offlineEarnings: number;
   offlineSeconds: number;
   isHoldToClickEnabled: boolean;
+  isSoundEnabled: boolean;
+  isVfxEnabled: boolean;
   totalClicks: number;
   unlockedAchievements: string[];
   isAchievementsOpen: boolean;
@@ -31,6 +33,8 @@ export interface GameState {
   bossMaxHp: number;
   bossTimeLeft: number;
   toggleHoldToClick: () => void;
+  toggleSound: () => void;
+  toggleVfx: () => void;
   togglePokedex: () => void;
   togglePartyMember: (id: number) => void;
   toggleAchievements: () => void;

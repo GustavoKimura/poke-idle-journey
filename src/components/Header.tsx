@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Book, Sparkles, Settings as SettingsIcon, Trophy } from "lucide-react";
+import {
+  Book,
+  Sparkles,
+  Settings as SettingsIcon,
+  Trophy,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
 import { SettingsModal } from "./SettingsModal";
@@ -12,6 +19,8 @@ export function Header() {
     multiplier,
     rareCandies,
     party,
+    isSoundEnabled,
+    toggleSound,
     togglePokedex,
     toggleAchievements,
     unlockedAchievements,
@@ -91,6 +100,18 @@ export function Header() {
           </div>
 
           <div className="flex gap-2 sm:gap-4">
+            <button
+              onClick={toggleSound}
+              title="Toggle Sound"
+              className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
+            >
+              {isSoundEnabled ? (
+                <Volume2 size={22} />
+              ) : (
+                <VolumeX size={22} className="text-red-400" />
+              )}
+            </button>
+
             <button
               onClick={toggleAchievements}
               title="Achievements"

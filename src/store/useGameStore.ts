@@ -43,6 +43,8 @@ export const useGameStore = create<GameState>()(
       offlineEarnings: 0,
       offlineSeconds: 0,
       isHoldToClickEnabled: false,
+      isSoundEnabled: true,
+      isVfxEnabled: true,
       totalClicks: 0,
       unlockedAchievements: [],
       isAchievementsOpen: false,
@@ -52,6 +54,9 @@ export const useGameStore = create<GameState>()(
       bossTimeLeft: 0,
       toggleHoldToClick: () =>
         set((state) => ({ isHoldToClickEnabled: !state.isHoldToClickEnabled })),
+      toggleSound: () =>
+        set((state) => ({ isSoundEnabled: !state.isSoundEnabled })),
+      toggleVfx: () => set((state) => ({ isVfxEnabled: !state.isVfxEnabled })),
       togglePokedex: () =>
         set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
       togglePartyMember: (id) =>
@@ -262,6 +267,8 @@ export const useGameStore = create<GameState>()(
           offlineEarnings: 0,
           offlineSeconds: 0,
           isHoldToClickEnabled: false,
+          isSoundEnabled: true,
+          isVfxEnabled: true,
           totalClicks: 0,
           unlockedAchievements: [],
           isAchievementsOpen: false,
@@ -293,7 +300,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 9,
+      version: 10,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -336,6 +343,9 @@ export const useGameStore = create<GameState>()(
           state.offlineSeconds = 0;
         if (typeof state.isHoldToClickEnabled !== "boolean")
           state.isHoldToClickEnabled = false;
+        if (typeof state.isSoundEnabled !== "boolean")
+          state.isSoundEnabled = true;
+        if (typeof state.isVfxEnabled !== "boolean") state.isVfxEnabled = true;
         if (
           typeof state.totalClicks !== "number" ||
           Number.isNaN(state.totalClicks)

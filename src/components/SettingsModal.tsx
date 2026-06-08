@@ -5,6 +5,9 @@ import {
   Settings,
   Info,
   Hand,
+  Volume2,
+  VolumeX,
+  Sparkles,
 } from "lucide-react";
 import { useSettingsVM } from "../viewmodels/useSettingsVM";
 import { GAME_CONFIG } from "../config/gameConfig";
@@ -32,7 +35,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const isHoldToClickEnabled = useGameStore(
     (state) => state.isHoldToClickEnabled,
   );
+  const isSoundEnabled = useGameStore((state) => state.isSoundEnabled);
+  const isVfxEnabled = useGameStore((state) => state.isVfxEnabled);
+
   const toggleHoldToClick = useGameStore((state) => state.toggleHoldToClick);
+  const toggleSound = useGameStore((state) => state.toggleSound);
+  const toggleVfx = useGameStore((state) => state.toggleVfx);
 
   return (
     <Modal
@@ -74,19 +82,41 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         <div className="space-y-4">
           <h3 className="text-green-400 font-bold uppercase tracking-wider text-sm border-b border-white/10 pb-2 flex items-center gap-2">
             <Hand size={16} />
-            Accessibility
+            Accessibility & Performance
           </h3>
-          <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Button
+              variant={isSoundEnabled ? "primary" : "ghost"}
+              fullWidth
+              onClick={toggleSound}
+            >
+              {isSoundEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+              Sound: {isSoundEnabled ? "ON" : "OFF"}
+            </Button>
+            <Button
+              variant={isVfxEnabled ? "primary" : "ghost"}
+              fullWidth
+              onClick={toggleVfx}
+            >
+              {isVfxEnabled ? (
+                <Sparkles size={20} />
+              ) : (
+                <Sparkles size={20} className="opacity-50" />
+              )}
+              Visual FX: {isVfxEnabled ? "ON" : "OFF"}
+            </Button>
             <Button
               variant={isHoldToClickEnabled ? "primary" : "ghost"}
               fullWidth
               onClick={toggleHoldToClick}
+              className="sm:col-span-2"
             >
               Hold-to-Click: {isHoldToClickEnabled ? "ON" : "OFF"}
             </Button>
-            <p className="text-xs text-gray-400 mt-2 text-center">
-              Enable to hold down the mouse or touch to automatically click the
-              Pokémon. Helps prevent repetitive strain injury (RSI).
+            <p className="text-xs text-gray-400 mt-2 text-center sm:col-span-2">
+              Enable "Hold-to-Click" to hold down the mouse to automatically
+              click and prevent RSI. Turn off "Visual FX" to disable screen
+              shake and floating numbers if the game is lagging.
             </p>
           </div>
         </div>
