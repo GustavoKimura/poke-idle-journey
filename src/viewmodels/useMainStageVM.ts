@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useEffect } from "react";
+import { useCallback, useMemo, useRef, useEffect, useState } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { usePokeAPI } from "../hooks/usePokeAPI";
 import {
@@ -41,6 +41,10 @@ export function useMainStageVM() {
   const isMaxLevel = currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID;
 
   const intervalRef = useRef<number | null>(null);
+  const prevPokemonId = useRef(currentPokemonId);
+
+  const [isCatching, setIsCatching] = useState(false);
+  const [spawnFlash, setSpawnFlash] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -49,6 +53,17 @@ export function useMainStageVM() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (currentPokemonId > prevPokemonId.current) {
+      setSpawnFlash(true);
+      const timer = setTimeout(() => setSpawnFlash(false), 500);
+      prevPokemonId.current = currentPokemonId;
+      return () => clearTimeout(timer);
+    } else if (currentPokemonId < prevPokemonId.current) {
+      prevPokemonId.current = currentPokemonId;
+    }
+  }, [currentPokemonId]);
 
   const triggerClick = useCallback(
     (clientX: number, clientY: number, targetElem: HTMLElement | null) => {
@@ -83,10 +98,12 @@ export function useMainStageVM() {
       particle.style.top = `${clientY}px`;
       particle.style.transform = "translate(-50%, -50%)";
 
+      let textColorClass = "text-3xl text-pokeYellow";
+      if (state.isBossActive) textColorClass = "text-3xl text-orange-400";
+      if (isCritical) textColorClass = "text-5xl text-pokeRed";
+
       const textSpan = document.createElement("span");
-      textSpan.className = `font-black animate-float-up drop-shadow-lg flex flex-col items-center ${
-        isCritical ? "text-5xl text-pokeRed" : "text-3xl text-pokeYellow"
-      }`;
+      textSpan.className = `font-black animate-float-up drop-shadow-lg flex flex-col items-center ${textColorClass}`;
 
       if (isCritical) {
         const critSpan = document.createElement("span");
@@ -144,9 +161,13 @@ export function useMainStageVM() {
   };
 
   const handleCatch = () => {
-    if (canUnlock) {
-      useGameStore.getState().unlockNextPokemon();
+    if (canUnlock && !isCatching) {
+      setIsCatching(true);
       playCatchSound();
+      setTimeout(() => {
+        useGameStore.getState().unlockNextPokemon();
+        setIsCatching(false);
+      }, 800);
     }
   };
 
@@ -162,6 +183,31 @@ export function useMainStageVM() {
     }
   };
 
+  const TYPE_COLORS: Record<string, string> = {
+    normal: "from-gray-600",
+    fire: "from-red-900",
+    water: "from-blue-800",
+    electric: "from-yellow-700",
+    grass: "from-green-800",
+    ice: "from-cyan-700",
+    fighting: "from-orange-900",
+    poison: "from-purple-900",
+    ground: "from-yellow-900",
+    flying: "from-indigo-700",
+    psychic: "from-pink-800",
+    bug: "from-lime-800",
+    rock: "from-stone-700",
+    ghost: "from-violet-900",
+    dragon: "from-indigo-900",
+    dark: "from-gray-900",
+    steel: "from-slate-700",
+    fairy: "from-rose-800",
+  };
+
+  const bgGradient = pokemon?.types?.[0]
+    ? TYPE_COLORS[pokemon.types[0]] || "from-pokeDarkBlue"
+    : "from-pokeDarkBlue";
+
   return {
     pokemon,
     isLoading,
@@ -174,6 +220,9 @@ export function useMainStageVM() {
     bossHp,
     bossMaxHp,
     bossTimeLeft,
+    isCatching,
+    spawnFlash,
+    bgGradient,
     handlePointerDown,
     stopHold,
     handleStartBoss,

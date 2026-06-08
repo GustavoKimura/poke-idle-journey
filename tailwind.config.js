@@ -18,10 +18,23 @@ export default {
           "50%": { transform: "translate(-5px, 5px)" },
           "75%": { transform: "translate(5px, 5px)" },
         },
+        "suck-in": {
+          "0%": {
+            transform: "scale(1) rotate(0deg)",
+            opacity: "1",
+            filter: "brightness(1)",
+          },
+          "100%": {
+            transform: "scale(0) rotate(720deg)",
+            opacity: "0",
+            filter: "brightness(3)",
+          },
+        },
       },
       animation: {
         "float-up": "float-up 1s ease-out forwards",
         shake: "shake 0.2s ease-in-out",
+        "suck-in": "suck-in 0.8s ease-in forwards",
       },
     },
   },

@@ -16,6 +16,9 @@ export function MainStage() {
     bossHp,
     bossMaxHp,
     bossTimeLeft,
+    isCatching,
+    spawnFlash,
+    bgGradient,
     handlePointerDown,
     stopHold,
     handleStartBoss,
@@ -25,14 +28,20 @@ export function MainStage() {
 
   return (
     <main
-      className={`flex-1 relative flex flex-col items-center justify-center transition-colors duration-1000 overflow-hidden ${
+      className={`flex-1 relative flex flex-col items-center justify-center transition-colors duration-1000 overflow-hidden bg-gradient-to-b ${
         isBossActive
-          ? "bg-gradient-to-b from-red-950 to-black"
+          ? "from-red-950"
           : isBossLevel
-            ? "bg-gradient-to-b from-orange-950 to-black"
-            : "bg-gradient-to-b from-pokeDarkBlue to-black"
-      }`}
+            ? "from-orange-950"
+            : bgGradient
+      } to-black`}
     >
+      <div
+        className={`absolute inset-0 bg-white pointer-events-none z-50 transition-opacity duration-500 ${
+          spawnFlash ? "opacity-100" : "opacity-0"
+        }`}
+      />
+
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
 
       <div className="absolute top-8 flex flex-col items-center gap-2 z-10 w-full px-8">
@@ -70,7 +79,7 @@ export function MainStage() {
       </div>
 
       <div
-        className={`relative cursor-pointer transition-transform duration-75 active:scale-95 hover:scale-105 z-10 ${
+        className={`relative cursor-pointer transition-all duration-75 active:scale-90 active:brightness-150 hover:scale-105 z-10 ${
           isLoading ? "opacity-50" : "opacity-100"
         }`}
         onPointerDown={handlePointerDown}
@@ -85,7 +94,9 @@ export function MainStage() {
           <img
             src={pokemon.sprite}
             alt={pokemon.name}
-            className="w-80 h-80 drop-shadow-2xl select-none hover:brightness-125 transition-all duration-200"
+            className={`w-80 h-80 drop-shadow-2xl select-none transition-all duration-200 ${
+              isCatching ? "animate-suck-in" : "hover:brightness-125"
+            }`}
             draggable="false"
           />
         )}
@@ -118,7 +129,10 @@ export function MainStage() {
                 </span>
               </span>
               <div className="flex gap-4">
-                <Button onClick={handleCatch} disabled={!canUnlock}>
+                <Button
+                  onClick={handleCatch}
+                  disabled={!canUnlock || isCatching}
+                >
                   Catch Next Pokemon
                 </Button>
                 {currentPokemonId >= GAME_CONFIG.PRESTIGE_MIN_ID && (
