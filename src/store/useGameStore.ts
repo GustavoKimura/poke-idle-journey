@@ -4,6 +4,7 @@ import type { GameState, Upgrade } from "../types/game";
 import {
   GAME_CONFIG,
   INITIAL_UPGRADES,
+  ACHIEVEMENTS,
   calculateUpgradeCost,
   calculateNextPokemonCost,
   getMilestoneMultiplier,
@@ -39,10 +40,45 @@ export const useGameStore = create<GameState>()(
       lastSaveTime: Date.now(),
       offlineEarnings: 0,
       isHoldToClickEnabled: false,
+      totalClicks: 0,
+      unlockedAchievements: [],
+      isAchievementsOpen: false,
       toggleHoldToClick: () =>
         set((state) => ({ isHoldToClickEnabled: !state.isHoldToClickEnabled })),
       togglePokedex: () =>
         set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
+      toggleAchievements: () =>
+        set((state) => ({ isAchievementsOpen: !state.isAchievementsOpen })),
+      claimAchievement: (id) =>
+        set((state) => {
+          if (state.unlockedAchievements.includes(id)) return state;
+          const achievement = ACHIEVEMENTS.find((a) => a.id === id);
+          if (!achievement) return state;
+
+          let isCompleted = false;
+          if (
+            achievement.condition === "clicks" &&
+            state.totalClicks >= achievement.target
+          )
+            isCompleted = true;
+          if (
+            achievement.condition === "income" &&
+            state.passiveIncome >= achievement.target
+          )
+            isCompleted = true;
+          if (
+            achievement.condition === "pokemon" &&
+            state.unlockedPokemonIds.length >= achievement.target
+          )
+            isCompleted = true;
+
+          if (!isCompleted) return state;
+
+          return {
+            unlockedAchievements: [...state.unlockedAchievements, id],
+            rareCandies: state.rareCandies + achievement.reward,
+          };
+        }),
       click: (critMultiplier = 1) =>
         set((state) => ({
           score:
@@ -51,6 +87,7 @@ export const useGameStore = create<GameState>()(
               state.multiplier *
               (1 + state.rareCandies) *
               critMultiplier,
+          totalClicks: state.totalClicks + 1,
         })),
       buyUpgrade: (id) =>
         set((state) => {
@@ -132,6 +169,9 @@ export const useGameStore = create<GameState>()(
           isPokedexOpen: false,
           offlineEarnings: 0,
           isHoldToClickEnabled: false,
+          totalClicks: 0,
+          unlockedAchievements: [],
+          isAchievementsOpen: false,
           lastSaveTime: Date.now(),
         });
 
@@ -150,7 +190,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 5,
+      version: 6,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -188,6 +228,14 @@ export const useGameStore = create<GameState>()(
         if (typeof state.isHoldToClickEnabled !== "boolean")
           state.isHoldToClickEnabled = false;
 
+        if (
+          typeof state.totalClicks !== "number" ||
+          Number.isNaN(state.totalClicks)
+        )
+          state.totalClicks = 0;
+        if (!Array.isArray(state.unlockedAchievements))
+          state.unlockedAchievements = [];
+
         if (Array.isArray(state.upgrades)) {
           state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {
             const initialMatch = INITIAL_UPGRADES.find(
@@ -217,6 +265,7 @@ export const useGameStore = create<GameState>()(
         state.clickPower = totals.clickPower;
         state.passiveIncome = totals.passiveIncome;
         state.isPokedexOpen = false;
+        state.isAchievementsOpen = false;
 
         return state as GameState;
       },

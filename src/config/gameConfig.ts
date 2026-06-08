@@ -69,6 +69,98 @@ export const INITIAL_UPGRADES: Upgrade[] = [
   },
 ];
 
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  reward: number;
+  condition: "clicks" | "income" | "pokemon";
+  target: number;
+}
+
+export const ACHIEVEMENTS: Achievement[] = [
+  {
+    id: "c1",
+    name: "Warm Up",
+    description: "Click 100 times",
+    reward: 1,
+    condition: "clicks",
+    target: 100,
+  },
+  {
+    id: "c2",
+    name: "Clicker Novice",
+    description: "Click 1,000 times",
+    reward: 2,
+    condition: "clicks",
+    target: 1000,
+  },
+  {
+    id: "c3",
+    name: "Auto Clicker",
+    description: "Click 10,000 times",
+    reward: 3,
+    condition: "clicks",
+    target: 10000,
+  },
+  {
+    id: "p1",
+    name: "Collector",
+    description: "Catch 10 Pokémon",
+    reward: 1,
+    condition: "pokemon",
+    target: 10,
+  },
+  {
+    id: "p2",
+    name: "Ranger",
+    description: "Catch 50 Pokémon",
+    reward: 2,
+    condition: "pokemon",
+    target: 50,
+  },
+  {
+    id: "p3",
+    name: "Master",
+    description: "Catch 100 Pokémon",
+    reward: 3,
+    condition: "pokemon",
+    target: 100,
+  },
+  {
+    id: "p4",
+    name: "Champion",
+    description: "Catch 151 Pokémon",
+    reward: 5,
+    condition: "pokemon",
+    target: 151,
+  },
+  {
+    id: "i1",
+    name: "Passive Income",
+    description: "Reach $1,000/sec",
+    reward: 1,
+    condition: "income",
+    target: 1000,
+  },
+  {
+    id: "i2",
+    name: "Business Owner",
+    description: "Reach $1M/sec",
+    reward: 2,
+    condition: "income",
+    target: 1000000,
+  },
+  {
+    id: "i3",
+    name: "Tycoon",
+    description: "Reach $1B/sec",
+    reward: 3,
+    condition: "income",
+    target: 1000000000,
+  },
+];
+
 export const calculateUpgradeCost = (
   baseCost: number,
   costMultiplier: number,

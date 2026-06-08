@@ -21,8 +21,13 @@ export interface GameState {
   lastSaveTime: number;
   offlineEarnings: number;
   isHoldToClickEnabled: boolean;
+  totalClicks: number;
+  unlockedAchievements: string[];
+  isAchievementsOpen: boolean;
   toggleHoldToClick: () => void;
   togglePokedex: () => void;
+  toggleAchievements: () => void;
+  claimAchievement: (id: string) => void;
   click: (critMultiplier?: number) => void;
   buyUpgrade: (id: string) => void;
   addPassiveIncome: (amount: number) => void;

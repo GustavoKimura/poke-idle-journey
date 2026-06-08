@@ -1,14 +1,32 @@
 import { useState } from "react";
-import { Book, Sparkles, Settings as SettingsIcon } from "lucide-react";
+import { Book, Sparkles, Settings as SettingsIcon, Trophy } from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
 import { SettingsModal } from "./SettingsModal";
+import { ACHIEVEMENTS } from "../config/gameConfig";
 
 export function Header() {
-  const { score, passiveIncome, multiplier, rareCandies, togglePokedex } =
-    useGameStore();
+  const {
+    score,
+    passiveIncome,
+    multiplier,
+    rareCandies,
+    togglePokedex,
+    toggleAchievements,
+    unlockedAchievements,
+    totalClicks,
+    unlockedPokemonIds,
+  } = useGameStore();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const claimableCount = ACHIEVEMENTS.filter((a) => {
+    if (unlockedAchievements.includes(a.id)) return false;
+    if (a.condition === "clicks") return totalClicks >= a.target;
+    if (a.condition === "income") return passiveIncome >= a.target;
+    if (a.condition === "pokemon") return unlockedPokemonIds.length >= a.target;
+    return false;
+  }).length;
 
   return (
     <>
@@ -39,7 +57,7 @@ export function Header() {
         </div>
 
         <div className="flex gap-4 sm:gap-6">
-          <div className="hidden md:flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10">
+          <div className="hidden lg:flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10">
             <div className="flex flex-col items-center">
               <span className="text-gray-400 text-sm font-semibold uppercase">
                 Passive Income
@@ -69,21 +87,36 @@ export function Header() {
             )}
           </div>
 
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            title="Settings"
-            className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
-          >
-            <SettingsIcon size={22} />
-          </button>
+          <div className="flex gap-2 sm:gap-4">
+            <button
+              onClick={toggleAchievements}
+              title="Achievements"
+              className="relative flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
+            >
+              <Trophy size={22} />
+              {claimableCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-pokeRed text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg border border-pokeRed/50 animate-pulse">
+                  {claimableCount}
+                </span>
+              )}
+            </button>
 
-          <button
-            onClick={togglePokedex}
-            className="flex items-center gap-2 bg-pokeDarkBlue border-2 border-pokeYellow/50 hover:border-pokeYellow hover:bg-pokeYellow/10 text-white px-4 sm:px-6 rounded-xl font-bold uppercase transition-all shadow-lg cursor-pointer"
-          >
-            <Book size={20} className="text-pokeYellow" />
-            <span className="hidden sm:inline">Pokédex</span>
-          </button>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              title="Settings"
+              className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
+            >
+              <SettingsIcon size={22} />
+            </button>
+
+            <button
+              onClick={togglePokedex}
+              className="flex items-center gap-2 bg-pokeDarkBlue border-2 border-pokeYellow/50 hover:border-pokeYellow hover:bg-pokeYellow/10 text-white px-3 sm:px-6 rounded-xl font-bold uppercase transition-all shadow-lg cursor-pointer"
+            >
+              <Book size={20} className="text-pokeYellow" />
+              <span className="hidden md:inline">Pokédex</span>
+            </button>
+          </div>
         </div>
       </header>
 

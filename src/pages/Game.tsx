@@ -3,6 +3,7 @@ import { MainStage } from "../components/MainStage";
 import { UpgradeSidebar } from "../components/UpgradeSidebar";
 import { PokedexModal } from "../components/PokedexModal";
 import { OfflineModal } from "../components/OfflineModal";
+import { AchievementsModal } from "../components/AchievementsModal";
 import { useGameLoop } from "../hooks/useGameLoop";
 
 export function Game() {
@@ -16,6 +17,7 @@ export function Game() {
         <UpgradeSidebar />
       </div>
       <PokedexModal />
+      <AchievementsModal />
       <OfflineModal />
     </div>
   );
