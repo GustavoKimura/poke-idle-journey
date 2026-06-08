@@ -14,7 +14,7 @@ interface PokeAPIType {
   };
 }
 
-const cache: Record<number, PokemonData> = {};
+const memoryCache: Record<number, PokemonData> = {};
 
 export function usePokeAPI(pokemonId: number) {
   const [data, setData] = useState<PokemonData | null>(null);
@@ -24,10 +24,25 @@ export function usePokeAPI(pokemonId: number) {
     let isMounted = true;
 
     const fetchPokemon = async () => {
-      if (cache[pokemonId]) {
-        setData(cache[pokemonId]);
+      if (memoryCache[pokemonId]) {
+        setData(memoryCache[pokemonId]);
         setIsLoading(false);
         return;
+      }
+
+      const localCacheKey = `pokeCache_${pokemonId}`;
+      const localCache = localStorage.getItem(localCacheKey);
+
+      if (localCache) {
+        try {
+          const parsed = JSON.parse(localCache);
+          memoryCache[pokemonId] = parsed;
+          setData(parsed);
+          setIsLoading(false);
+          return;
+        } catch {
+          localStorage.removeItem(localCacheKey);
+        }
       }
 
       setIsLoading(true);
@@ -49,7 +64,8 @@ export function usePokeAPI(pokemonId: number) {
           weight: result.weight,
         };
 
-        cache[pokemonId] = pokemonData;
+        memoryCache[pokemonId] = pokemonData;
+        localStorage.setItem(localCacheKey, JSON.stringify(pokemonData));
 
         if (isMounted) {
           setData(pokemonData);
