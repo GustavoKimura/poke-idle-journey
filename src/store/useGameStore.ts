@@ -67,7 +67,7 @@ export const useGameStore = create<GameState>()(
       passiveIncome: 0,
       multiplier: 1,
       rareCandies: 0,
-      upgrades: initialUpgrades,
+      upgrades: initialUpgrades.map((u) => ({ ...u })),
       unlockedPokemonIds: [1],
       currentPokemonId: 1,
       isPokedexOpen: false,
@@ -145,14 +145,31 @@ export const useGameStore = create<GameState>()(
             passiveIncome: 0,
             multiplier: 1,
             rareCandies: state.rareCandies + 1,
-            upgrades: initialUpgrades,
+            upgrades: initialUpgrades.map((u) => ({ ...u })),
             unlockedPokemonIds: [1],
             currentPokemonId: 1,
+            offlineEarnings: 0,
+            lastSaveTime: Date.now(),
           };
         }),
       hardReset: () => {
-        localStorage.removeItem("poke-idle-storage");
-        window.location.reload();
+        set({
+          score: 0,
+          clickPower: 1,
+          passiveIncome: 0,
+          multiplier: 1,
+          rareCandies: 0,
+          upgrades: initialUpgrades.map((u) => ({ ...u })),
+          unlockedPokemonIds: [1],
+          currentPokemonId: 1,
+          isPokedexOpen: false,
+          offlineEarnings: 0,
+          lastSaveTime: Date.now(),
+        });
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       },
       updateSaveTime: () => set({ lastSaveTime: Date.now() }),
       setOfflineEarnings: (amount) => set({ offlineEarnings: amount }),
@@ -229,11 +246,11 @@ export const useGameStore = create<GameState>()(
 
           initialUpgrades.forEach((init) => {
             if (!state.upgrades!.find((u: Upgrade) => u.id === init.id)) {
-              state.upgrades!.push(init);
+              state.upgrades!.push({ ...init });
             }
           });
         } else {
-          state.upgrades = initialUpgrades;
+          state.upgrades = initialUpgrades.map((u) => ({ ...u }));
         }
 
         state.isPokedexOpen = false;

@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg"],
+      includeAssets: ["favicon.ico", "logo.png"],
       manifest: {
         name: "PokeIdle: Infinite Journey",
         short_name: "PokeIdle",
@@ -19,9 +19,9 @@ export default defineConfig({
         display: "standalone",
         icons: [
           {
-            src: "/poke-idle-journey/favicon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/poke-idle-journey/logo.png",
+            sizes: "512x512",
+            type: "image/png",
             purpose: "any maskable",
           },
         ],
