@@ -25,10 +25,17 @@ export interface GameState {
   totalClicks: number;
   unlockedAchievements: string[];
   isAchievementsOpen: boolean;
+  isBossActive: boolean;
+  bossHp: number;
+  bossMaxHp: number;
+  bossTimeLeft: number;
   toggleHoldToClick: () => void;
   togglePokedex: () => void;
   toggleAchievements: () => void;
   claimAchievement: (id: string) => void;
+  startBossFight: () => void;
+  damageBoss: (amount: number) => void;
+  tickBoss: (deltaTime: number) => void;
   click: (critMultiplier?: number) => void;
   buyUpgrade: (id: string) => void;
   addPassiveIncome: (amount: number) => void;

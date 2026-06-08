@@ -10,6 +10,7 @@ import {
   getMilestoneMultiplier,
   calculatePrestigeReward,
 } from "../config/gameConfig";
+import { playCatchSound } from "../utils/audio";
 
 const recalculateTotals = (upgrades: Upgrade[]) => {
   let clickPower = 1;
@@ -44,12 +45,58 @@ export const useGameStore = create<GameState>()(
       totalClicks: 0,
       unlockedAchievements: [],
       isAchievementsOpen: false,
+      isBossActive: false,
+      bossHp: 0,
+      bossMaxHp: 0,
+      bossTimeLeft: 0,
       toggleHoldToClick: () =>
         set((state) => ({ isHoldToClickEnabled: !state.isHoldToClickEnabled })),
       togglePokedex: () =>
         set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
       toggleAchievements: () =>
         set((state) => ({ isAchievementsOpen: !state.isAchievementsOpen })),
+      startBossFight: () =>
+        set((state) => {
+          const cost = calculateNextPokemonCost(state.currentPokemonId);
+          const maxHp = cost * 1.5;
+          return {
+            isBossActive: true,
+            bossMaxHp: maxHp,
+            bossHp: maxHp,
+            bossTimeLeft: 15,
+          };
+        }),
+      damageBoss: (amount) =>
+        set((state) => {
+          if (!state.isBossActive) return state;
+          const newHp = state.bossHp - amount;
+          if (newHp <= 0) {
+            playCatchSound();
+            return {
+              isBossActive: false,
+              currentPokemonId: state.currentPokemonId + 1,
+              unlockedPokemonIds: [
+                ...state.unlockedPokemonIds,
+                state.currentPokemonId + 1,
+              ],
+              multiplier:
+                state.multiplier +
+                GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId,
+              score: state.score + state.bossMaxHp * 2,
+              bossHp: 0,
+            };
+          }
+          return { bossHp: newHp };
+        }),
+      tickBoss: (deltaTime) =>
+        set((state) => {
+          if (!state.isBossActive) return state;
+          const newTime = state.bossTimeLeft - deltaTime;
+          if (newTime <= 0) {
+            return { isBossActive: false };
+          }
+          return { bossTimeLeft: newTime };
+        }),
       claimAchievement: (id) =>
         set((state) => {
           if (state.unlockedAchievements.includes(id)) return state;
@@ -81,15 +128,39 @@ export const useGameStore = create<GameState>()(
           };
         }),
       click: (critMultiplier = 1) =>
-        set((state) => ({
-          score:
-            state.score +
+        set((state) => {
+          const amount =
             state.clickPower *
-              state.multiplier *
-              (1 + state.rareCandies) *
-              critMultiplier,
-          totalClicks: state.totalClicks + 1,
-        })),
+            state.multiplier *
+            (1 + state.rareCandies) *
+            critMultiplier;
+          const newState: Partial<GameState> = {
+            score: state.score + amount,
+            totalClicks: state.totalClicks + 1,
+          };
+
+          if (state.isBossActive) {
+            const newHp = state.bossHp - amount;
+            if (newHp <= 0) {
+              playCatchSound();
+              newState.isBossActive = false;
+              newState.currentPokemonId = state.currentPokemonId + 1;
+              newState.unlockedPokemonIds = [
+                ...state.unlockedPokemonIds,
+                state.currentPokemonId + 1,
+              ];
+              newState.multiplier =
+                state.multiplier +
+                GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId;
+              newState.score = newState.score! + state.bossMaxHp * 2;
+              newState.bossHp = 0;
+            } else {
+              newState.bossHp = newHp;
+            }
+          }
+
+          return newState;
+        }),
       buyUpgrade: (id) =>
         set((state) => {
           const upgradeIndex = state.upgrades.findIndex((u) => u.id === id);
@@ -155,6 +226,10 @@ export const useGameStore = create<GameState>()(
             currentPokemonId: 1,
             offlineEarnings: 0,
             offlineSeconds: 0,
+            isBossActive: false,
+            bossHp: 0,
+            bossMaxHp: 0,
+            bossTimeLeft: 0,
             lastSaveTime: Date.now(),
           };
         }),
@@ -175,6 +250,10 @@ export const useGameStore = create<GameState>()(
           totalClicks: 0,
           unlockedAchievements: [],
           isAchievementsOpen: false,
+          isBossActive: false,
+          bossHp: 0,
+          bossMaxHp: 0,
+          bossTimeLeft: 0,
           lastSaveTime: Date.now(),
         });
 
@@ -184,7 +263,11 @@ export const useGameStore = create<GameState>()(
       },
       updateSaveTime: () => set({ lastSaveTime: Date.now() }),
       setOfflineEarnings: (amount, seconds) =>
-        set({ offlineEarnings: amount, offlineSeconds: seconds }),
+        set({
+          offlineEarnings: amount,
+          offlineSeconds: seconds,
+          isBossActive: false,
+        }),
       claimOfflineEarnings: () =>
         set((state) => ({
           score: state.score + state.offlineEarnings,
@@ -195,7 +278,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 7,
+      version: 8,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -245,6 +328,20 @@ export const useGameStore = create<GameState>()(
           state.totalClicks = 0;
         if (!Array.isArray(state.unlockedAchievements))
           state.unlockedAchievements = [];
+
+        if (typeof state.isBossActive !== "boolean") state.isBossActive = false;
+        if (typeof state.bossHp !== "number" || Number.isNaN(state.bossHp))
+          state.bossHp = 0;
+        if (
+          typeof state.bossMaxHp !== "number" ||
+          Number.isNaN(state.bossMaxHp)
+        )
+          state.bossMaxHp = 0;
+        if (
+          typeof state.bossTimeLeft !== "number" ||
+          Number.isNaN(state.bossTimeLeft)
+        )
+          state.bossTimeLeft = 0;
 
         if (Array.isArray(state.upgrades)) {
           state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {

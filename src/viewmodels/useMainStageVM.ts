@@ -19,6 +19,10 @@ export function useMainStageVM() {
   const isHoldToClickEnabled = useGameStore(
     (state) => state.isHoldToClickEnabled,
   );
+  const isBossActive = useGameStore((state) => state.isBossActive);
+  const bossHp = useGameStore((state) => state.bossHp);
+  const bossMaxHp = useGameStore((state) => state.bossMaxHp);
+  const bossTimeLeft = useGameStore((state) => state.bossTimeLeft);
 
   const { data: pokemon, isLoading } = usePokeAPI(currentPokemonId);
 
@@ -27,8 +31,13 @@ export function useMainStageVM() {
     [currentPokemonId],
   );
 
+  const isBossLevel =
+    currentPokemonId % 10 === 0 &&
+    currentPokemonId !== GAME_CONFIG.MAX_POKEMON_ID;
   const canUnlock =
-    score >= nextPokemonCost && currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID;
+    score >= nextPokemonCost &&
+    !isBossLevel &&
+    currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID;
   const isMaxLevel = currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID;
 
   const intervalRef = useRef<number | null>(null);
@@ -126,6 +135,10 @@ export function useMainStageVM() {
     [triggerClick, isHoldToClickEnabled, stopHold],
   );
 
+  const handleStartBoss = () => {
+    useGameStore.getState().startBossFight();
+  };
+
   const handleCatch = () => {
     if (canUnlock) {
       useGameStore.getState().unlockNextPokemon();
@@ -152,8 +165,14 @@ export function useMainStageVM() {
     nextPokemonCost,
     canUnlock,
     isMaxLevel,
+    isBossLevel,
+    isBossActive,
+    bossHp,
+    bossMaxHp,
+    bossTimeLeft,
     handlePointerDown,
     stopHold,
+    handleStartBoss,
     handleCatch,
     handlePrestige,
   };
