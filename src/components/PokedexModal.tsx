@@ -8,6 +8,14 @@ import { Button } from "./ui/Button";
 
 function PokedexEntry({ id }: { id: number }) {
   const { data, isLoading } = usePokeAPI(id);
+  const isEquipped = useGameStore((state) => state.party.includes(id));
+  const partyLength = useGameStore((state) => state.party.length);
+  const togglePartyMember = useGameStore((state) => state.togglePartyMember);
+
+  const handleToggle = () => {
+    if (!isEquipped && partyLength >= GAME_CONFIG.MAX_PARTY_SIZE) return;
+    togglePartyMember(id);
+  };
 
   if (isLoading || !data) {
     return (
@@ -16,13 +24,19 @@ function PokedexEntry({ id }: { id: number }) {
   }
 
   return (
-    <div className="relative group flex flex-col items-center p-3 bg-black/40 rounded-xl border border-white/10 hover:border-pokeYellow transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-pokeYellow/20 overflow-hidden h-48">
-      <span className="absolute top-2 left-2 text-[10px] font-black text-gray-400 bg-black/60 px-1.5 py-0.5 rounded">
+    <div
+      className={`relative group flex flex-col items-center p-3 bg-black/40 rounded-xl border transition-all hover:-translate-y-1 hover:shadow-lg overflow-hidden h-48 ${
+        isEquipped
+          ? "border-pokeYellow shadow-[0_0_15px_rgba(255,222,0,0.2)]"
+          : "border-white/10 hover:border-pokeYellow hover:shadow-pokeYellow/20"
+      }`}
+    >
+      <span className="absolute top-2 left-2 text-[10px] font-black text-gray-400 bg-black/60 px-1.5 py-0.5 rounded z-10">
         #{id.toString().padStart(3, "0")}
       </span>
 
       {data.shinySprite && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <Sparkles size={12} className="text-pokeYellow" />
         </div>
       )}
@@ -57,9 +71,29 @@ function PokedexEntry({ id }: { id: number }) {
         ))}
       </div>
 
-      <div className="flex items-center gap-1 mt-auto text-[10px] text-gray-400">
-        <Scale size={10} />
-        <span>{(data.weight / 10).toFixed(1)} kg</span>
+      <div className="mt-auto w-full">
+        <div
+          className={`flex justify-center items-center gap-1 text-[10px] text-gray-400 transition-opacity ${
+            isEquipped ? "hidden" : "group-hover:hidden"
+          }`}
+        >
+          <Scale size={10} />
+          <span>{(data.weight / 10).toFixed(1)} kg</span>
+        </div>
+
+        <button
+          onClick={handleToggle}
+          disabled={!isEquipped && partyLength >= GAME_CONFIG.MAX_PARTY_SIZE}
+          className={`w-full py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
+            isEquipped
+              ? "bg-pokeYellow text-black shadow-[0_0_10px_rgba(255,222,0,0.3)] block"
+              : partyLength >= GAME_CONFIG.MAX_PARTY_SIZE
+                ? "bg-black/50 text-gray-500 cursor-not-allowed border border-white/10 hidden group-hover:block"
+                : "bg-black/60 text-white border border-white/20 hover:border-pokeYellow hover:text-pokeYellow hidden group-hover:block"
+          }`}
+        >
+          {isEquipped ? "Equipped" : "Equip"}
+        </button>
       </div>
     </div>
   );
@@ -69,6 +103,7 @@ export function PokedexModal() {
   const isPokedexOpen = useGameStore((state) => state.isPokedexOpen);
   const togglePokedex = useGameStore((state) => state.togglePokedex);
   const unlockedPokemonIds = useGameStore((state) => state.unlockedPokemonIds);
+  const partyLength = useGameStore((state) => state.party.length);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 24;
@@ -84,9 +119,14 @@ export function PokedexModal() {
   const handlePrev = () => setCurrentPage((p) => Math.max(1, p - 1));
 
   const headerRight = (
-    <span className="px-3 py-1 bg-pokeYellow/20 text-pokeYellow font-bold rounded-full text-xs sm:text-sm border border-pokeYellow/30 whitespace-nowrap ml-4">
-      {unlockedPokemonIds.length} / {GAME_CONFIG.MAX_POKEMON_ID} Captured
-    </span>
+    <div className="flex gap-2 ml-4">
+      <span className="px-3 py-1 bg-blue-900/40 text-blue-300 font-bold rounded-full text-xs sm:text-sm border border-blue-500/30 whitespace-nowrap">
+        Party: {partyLength} / {GAME_CONFIG.MAX_PARTY_SIZE}
+      </span>
+      <span className="px-3 py-1 bg-pokeYellow/20 text-pokeYellow font-bold rounded-full text-xs sm:text-sm border border-pokeYellow/30 whitespace-nowrap hidden sm:inline-block">
+        {unlockedPokemonIds.length} / {GAME_CONFIG.MAX_POKEMON_ID} Captured
+      </span>
+    </div>
   );
 
   return (

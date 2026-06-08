@@ -55,9 +55,13 @@ export function useMainStageVM() {
       const state = useGameStore.getState();
       const isCritical = Math.random() < GAME_CONFIG.CRIT_CHANCE;
       const critMultiplier = isCritical ? GAME_CONFIG.CRIT_MULTIPLIER : 1;
+
+      const partyMult =
+        1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
       const gainedValue =
         state.clickPower *
         state.multiplier *
+        partyMult *
         (1 + state.rareCandies) *
         critMultiplier;
 

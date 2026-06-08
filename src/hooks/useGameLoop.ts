@@ -19,9 +19,12 @@ export function useGameLoop() {
       timeDiffSeconds > GAME_CONFIG.OFFLINE_MIN_SECONDS &&
       state.passiveIncome > 0
     ) {
+      const partyMult =
+        1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
       const earned =
         state.passiveIncome *
         state.multiplier *
+        partyMult *
         (1 + state.rareCandies) *
         timeDiffSeconds;
       state.setOfflineEarnings(earned, timeDiffSeconds);
@@ -48,9 +51,12 @@ export function useGameLoop() {
         currentState.passiveIncome > 0 &&
         currentState.offlineEarnings === 0
       ) {
+        const partyMult =
+          1 + currentState.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
         const incomePerSecond =
           currentState.passiveIncome *
           currentState.multiplier *
+          partyMult *
           (1 + currentState.rareCandies);
 
         uncommittedIncomeRef.current += incomePerSecond * deltaTime;

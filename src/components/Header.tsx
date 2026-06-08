@@ -3,7 +3,7 @@ import { Book, Sparkles, Settings as SettingsIcon, Trophy } from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
 import { SettingsModal } from "./SettingsModal";
-import { ACHIEVEMENTS } from "../config/gameConfig";
+import { ACHIEVEMENTS, GAME_CONFIG } from "../config/gameConfig";
 
 export function Header() {
   const {
@@ -11,6 +11,7 @@ export function Header() {
     passiveIncome,
     multiplier,
     rareCandies,
+    party,
     togglePokedex,
     toggleAchievements,
     unlockedAchievements,
@@ -19,6 +20,8 @@ export function Header() {
   } = useGameStore();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const partyMult = 1 + party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
 
   const claimableCount = ACHIEVEMENTS.filter((a) => {
     if (unlockedAchievements.includes(a.id)) return false;
@@ -71,7 +74,7 @@ export function Header() {
                 Multiplier
               </span>
               <span className="text-2xl font-bold text-blue-400">
-                x{formatNumber(multiplier * (1 + rareCandies))}
+                x{formatNumber(multiplier * partyMult * (1 + rareCandies))}
               </span>
             </div>
             {rareCandies > 0 && (
@@ -111,10 +114,14 @@ export function Header() {
 
             <button
               onClick={togglePokedex}
-              className="flex items-center gap-2 bg-pokeDarkBlue border-2 border-pokeYellow/50 hover:border-pokeYellow hover:bg-pokeYellow/10 text-white px-3 sm:px-6 rounded-xl font-bold uppercase transition-all shadow-lg cursor-pointer"
+              className="flex items-center gap-2 bg-pokeDarkBlue border-2 border-pokeYellow/50 hover:border-pokeYellow hover:bg-pokeYellow/10 text-white px-3 sm:px-6 rounded-xl font-bold uppercase transition-all shadow-lg cursor-pointer relative"
             >
               <Book size={20} className="text-pokeYellow" />
               <span className="hidden md:inline">Pokédex</span>
+              {party.length < GAME_CONFIG.MAX_PARTY_SIZE &&
+                unlockedPokemonIds.length > party.length && (
+                  <span className="absolute -top-2 -right-2 w-3 h-3 bg-green-400 rounded-full animate-ping" />
+                )}
             </button>
           </div>
         </div>

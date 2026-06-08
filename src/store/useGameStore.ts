@@ -37,6 +37,7 @@ export const useGameStore = create<GameState>()(
       upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
       unlockedPokemonIds: [1],
       currentPokemonId: 1,
+      party: [],
       isPokedexOpen: false,
       lastSaveTime: Date.now(),
       offlineEarnings: 0,
@@ -53,6 +54,14 @@ export const useGameStore = create<GameState>()(
         set((state) => ({ isHoldToClickEnabled: !state.isHoldToClickEnabled })),
       togglePokedex: () =>
         set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
+      togglePartyMember: (id) =>
+        set((state) => {
+          if (state.party.includes(id)) {
+            return { party: state.party.filter((p) => p !== id) };
+          }
+          if (state.party.length >= GAME_CONFIG.MAX_PARTY_SIZE) return state;
+          return { party: [...state.party, id] };
+        }),
       toggleAchievements: () =>
         set((state) => ({ isAchievementsOpen: !state.isAchievementsOpen })),
       startBossFight: () =>
@@ -129,11 +138,15 @@ export const useGameStore = create<GameState>()(
         }),
       click: (critMultiplier = 1) =>
         set((state) => {
+          const partyMult =
+            1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
           const amount =
             state.clickPower *
             state.multiplier *
+            partyMult *
             (1 + state.rareCandies) *
             critMultiplier;
+
           const newState: Partial<GameState> = {
             score: state.score + amount,
             totalClicks: state.totalClicks + 1,
@@ -224,6 +237,7 @@ export const useGameStore = create<GameState>()(
             upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
             unlockedPokemonIds: [1],
             currentPokemonId: 1,
+            party: [],
             offlineEarnings: 0,
             offlineSeconds: 0,
             isBossActive: false,
@@ -243,6 +257,7 @@ export const useGameStore = create<GameState>()(
           upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
           unlockedPokemonIds: [1],
           currentPokemonId: 1,
+          party: [],
           isPokedexOpen: false,
           offlineEarnings: 0,
           offlineSeconds: 0,
@@ -278,7 +293,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 8,
+      version: 9,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -303,6 +318,7 @@ export const useGameStore = create<GameState>()(
           state.currentPokemonId = 1;
         if (!Array.isArray(state.unlockedPokemonIds))
           state.unlockedPokemonIds = [1];
+        if (!Array.isArray(state.party)) state.party = [];
         if (
           typeof state.lastSaveTime !== "number" ||
           Number.isNaN(state.lastSaveTime)
@@ -320,7 +336,6 @@ export const useGameStore = create<GameState>()(
           state.offlineSeconds = 0;
         if (typeof state.isHoldToClickEnabled !== "boolean")
           state.isHoldToClickEnabled = false;
-
         if (
           typeof state.totalClicks !== "number" ||
           Number.isNaN(state.totalClicks)
@@ -328,7 +343,6 @@ export const useGameStore = create<GameState>()(
           state.totalClicks = 0;
         if (!Array.isArray(state.unlockedAchievements))
           state.unlockedAchievements = [];
-
         if (typeof state.isBossActive !== "boolean") state.isBossActive = false;
         if (typeof state.bossHp !== "number" || Number.isNaN(state.bossHp))
           state.bossHp = 0;

@@ -49,6 +49,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </h3>
           <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 text-sm text-blue-100 space-y-3">
             <p>
+              <strong className="text-green-400">Party System:</strong> Open
+              your Pokédex and equip up to {GAME_CONFIG.MAX_PARTY_SIZE} Pokémon.
+              Each active party member grants a massive +
+              {GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * 100}% global multiplier!
+            </p>
+            <p>
               <strong className="text-blue-300">Offline Earnings:</strong> Close
               the game and return later! Your trainers will continue to collect
               PokeDollars automatically (triggers after{" "}

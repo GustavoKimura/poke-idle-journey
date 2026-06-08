@@ -17,6 +17,7 @@ export interface GameState {
   upgrades: Upgrade[];
   unlockedPokemonIds: number[];
   currentPokemonId: number;
+  party: number[];
   isPokedexOpen: boolean;
   lastSaveTime: number;
   offlineEarnings: number;
@@ -31,6 +32,7 @@ export interface GameState {
   bossTimeLeft: number;
   toggleHoldToClick: () => void;
   togglePokedex: () => void;
+  togglePartyMember: (id: number) => void;
   toggleAchievements: () => void;
   claimAchievement: (id: string) => void;
   startBossFight: () => void;
