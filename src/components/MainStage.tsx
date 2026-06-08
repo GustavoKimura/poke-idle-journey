@@ -1,5 +1,6 @@
 import { formatNumber } from "../utils/format";
 import { useMainStageVM } from "../viewmodels/useMainStageVM";
+import { PartyRoster } from "./PartyRoster";
 import { Button } from "./ui/Button";
 import { GAME_CONFIG, calculatePrestigeReward } from "../config/gameConfig";
 
@@ -44,9 +45,13 @@ export function MainStage() {
 
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
 
+      <div className="absolute top-4 z-20">
+        <PartyRoster />
+      </div>
+
       <div
         id="combo-meter"
-        className="absolute left-8 sm:left-16 top-1/2 flex flex-col items-center gap-1 opacity-0 transition-all duration-300 pointer-events-none z-20"
+        className="absolute left-2 sm:left-8 top-1/2 flex flex-col items-center gap-1 opacity-0 transition-all duration-300 pointer-events-none z-20"
         style={{
           transform: "scale(0.8) translateY(-50%)",
           transformOrigin: "left center",
@@ -83,7 +88,7 @@ export function MainStage() {
         </div>
       </div>
 
-      <div className="absolute top-8 flex flex-col items-center gap-2 z-10 w-full px-8">
+      <div className="absolute top-24 flex flex-col items-center gap-2 z-10 w-full px-8">
         <span
           className={`font-bold tracking-widest uppercase ${isBossLevel ? "text-pokeRed" : "text-gray-400"}`}
         >
@@ -118,7 +123,7 @@ export function MainStage() {
       </div>
 
       <div
-        className={`relative cursor-pointer transition-all duration-75 active:scale-90 active:brightness-150 hover:scale-105 z-10 ${
+        className={`relative cursor-pointer transition-all duration-75 active:scale-90 active:brightness-150 hover:scale-105 z-10 mt-8 ${
           isLoading ? "opacity-50" : "opacity-100"
         }`}
         onPointerDown={handlePointerDown}
@@ -133,7 +138,7 @@ export function MainStage() {
           <img
             src={pokemon.sprite}
             alt={pokemon.name}
-            className={`w-80 h-80 drop-shadow-2xl select-none transition-all duration-200 ${
+            className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 ${
               isCatching ? "animate-suck-in" : "hover:brightness-125"
             }`}
             draggable="false"
@@ -141,7 +146,7 @@ export function MainStage() {
         )}
       </div>
 
-      <div className="absolute bottom-12 flex flex-col items-center gap-4 z-10">
+      <div className="absolute bottom-6 sm:bottom-12 flex flex-col items-center gap-4 z-10">
         {!isMaxLevel ? (
           isBossLevel ? (
             !isBossActive && (

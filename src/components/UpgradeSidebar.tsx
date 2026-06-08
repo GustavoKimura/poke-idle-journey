@@ -89,7 +89,7 @@ export function UpgradeSidebar() {
   const [buyMultiplier, setBuyMultiplier] = useState<BuyMultiplierOption>(1);
 
   return (
-    <aside className="w-96 bg-pokeDarkBlue border-l-4 border-pokeYellow/20 flex flex-col h-full shadow-2xl z-10">
+    <aside className="w-full lg:w-96 h-[45%] lg:h-full shrink-0 bg-pokeDarkBlue border-t-4 lg:border-t-0 lg:border-l-4 border-pokeYellow/20 flex flex-col shadow-2xl z-20">
       <div className="p-4 bg-black/20 border-b border-white/5 flex flex-col gap-4">
         <h2 className="text-2xl font-black text-white tracking-widest uppercase text-center drop-shadow-md mt-2">
           Upgrades

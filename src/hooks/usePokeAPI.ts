@@ -23,10 +23,24 @@ export function usePokeAPI(pokemonId: number) {
   useEffect(() => {
     let isMounted = true;
 
+    if (!pokemonId || pokemonId <= 0) {
+      window.setTimeout(() => {
+        if (isMounted) {
+          setData(null);
+          setIsLoading(false);
+        }
+      }, 0);
+      return;
+    }
+
     const fetchPokemon = async () => {
       if (memoryCache[pokemonId]) {
-        setData(memoryCache[pokemonId]);
-        setIsLoading(false);
+        window.setTimeout(() => {
+          if (isMounted) {
+            setData(memoryCache[pokemonId]);
+            setIsLoading(false);
+          }
+        }, 0);
         return;
       }
 
@@ -37,15 +51,22 @@ export function usePokeAPI(pokemonId: number) {
         try {
           const parsed = JSON.parse(localCache);
           memoryCache[pokemonId] = parsed;
-          setData(parsed);
-          setIsLoading(false);
+          window.setTimeout(() => {
+            if (isMounted) {
+              setData(parsed);
+              setIsLoading(false);
+            }
+          }, 0);
           return;
         } catch {
           localStorage.removeItem(localCacheKey);
         }
       }
 
-      setIsLoading(true);
+      window.setTimeout(() => {
+        if (isMounted) setIsLoading(true);
+      }, 0);
+
       try {
         const response = await fetch(
           `https://pokeapi.co/api/v2/pokemon/${pokemonId}`,
