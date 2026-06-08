@@ -1,13 +1,11 @@
+import React from "react";
 import { formatNumber } from "../utils/format";
-import {
-  useUpgradeItemVM,
-  useUpgradesListVM,
-} from "../viewmodels/useUpgradesVM";
-import type { Upgrade } from "../types/game";
+import { useUpgradeItemVM } from "../viewmodels/useUpgradesVM";
 import { getMilestoneMultiplier, getNextMilestone } from "../config/gameConfig";
+import { useGameStore } from "../store/useGameStore";
 
-function UpgradeItem({ upgrade }: { upgrade: Upgrade }) {
-  const { currentCost, canAfford, handleBuy } = useUpgradeItemVM(upgrade);
+const UpgradeItem = React.memo(({ id }: { id: string }) => {
+  const { upgrade, currentCost, canAfford, handleBuy } = useUpgradeItemVM(id);
 
   const currentMultiplier = getMilestoneMultiplier(upgrade.count);
   const nextMilestone = getNextMilestone(upgrade.count);
@@ -65,10 +63,12 @@ function UpgradeItem({ upgrade }: { upgrade: Upgrade }) {
       </div>
     </button>
   );
-}
+});
 
 export function UpgradeSidebar() {
-  const { upgrades } = useUpgradesListVM();
+  const upgradeIdsHash = useGameStore((state) =>
+    state.upgrades.map((u) => u.id).join(","),
+  );
 
   return (
     <aside className="w-96 bg-pokeDarkBlue border-l-4 border-pokeYellow/20 flex flex-col h-full shadow-2xl z-10">
@@ -78,8 +78,8 @@ export function UpgradeSidebar() {
         </h2>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-        {upgrades.map((upgrade) => (
-          <UpgradeItem key={upgrade.id} upgrade={upgrade} />
+        {upgradeIdsHash.split(",").map((id) => (
+          <UpgradeItem key={id} id={id} />
         ))}
       </div>
     </aside>

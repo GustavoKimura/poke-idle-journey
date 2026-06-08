@@ -1,22 +1,20 @@
-import { useMemo } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { playUpgradeSound } from "../utils/audio";
 import { calculateUpgradeCost } from "../config/gameConfig";
-import type { Upgrade } from "../types/game";
 
-export function useUpgradeItemVM(upgrade: Upgrade) {
-  const score = useGameStore((state) => state.score);
+export function useUpgradeItemVM(id: string) {
+  const upgrade = useGameStore(
+    (state) => state.upgrades.find((u) => u.id === id)!,
+  );
+
+  const currentCost = calculateUpgradeCost(
+    upgrade.baseCost,
+    upgrade.costMultiplier,
+    upgrade.count,
+  );
+
+  const canAfford = useGameStore((state) => state.score >= currentCost);
   const buyUpgrade = useGameStore((state) => state.buyUpgrade);
-
-  const currentCost = useMemo(() => {
-    return calculateUpgradeCost(
-      upgrade.baseCost,
-      upgrade.costMultiplier,
-      upgrade.count,
-    );
-  }, [upgrade.baseCost, upgrade.costMultiplier, upgrade.count]);
-
-  const canAfford = score >= currentCost;
 
   const handleBuy = () => {
     if (canAfford) {
@@ -26,13 +24,9 @@ export function useUpgradeItemVM(upgrade: Upgrade) {
   };
 
   return {
+    upgrade,
     currentCost,
     canAfford,
     handleBuy,
   };
-}
-
-export function useUpgradesListVM() {
-  const upgrades = useGameStore((state) => state.upgrades);
-  return { upgrades };
 }

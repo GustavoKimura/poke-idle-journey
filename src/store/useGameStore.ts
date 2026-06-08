@@ -39,6 +39,7 @@ export const useGameStore = create<GameState>()(
       isPokedexOpen: false,
       lastSaveTime: Date.now(),
       offlineEarnings: 0,
+      offlineSeconds: 0,
       isHoldToClickEnabled: false,
       totalClicks: 0,
       unlockedAchievements: [],
@@ -153,6 +154,7 @@ export const useGameStore = create<GameState>()(
             unlockedPokemonIds: [1],
             currentPokemonId: 1,
             offlineEarnings: 0,
+            offlineSeconds: 0,
             lastSaveTime: Date.now(),
           };
         }),
@@ -168,6 +170,7 @@ export const useGameStore = create<GameState>()(
           currentPokemonId: 1,
           isPokedexOpen: false,
           offlineEarnings: 0,
+          offlineSeconds: 0,
           isHoldToClickEnabled: false,
           totalClicks: 0,
           unlockedAchievements: [],
@@ -180,17 +183,19 @@ export const useGameStore = create<GameState>()(
         }, 100);
       },
       updateSaveTime: () => set({ lastSaveTime: Date.now() }),
-      setOfflineEarnings: (amount) => set({ offlineEarnings: amount }),
+      setOfflineEarnings: (amount, seconds) =>
+        set({ offlineEarnings: amount, offlineSeconds: seconds }),
       claimOfflineEarnings: () =>
         set((state) => ({
           score: state.score + state.offlineEarnings,
           offlineEarnings: 0,
+          offlineSeconds: 0,
           lastSaveTime: Date.now(),
         })),
     }),
     {
       name: "poke-idle-storage",
-      version: 6,
+      version: 7,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -225,6 +230,11 @@ export const useGameStore = create<GameState>()(
           Number.isNaN(state.offlineEarnings)
         )
           state.offlineEarnings = 0;
+        if (
+          typeof state.offlineSeconds !== "number" ||
+          Number.isNaN(state.offlineSeconds)
+        )
+          state.offlineSeconds = 0;
         if (typeof state.isHoldToClickEnabled !== "boolean")
           state.isHoldToClickEnabled = false;
 

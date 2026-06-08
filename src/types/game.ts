@@ -20,6 +20,7 @@ export interface GameState {
   isPokedexOpen: boolean;
   lastSaveTime: number;
   offlineEarnings: number;
+  offlineSeconds: number;
   isHoldToClickEnabled: boolean;
   totalClicks: number;
   unlockedAchievements: string[];
@@ -35,6 +36,6 @@ export interface GameState {
   prestige: () => void;
   hardReset: () => void;
   updateSaveTime: () => void;
-  setOfflineEarnings: (amount: number) => void;
+  setOfflineEarnings: (amount: number, seconds: number) => void;
   claimOfflineEarnings: () => void;
 }

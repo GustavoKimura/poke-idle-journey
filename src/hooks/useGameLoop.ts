@@ -22,7 +22,7 @@ export function useGameLoop() {
         state.multiplier *
         (1 + state.rareCandies) *
         timeDiffSeconds;
-      state.setOfflineEarnings(earned);
+      state.setOfflineEarnings(earned, timeDiffSeconds);
     }
 
     state.updateSaveTime();
