@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  base: "/poke-idle-journey/",
   plugins: [
     react(),
     VitePWA({
@@ -18,7 +19,7 @@ export default defineConfig({
         display: "standalone",
         icons: [
           {
-            src: "/favicon.svg",
+            src: "/poke-idle-journey/favicon.svg",
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any maskable",
