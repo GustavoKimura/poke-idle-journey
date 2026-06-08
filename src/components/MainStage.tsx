@@ -1,7 +1,7 @@
 import { formatNumber } from "../utils/format";
 import { useMainStageVM } from "../viewmodels/useMainStageVM";
 import { Button } from "./ui/Button";
-import { GAME_CONFIG } from "../config/gameConfig";
+import { GAME_CONFIG, calculatePrestigeReward } from "../config/gameConfig";
 
 export function MainStage() {
   const {
@@ -57,17 +57,28 @@ export function MainStage() {
 
       <div className="absolute bottom-12 flex flex-col items-center gap-4 z-10">
         {!isMaxLevel ? (
-          <>
+          <div className="flex flex-col items-center gap-4">
             <span className="text-sm text-gray-400 font-semibold uppercase">
               Next Capture:{" "}
               <span className="text-pokeRed font-bold">
                 ${formatNumber(nextPokemonCost)}
               </span>
             </span>
-            <Button onClick={handleCatch} disabled={!canUnlock}>
-              Catch Next Pokemon
-            </Button>
-          </>
+            <div className="flex gap-4">
+              <Button onClick={handleCatch} disabled={!canUnlock}>
+                Catch Next Pokemon
+              </Button>
+              {currentPokemonId >= GAME_CONFIG.PRESTIGE_MIN_ID && (
+                <Button
+                  variant="outline"
+                  onClick={handlePrestige}
+                  className="bg-transparent border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-white shadow-[0_0_10px_rgba(236,72,153,0.3)]"
+                >
+                  Prestige (+{calculatePrestigeReward(currentPokemonId)} Candy)
+                </Button>
+              )}
+            </div>
+          </div>
         ) : (
           <>
             <span className="text-sm text-pink-400 font-black uppercase tracking-widest animate-pulse">
@@ -77,7 +88,7 @@ export function MainStage() {
               onClick={handlePrestige}
               className="bg-gradient-to-r from-pink-500 to-purple-600 text-white border-2 border-pink-300 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
             >
-              Prestige (+{GAME_CONFIG.PRESTIGE_REWARD} Rare Candy)
+              Prestige (+{calculatePrestigeReward(currentPokemonId)} Rare Candy)
             </Button>
           </>
         )}

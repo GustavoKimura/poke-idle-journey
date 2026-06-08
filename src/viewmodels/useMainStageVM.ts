@@ -6,7 +6,11 @@ import {
   playCatchSound,
   playPrestigeSound,
 } from "../utils/audio";
-import { GAME_CONFIG, calculateNextPokemonCost } from "../config/gameConfig";
+import {
+  GAME_CONFIG,
+  calculateNextPokemonCost,
+  calculatePrestigeReward,
+} from "../config/gameConfig";
 import { formatNumber } from "../utils/format";
 
 export function useMainStageVM() {
@@ -130,9 +134,10 @@ export function useMainStageVM() {
   };
 
   const handlePrestige = () => {
+    const reward = calculatePrestigeReward(currentPokemonId);
     if (
       window.confirm(
-        `Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive ${GAME_CONFIG.PRESTIGE_REWARD} Rare Candy (+100% global multiplier permanently)!`,
+        `Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive ${reward} Rare Cand${reward > 1 ? "ies" : "y"} (+${reward * 100}% global multiplier permanently)!`,
       )
     ) {
       useGameStore.getState().prestige();

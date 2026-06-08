@@ -20,6 +20,28 @@ export function playClickSound(isCritical: boolean = false) {
   const ctx = audioCtx;
   if (!ctx) return;
 
+  const bufferSize = ctx.sampleRate * 0.1;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const noiseSource = ctx.createBufferSource();
+  noiseSource.buffer = buffer;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = "lowpass";
+  noiseFilter.frequency.value = isCritical ? 3000 : 1000;
+
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(isCritical ? 0.3 : 0.1, ctx.currentTime);
+  noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+  noiseSource.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(ctx.destination);
+  noiseSource.start();
+
   const oscillator = ctx.createOscillator();
   const gainNode = ctx.createGain();
 

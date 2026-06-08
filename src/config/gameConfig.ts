@@ -8,7 +8,7 @@ export const GAME_CONFIG = {
   CRIT_MULTIPLIER: 3,
   BASE_POKEMON_COST: 1000,
   POKEMON_COST_MULTIPLIER: 1.25,
-  PRESTIGE_REWARD: 1,
+  PRESTIGE_MIN_ID: 50,
   POKEMON_MULTIPLIER_REWARD: 0.1,
 };
 
@@ -99,4 +99,12 @@ export const getNextMilestone = (count: number): number | null => {
   if (count < 50) return 50;
   if (count < 100) return 100;
   return null;
+};
+
+export const calculatePrestigeReward = (currentId: number): number => {
+  if (currentId < GAME_CONFIG.PRESTIGE_MIN_ID) return 0;
+  if (currentId >= GAME_CONFIG.MAX_POKEMON_ID) {
+    return Math.floor((currentId - 40) / 10) + 5;
+  }
+  return Math.floor((currentId - 40) / 10);
 };

@@ -7,6 +7,7 @@ import {
   calculateUpgradeCost,
   calculateNextPokemonCost,
   getMilestoneMultiplier,
+  calculatePrestigeReward,
 } from "../config/gameConfig";
 
 const recalculateTotals = (upgrades: Upgrade[]) => {
@@ -100,14 +101,17 @@ export const useGameStore = create<GameState>()(
         }),
       prestige: () =>
         set((state) => {
-          if (state.currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID) return state;
+          if (state.currentPokemonId < GAME_CONFIG.PRESTIGE_MIN_ID)
+            return state;
+
+          const reward = calculatePrestigeReward(state.currentPokemonId);
 
           return {
             score: 0,
             clickPower: 1,
             passiveIncome: 0,
             multiplier: 1,
-            rareCandies: state.rareCandies + GAME_CONFIG.PRESTIGE_REWARD,
+            rareCandies: state.rareCandies + reward,
             upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
             unlockedPokemonIds: [1],
             currentPokemonId: 1,

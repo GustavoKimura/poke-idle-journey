@@ -56,13 +56,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </p>
             <p>
               <strong className="text-pokeYellow">Prestige System:</strong>{" "}
-              Reach and capture Pokémon #{GAME_CONFIG.MAX_POKEMON_ID} to unlock
-              Prestige. This resets your money, upgrades, and caught Pokémon,
-              but rewards you with{" "}
-              <strong className="text-pink-400">
-                {GAME_CONFIG.PRESTIGE_REWARD} Rare Candy
-              </strong>
-              , which permanently increases your global multiplier by +100%!
+              Reach Pokémon #{GAME_CONFIG.PRESTIGE_MIN_ID} to unlock Prestige.
+              This resets your money, upgrades, and caught Pokémon, but rewards
+              you with Rare Candies based on how far you got! Each Candy
+              permanently increases your global multiplier by +100%. Reaching
+              Pokémon #{GAME_CONFIG.MAX_POKEMON_ID} gives a massive bonus!
             </p>
           </div>
         </div>
