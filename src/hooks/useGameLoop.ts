@@ -5,6 +5,8 @@ import { GAME_CONFIG } from "../config/gameConfig";
 export function useGameLoop() {
   const requestRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
+  const uncommittedIncomeRef = useRef<number>(0);
+  const lastUptimeRef = useRef<number>(0);
 
   useEffect(() => {
     const state = useGameStore.getState();
@@ -32,24 +34,32 @@ export function useGameLoop() {
     const loop = (time: number) => {
       if (lastTimeRef.current === 0) {
         lastTimeRef.current = time;
+        lastUptimeRef.current = time;
       }
 
       const deltaTime = (time - lastTimeRef.current) / 1000;
       lastTimeRef.current = time;
 
-      if (deltaTime > 0) {
-        const currentState = useGameStore.getState();
-        if (
-          currentState.passiveIncome > 0 &&
-          currentState.offlineEarnings === 0
-        ) {
-          currentState.addPassiveIncome(
-            currentState.passiveIncome *
-              currentState.multiplier *
-              (1 + currentState.rareCandies) *
-              deltaTime,
-          );
+      const currentState = useGameStore.getState();
+
+      if (
+        currentState.passiveIncome > 0 &&
+        currentState.offlineEarnings === 0
+      ) {
+        const incomePerSecond =
+          currentState.passiveIncome *
+          currentState.multiplier *
+          (1 + currentState.rareCandies);
+
+        uncommittedIncomeRef.current += incomePerSecond * deltaTime;
+      }
+
+      if (time - lastUptimeRef.current > 200) {
+        if (uncommittedIncomeRef.current > 0) {
+          currentState.addPassiveIncome(uncommittedIncomeRef.current);
+          uncommittedIncomeRef.current = 0;
         }
+        lastUptimeRef.current = time;
       }
 
       requestRef.current = requestAnimationFrame(loop);
