@@ -1,7 +1,11 @@
 import { useState, useCallback, useMemo } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { usePokeAPI } from "../hooks/usePokeAPI";
-import { playClickSound, playCatchSound } from "../utils/audio";
+import {
+  playClickSound,
+  playCatchSound,
+  playPrestigeSound,
+} from "../utils/audio";
 import { formatNumber } from "../utils/format";
 
 interface Particle {
@@ -15,9 +19,11 @@ export function MainStage() {
   const click = useGameStore((state) => state.click);
   const clickPower = useGameStore((state) => state.clickPower);
   const multiplier = useGameStore((state) => state.multiplier);
+  const rareCandies = useGameStore((state) => state.rareCandies);
   const score = useGameStore((state) => state.score);
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
   const unlockNextPokemon = useGameStore((state) => state.unlockNextPokemon);
+  const prestige = useGameStore((state) => state.prestige);
 
   const [particles, setParticles] = useState<Particle[]>([]);
   const [particleCounter, setParticleCounter] = useState(0);
@@ -60,6 +66,17 @@ export function MainStage() {
     }
   };
 
+  const handlePrestige = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive 1 Rare Candy (+100% global multiplier permanently)!",
+      )
+    ) {
+      prestige();
+      playPrestigeSound();
+    }
+  };
+
   return (
     <main className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-b from-pokeDarkBlue to-black overflow-hidden">
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
@@ -92,7 +109,7 @@ export function MainStage() {
         )}
       </div>
 
-      {currentPokemonId < 151 && (
+      {currentPokemonId < 151 ? (
         <div className="absolute bottom-12 flex flex-col items-center gap-4 z-10">
           <span className="text-sm text-gray-400 font-semibold uppercase">
             Next Capture:{" "}
@@ -112,6 +129,18 @@ export function MainStage() {
             Catch Next Pokemon
           </button>
         </div>
+      ) : (
+        <div className="absolute bottom-12 flex flex-col items-center gap-4 z-10">
+          <span className="text-sm text-pink-400 font-black uppercase tracking-widest animate-pulse">
+            Maximum Level Reached!
+          </span>
+          <button
+            onClick={handlePrestige}
+            className="px-8 py-3 rounded-full font-black uppercase tracking-widest transition-all bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:scale-105 shadow-[0_0_20px_rgba(236,72,153,0.6)] cursor-pointer border-2 border-pink-300"
+          >
+            Prestige (+1 Rare Candy)
+          </button>
+        </div>
       )}
 
       {particles.map((p) => (
@@ -127,7 +156,13 @@ export function MainStage() {
               Critical!
             </span>
           )}
-          +{formatNumber(clickPower * multiplier * (p.isCritical ? 3 : 1))}
+          +
+          {formatNumber(
+            clickPower *
+              multiplier *
+              (1 + rareCandies) *
+              (p.isCritical ? 3 : 1),
+          )}
         </span>
       ))}
     </main>

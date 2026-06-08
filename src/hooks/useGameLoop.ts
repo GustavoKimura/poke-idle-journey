@@ -5,6 +5,7 @@ export function useGameLoop() {
   const addPassiveIncome = useGameStore((state) => state.addPassiveIncome);
   const passiveIncome = useGameStore((state) => state.passiveIncome);
   const multiplier = useGameStore((state) => state.multiplier);
+  const rareCandies = useGameStore((state) => state.rareCandies);
 
   const lastTimeRef = useRef<number>(0);
   const requestRef = useRef<number>(0);
@@ -21,7 +22,9 @@ export function useGameLoop() {
       lastTimeRef.current = time;
 
       if (deltaTime > 0) {
-        addPassiveIncome(passiveIncome * multiplier * deltaTime);
+        addPassiveIncome(
+          passiveIncome * multiplier * (1 + rareCandies) * deltaTime,
+        );
       }
 
       requestRef.current = requestAnimationFrame(loop);
@@ -31,5 +34,5 @@ export function useGameLoop() {
     requestRef.current = requestAnimationFrame(loop);
 
     return () => cancelAnimationFrame(requestRef.current);
-  }, [passiveIncome, multiplier, addPassiveIncome]);
+  }, [passiveIncome, multiplier, rareCandies, addPassiveIncome]);
 }

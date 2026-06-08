@@ -82,3 +82,27 @@ export function playUpgradeSound() {
   osc.start();
   osc.stop(ctx.currentTime + 0.1);
 }
+
+export function playPrestigeSound() {
+  initAudio();
+  const ctx = audioCtx;
+  if (!ctx) return;
+
+  const freqs = [440, 554, 659, 880, 1108, 1318];
+  freqs.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.type = "sine";
+    osc.frequency.value = freq;
+
+    const time = ctx.currentTime + i * 0.15;
+    gain.gain.setValueAtTime(0.1, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+
+    osc.start(time);
+    osc.stop(time + 0.5);
+  });
+}

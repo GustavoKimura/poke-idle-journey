@@ -30,6 +30,33 @@ const initialUpgrades = [
     type: "passive" as const,
     effect: 25,
   },
+  {
+    id: "4",
+    name: "Pokemon Daycare",
+    baseCost: 5000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive" as const,
+    effect: 150,
+  },
+  {
+    id: "5",
+    name: "Silph Co. Scope",
+    baseCost: 50000,
+    costMultiplier: 1.18,
+    count: 0,
+    type: "active" as const,
+    effect: 500,
+  },
+  {
+    id: "6",
+    name: "Master Ball Factory",
+    baseCost: 1000000,
+    costMultiplier: 1.2,
+    count: 0,
+    type: "passive" as const,
+    effect: 10000,
+  },
 ];
 
 export const useGameStore = create<GameState>()(
@@ -39,12 +66,21 @@ export const useGameStore = create<GameState>()(
       clickPower: 1,
       passiveIncome: 0,
       multiplier: 1,
+      rareCandies: 0,
       upgrades: initialUpgrades,
       unlockedPokemonIds: [1],
       currentPokemonId: 1,
-      click: () =>
+      isPokedexOpen: false,
+      togglePokedex: () =>
+        set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
+      click: (critMultiplier = 1) =>
         set((state) => ({
-          score: state.score + state.clickPower * state.multiplier,
+          score:
+            state.score +
+            state.clickPower *
+              state.multiplier *
+              (1 + state.rareCandies) *
+              critMultiplier,
         })),
       buyUpgrade: (id) =>
         set((state) => {
@@ -84,14 +120,32 @@ export const useGameStore = create<GameState>()(
       unlockNextPokemon: () =>
         set((state) => {
           const nextId = state.currentPokemonId + 1;
-          if (nextId > 151) return state;
+          if (state.currentPokemonId >= 151) return state;
+
+          const cost = Math.floor(
+            1000 * Math.pow(1.25, state.currentPokemonId - 1),
+          );
+
           return {
-            score:
-              state.score -
-              Math.floor(1000 * Math.pow(1.5, state.currentPokemonId - 1)),
+            score: state.score - cost,
             currentPokemonId: nextId,
             unlockedPokemonIds: [...state.unlockedPokemonIds, nextId],
-            multiplier: state.multiplier + 0.5,
+            multiplier: state.multiplier + 0.1 * state.currentPokemonId,
+          };
+        }),
+      prestige: () =>
+        set((state) => {
+          if (state.currentPokemonId < 151) return state;
+
+          return {
+            score: 0,
+            clickPower: 1,
+            passiveIncome: 0,
+            multiplier: 1,
+            rareCandies: state.rareCandies + 1,
+            upgrades: initialUpgrades,
+            unlockedPokemonIds: [1],
+            currentPokemonId: 1,
           };
         }),
     }),

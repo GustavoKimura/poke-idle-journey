@@ -1,9 +1,10 @@
-import { Book } from "lucide-react";
+import { Book, Sparkles } from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
 
 export function Header() {
-  const { score, passiveIncome, multiplier, togglePokedex } = useGameStore();
+  const { score, passiveIncome, multiplier, rareCandies, togglePokedex } =
+    useGameStore();
 
   return (
     <header className="flex justify-between items-center p-6 bg-pokeDarkBlue border-b-4 border-pokeYellow/20 shadow-lg z-10">
@@ -30,9 +31,20 @@ export function Header() {
               Multiplier
             </span>
             <span className="text-2xl font-bold text-blue-400">
-              x{formatNumber(multiplier)}
+              x{formatNumber(multiplier * (1 + rareCandies))}
             </span>
           </div>
+          {rareCandies > 0 && (
+            <div className="flex flex-col items-center pl-8 border-l border-white/10">
+              <span className="text-pink-300 text-sm font-semibold uppercase flex items-center gap-1">
+                <Sparkles size={14} className="text-pink-400" />
+                Rare Candies
+              </span>
+              <span className="text-2xl font-black text-pink-400 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">
+                {rareCandies}
+              </span>
+            </div>
+          )}
         </div>
         <button
           onClick={togglePokedex}
