@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef, useEffect } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { usePokeAPI } from "../hooks/usePokeAPI";
 import {
@@ -10,16 +10,11 @@ import { GAME_CONFIG, calculateNextPokemonCost } from "../config/gameConfig";
 import { formatNumber } from "../utils/format";
 
 export function useMainStageVM() {
-  const {
-    click,
-    clickPower,
-    multiplier,
-    rareCandies,
-    score,
-    currentPokemonId,
-    unlockNextPokemon,
-    prestige,
-  } = useGameStore();
+  const currentPokemonId = useGameStore((state) => state.currentPokemonId);
+  const score = useGameStore((state) => state.score);
+  const isHoldToClickEnabled = useGameStore(
+    (state) => state.isHoldToClickEnabled,
+  );
 
   const { data: pokemon, isLoading } = usePokeAPI(currentPokemonId);
 
@@ -32,18 +27,32 @@ export function useMainStageVM() {
     score >= nextPokemonCost && currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID;
   const isMaxLevel = currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID;
 
-  const handleMainClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+  const intervalRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current !== null) {
+        window.clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  const triggerClick = useCallback(
+    (clientX: number, clientY: number, targetElem: HTMLElement | null) => {
+      const state = useGameStore.getState();
       const isCritical = Math.random() < GAME_CONFIG.CRIT_CHANCE;
       const critMultiplier = isCritical ? GAME_CONFIG.CRIT_MULTIPLIER : 1;
       const gainedValue =
-        clickPower * multiplier * (1 + rareCandies) * critMultiplier;
+        state.clickPower *
+        state.multiplier *
+        (1 + state.rareCandies) *
+        critMultiplier;
 
-      click(critMultiplier);
+      state.click(critMultiplier);
       playClickSound(isCritical);
 
-      if (isCritical) {
-        const imgElement = e.currentTarget.querySelector("img");
+      if (isCritical && targetElem) {
+        const imgElement = targetElem.querySelector("img");
         if (imgElement) {
           imgElement.classList.remove("animate-shake");
           void imgElement.offsetWidth;
@@ -53,8 +62,8 @@ export function useMainStageVM() {
 
       const particle = document.createElement("div");
       particle.className = "fixed z-50 pointer-events-none";
-      particle.style.left = `${e.clientX}px`;
-      particle.style.top = `${e.clientY}px`;
+      particle.style.left = `${clientX}px`;
+      particle.style.top = `${clientY}px`;
       particle.style.transform = "translate(-50%, -50%)";
 
       const textSpan = document.createElement("span");
@@ -82,12 +91,40 @@ export function useMainStageVM() {
         particle.remove();
       }, 1000);
     },
-    [click, clickPower, multiplier, rareCandies],
+    [],
+  );
+
+  const stopHold = useCallback(() => {
+    if (intervalRef.current !== null) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (e.button !== 0) return;
+      const target = e.currentTarget;
+      const startX = e.clientX;
+      const startY = e.clientY;
+
+      triggerClick(startX, startY, target);
+
+      if (isHoldToClickEnabled) {
+        stopHold();
+        intervalRef.current = window.setInterval(() => {
+          const offsetX = startX + (Math.random() * 40 - 20);
+          const offsetY = startY + (Math.random() * 40 - 20);
+          triggerClick(offsetX, offsetY, target);
+        }, 150);
+      }
+    },
+    [triggerClick, isHoldToClickEnabled, stopHold],
   );
 
   const handleCatch = () => {
     if (canUnlock) {
-      unlockNextPokemon();
+      useGameStore.getState().unlockNextPokemon();
       playCatchSound();
     }
   };
@@ -98,7 +135,7 @@ export function useMainStageVM() {
         `Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive ${GAME_CONFIG.PRESTIGE_REWARD} Rare Candy (+100% global multiplier permanently)!`,
       )
     ) {
-      prestige();
+      useGameStore.getState().prestige();
       playPrestigeSound();
     }
   };
@@ -110,7 +147,8 @@ export function useMainStageVM() {
     nextPokemonCost,
     canUnlock,
     isMaxLevel,
-    handleMainClick,
+    handlePointerDown,
+    stopHold,
     handleCatch,
     handlePrestige,
   };

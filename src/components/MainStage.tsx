@@ -11,7 +11,8 @@ export function MainStage() {
     nextPokemonCost,
     canUnlock,
     isMaxLevel,
-    handleMainClick,
+    handlePointerDown,
+    stopHold,
     handleCatch,
     handlePrestige,
   } = useMainStageVM();
@@ -36,7 +37,13 @@ export function MainStage() {
         className={`relative cursor-pointer transition-transform duration-75 active:scale-95 hover:scale-105 z-10 ${
           isLoading ? "opacity-50" : "opacity-100"
         }`}
-        onClick={handleMainClick}
+        onPointerDown={handlePointerDown}
+        onPointerUp={stopHold}
+        onPointerLeave={stopHold}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          stopHold();
+        }}
       >
         {pokemon?.sprite && (
           <img

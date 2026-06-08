@@ -37,6 +37,9 @@ export const useGameStore = create<GameState>()(
       isPokedexOpen: false,
       lastSaveTime: Date.now(),
       offlineEarnings: 0,
+      isHoldToClickEnabled: false,
+      toggleHoldToClick: () =>
+        set((state) => ({ isHoldToClickEnabled: !state.isHoldToClickEnabled })),
       togglePokedex: () =>
         set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
       click: (critMultiplier = 1) =>
@@ -124,6 +127,7 @@ export const useGameStore = create<GameState>()(
           currentPokemonId: 1,
           isPokedexOpen: false,
           offlineEarnings: 0,
+          isHoldToClickEnabled: false,
           lastSaveTime: Date.now(),
         });
 
@@ -142,7 +146,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 4,
+      version: 5,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -177,6 +181,8 @@ export const useGameStore = create<GameState>()(
           Number.isNaN(state.offlineEarnings)
         )
           state.offlineEarnings = 0;
+        if (typeof state.isHoldToClickEnabled !== "boolean")
+          state.isHoldToClickEnabled = false;
 
         if (Array.isArray(state.upgrades)) {
           state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {

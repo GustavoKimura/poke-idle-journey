@@ -20,6 +20,8 @@ export interface GameState {
   isPokedexOpen: boolean;
   lastSaveTime: number;
   offlineEarnings: number;
+  isHoldToClickEnabled: boolean;
+  toggleHoldToClick: () => void;
   togglePokedex: () => void;
   click: (critMultiplier?: number) => void;
   buyUpgrade: (id: string) => void;

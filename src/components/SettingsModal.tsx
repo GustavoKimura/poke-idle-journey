@@ -1,8 +1,16 @@
-import { Download, Upload, AlertTriangle, Settings, Info } from "lucide-react";
+import {
+  Download,
+  Upload,
+  AlertTriangle,
+  Settings,
+  Info,
+  Hand,
+} from "lucide-react";
 import { useSettingsVM } from "../viewmodels/useSettingsVM";
 import { GAME_CONFIG } from "../config/gameConfig";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
+import { useGameStore } from "../store/useGameStore";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -20,6 +28,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     hardReset,
     closeSettings,
   } = useSettingsVM(onClose);
+
+  const isHoldToClickEnabled = useGameStore(
+    (state) => state.isHoldToClickEnabled,
+  );
+  const toggleHoldToClick = useGameStore((state) => state.toggleHoldToClick);
 
   return (
     <Modal
@@ -50,6 +63,26 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 {GAME_CONFIG.PRESTIGE_REWARD} Rare Candy
               </strong>
               , which permanently increases your global multiplier by +100%!
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-green-400 font-bold uppercase tracking-wider text-sm border-b border-white/10 pb-2 flex items-center gap-2">
+            <Hand size={16} />
+            Accessibility
+          </h3>
+          <div>
+            <Button
+              variant={isHoldToClickEnabled ? "primary" : "ghost"}
+              fullWidth
+              onClick={toggleHoldToClick}
+            >
+              Hold-to-Click: {isHoldToClickEnabled ? "ON" : "OFF"}
+            </Button>
+            <p className="text-xs text-gray-400 mt-2 text-center">
+              Enable to hold down the mouse or touch to automatically click the
+              Pokémon. Helps prevent repetitive strain injury (RSI).
             </p>
           </div>
         </div>
