@@ -10,7 +10,7 @@ export function useGameLoop() {
     const now = Date.now();
     const timeDiffSeconds = (now - state.lastSaveTime) / 1000;
 
-    if (timeDiffSeconds > 60 && state.passiveIncome > 0) {
+    if (timeDiffSeconds > 5 && state.passiveIncome > 0) {
       const earned =
         state.passiveIncome *
         state.multiplier *

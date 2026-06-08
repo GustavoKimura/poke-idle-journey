@@ -7,38 +7,40 @@ function PokedexEntry({ id }: { id: number }) {
 
   if (isLoading || !data) {
     return (
-      <div className="h-48 bg-white/5 animate-pulse rounded-xl border border-white/10" />
+      <div className="h-56 bg-white/5 animate-pulse rounded-xl border border-white/10" />
     );
   }
 
   return (
-    <div className="relative group flex flex-col items-center p-4 bg-black/40 rounded-xl border border-white/10 hover:border-pokeYellow transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-pokeYellow/20 overflow-hidden">
+    <div className="relative group flex flex-col items-center justify-between p-4 bg-black/40 rounded-xl border border-white/10 hover:border-pokeYellow transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-pokeYellow/20 overflow-hidden min-h-[220px]">
       <span className="absolute top-2 left-2 text-xs font-black text-gray-500 bg-black/50 px-2 py-1 rounded">
         #{id.toString().padStart(3, "0")}
       </span>
 
-      <div className="relative w-24 h-24 mt-4">
+      <div className="relative w-full aspect-square max-w-[100px] mt-6 mb-3">
         <img
           src={data.sprite}
           alt={data.name}
-          className="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 group-hover:opacity-0"
+          className="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 group-hover:opacity-0 drop-shadow-md"
         />
         {data.shinySprite && (
           <img
             src={data.shinySprite}
             alt={`${data.name} shiny`}
-            className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 drop-shadow-lg"
           />
         )}
       </div>
 
-      <span className="mt-2 font-bold capitalize text-white">{data.name}</span>
+      <span className="font-bold capitalize text-white text-center w-full truncate text-sm">
+        {data.name}
+      </span>
 
-      <div className="flex gap-1 mt-2">
+      <div className="flex flex-wrap justify-center gap-1 mt-2">
         {data.types.map((type) => (
           <span
             key={type}
-            className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-pokeDarkBlue text-gray-300 border border-white/10"
+            className="text-[9px] uppercase font-black px-2 py-0.5 rounded-full bg-pokeDarkBlue text-gray-300 border border-white/10"
           >
             {type}
           </span>
@@ -67,14 +69,14 @@ export function PokedexModal() {
   if (!isPokedexOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
-      <div className="bg-gradient-to-b from-pokeDarkBlue to-black border-2 border-pokeYellow rounded-3xl w-full max-w-6xl h-[85vh] flex flex-col shadow-[0_0_50px_rgba(255,222,0,0.15)] overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="p-6 flex justify-between items-center border-b border-white/10 bg-black/20">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6">
+      <div className="bg-gradient-to-b from-pokeDarkBlue to-black border-2 border-pokeYellow rounded-3xl w-full max-w-7xl h-[90vh] flex flex-col shadow-[0_0_50px_rgba(255,222,0,0.15)] overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="p-4 sm:p-6 flex justify-between items-center border-b border-white/10 bg-black/20">
           <div className="flex items-center gap-4">
-            <h2 className="text-3xl font-black uppercase tracking-widest text-white drop-shadow-md">
+            <h2 className="text-xl sm:text-3xl font-black uppercase tracking-widest text-white drop-shadow-md">
               Pokédex
             </h2>
-            <span className="px-3 py-1 bg-pokeYellow/20 text-pokeYellow font-bold rounded-full text-sm border border-pokeYellow/30">
+            <span className="px-3 py-1 bg-pokeYellow/20 text-pokeYellow font-bold rounded-full text-xs sm:text-sm border border-pokeYellow/30 whitespace-nowrap">
               {unlockedPokemonIds.length} / 151 Captured
             </span>
           </div>
@@ -85,7 +87,7 @@ export function PokedexModal() {
             <X size={32} />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 custom-scrollbar">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 custom-scrollbar">
           {unlockedPokemonIds.map((id) => (
             <PokedexEntry key={id} id={id} />
           ))}

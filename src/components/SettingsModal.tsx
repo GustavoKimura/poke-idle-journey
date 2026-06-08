@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Download, Upload, AlertTriangle, X, Settings } from "lucide-react";
+import {
+  Download,
+  Upload,
+  AlertTriangle,
+  X,
+  Settings,
+  Info,
+} from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 
 export function SettingsModal({
@@ -38,8 +45,8 @@ export function SettingsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-gradient-to-b from-pokeDarkBlue to-black border-2 border-white/20 rounded-3xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col">
-        <div className="p-6 flex justify-between items-center border-b border-white/10 bg-black/20">
+      <div className="bg-gradient-to-b from-pokeDarkBlue to-black border-2 border-white/20 rounded-3xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="p-6 flex justify-between items-center border-b border-white/10 bg-black/20 shrink-0">
           <div className="flex items-center gap-3">
             <Settings className="text-gray-400" size={28} />
             <h2 className="text-2xl font-black uppercase tracking-widest text-white">
@@ -57,7 +64,29 @@ export function SettingsModal({
           </button>
         </div>
 
-        <div className="p-6 space-y-8">
+        <div className="p-6 overflow-y-auto space-y-8 custom-scrollbar">
+          <div className="space-y-4">
+            <h3 className="text-blue-400 font-bold uppercase tracking-wider text-sm border-b border-white/10 pb-2 flex items-center gap-2">
+              <Info size={16} />
+              How to Play
+            </h3>
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 text-sm text-blue-100 space-y-3">
+              <p>
+                <strong className="text-blue-300">Offline Earnings:</strong>{" "}
+                Close the game and return later! Your trainers will continue to
+                collect PokeDollars automatically (triggers after 5 seconds
+                offline).
+              </p>
+              <p>
+                <strong className="text-pokeYellow">Prestige System:</strong>{" "}
+                Reach and capture Pokémon #151 to unlock Prestige. This resets
+                your money, upgrades, and caught Pokémon, but rewards you with{" "}
+                <strong className="text-pink-400">1 Rare Candy</strong>, which
+                permanently increases your global multiplier by +100%!
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-4">
             <h3 className="text-pokeYellow font-bold uppercase tracking-wider text-sm border-b border-white/10 pb-2">
               Save Management
