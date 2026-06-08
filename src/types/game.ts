@@ -14,6 +14,10 @@ export interface GameState {
   passiveIncome: number;
   multiplier: number;
   upgrades: Upgrade[];
+  unlockedPokemonIds: number[];
+  currentPokemonId: number;
   click: () => void;
   buyUpgrade: (id: string) => void;
+  addPassiveIncome: (amount: number) => void;
+  unlockNextPokemon: () => void;
 }
