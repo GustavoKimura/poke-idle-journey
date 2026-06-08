@@ -18,6 +18,8 @@ export interface GameState {
   unlockedPokemonIds: number[];
   currentPokemonId: number;
   isPokedexOpen: boolean;
+  lastSaveTime: number;
+  offlineEarnings: number;
   togglePokedex: () => void;
   click: (critMultiplier?: number) => void;
   buyUpgrade: (id: string) => void;
@@ -25,4 +27,7 @@ export interface GameState {
   unlockNextPokemon: () => void;
   prestige: () => void;
   hardReset: () => void;
+  updateSaveTime: () => void;
+  setOfflineEarnings: (amount: number) => void;
+  claimOfflineEarnings: () => void;
 }

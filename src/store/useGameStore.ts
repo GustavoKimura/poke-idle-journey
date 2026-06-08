@@ -71,6 +71,8 @@ export const useGameStore = create<GameState>()(
       unlockedPokemonIds: [1],
       currentPokemonId: 1,
       isPokedexOpen: false,
+      lastSaveTime: Date.now(),
+      offlineEarnings: 0,
       togglePokedex: () =>
         set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
       click: (critMultiplier = 1) =>
@@ -152,10 +154,18 @@ export const useGameStore = create<GameState>()(
         localStorage.removeItem("poke-idle-storage");
         window.location.reload();
       },
+      updateSaveTime: () => set({ lastSaveTime: Date.now() }),
+      setOfflineEarnings: (amount) => set({ offlineEarnings: amount }),
+      claimOfflineEarnings: () =>
+        set((state) => ({
+          score: state.score + state.offlineEarnings,
+          offlineEarnings: 0,
+          lastSaveTime: Date.now(),
+        })),
     }),
     {
       name: "poke-idle-storage",
-      version: 2,
+      version: 3,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -190,6 +200,16 @@ export const useGameStore = create<GameState>()(
           state.currentPokemonId = 1;
         if (!Array.isArray(state.unlockedPokemonIds))
           state.unlockedPokemonIds = [1];
+        if (
+          typeof state.lastSaveTime !== "number" ||
+          Number.isNaN(state.lastSaveTime)
+        )
+          state.lastSaveTime = Date.now();
+        if (
+          typeof state.offlineEarnings !== "number" ||
+          Number.isNaN(state.offlineEarnings)
+        )
+          state.offlineEarnings = 0;
 
         if (Array.isArray(state.upgrades)) {
           state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {
