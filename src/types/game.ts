@@ -13,7 +13,7 @@ export interface PartyMember {
   level: number;
 }
 
-export interface GameState {
+export interface PlayerSlice {
   score: number;
   clickPower: number;
   passiveIncome: number;
@@ -23,31 +23,11 @@ export interface GameState {
   unlockedPokemonIds: number[];
   currentPokemonId: number;
   party: PartyMember[];
-  isPokedexOpen: boolean;
-  lastSaveTime: number;
-  offlineEarnings: number;
-  offlineSeconds: number;
-  isHoldToClickEnabled: boolean;
-  isSoundEnabled: boolean;
-  isVfxEnabled: boolean;
   totalClicks: number;
   unlockedAchievements: string[];
-  isAchievementsOpen: boolean;
-  isBossActive: boolean;
-  bossHp: number;
-  bossMaxHp: number;
-  bossTimeLeft: number;
-  toggleHoldToClick: () => void;
-  toggleSound: () => void;
-  toggleVfx: () => void;
-  togglePokedex: () => void;
   togglePartyMember: (id: number) => void;
   upgradePartyMember: (id: number) => void;
-  toggleAchievements: () => void;
   claimAchievement: (id: string) => void;
-  startBossFight: () => void;
-  damageBoss: (amount: number) => void;
-  tickBoss: (deltaTime: number) => void;
   click: (
     critMultiplier?: number,
     comboMultiplier?: number,
@@ -58,7 +38,35 @@ export interface GameState {
   unlockNextPokemon: () => void;
   prestige: () => void;
   hardReset: () => void;
+}
+
+export interface BossSlice {
+  isBossActive: boolean;
+  bossHp: number;
+  bossMaxHp: number;
+  bossTimeLeft: number;
+  startBossFight: () => void;
+  damageBoss: (amount: number) => void;
+  tickBoss: (deltaTime: number) => void;
+}
+
+export interface SystemSlice {
+  isPokedexOpen: boolean;
+  lastSaveTime: number;
+  offlineEarnings: number;
+  offlineSeconds: number;
+  isHoldToClickEnabled: boolean;
+  isSoundEnabled: boolean;
+  isVfxEnabled: boolean;
+  isAchievementsOpen: boolean;
+  toggleHoldToClick: () => void;
+  toggleSound: () => void;
+  toggleVfx: () => void;
+  togglePokedex: () => void;
+  toggleAchievements: () => void;
   updateSaveTime: () => void;
   setOfflineEarnings: (amount: number, seconds: number) => void;
   claimOfflineEarnings: () => void;
 }
+
+export type GameState = PlayerSlice & BossSlice & SystemSlice;
