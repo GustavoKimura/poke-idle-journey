@@ -11,11 +11,9 @@ import {
   calculateNextPokemonCost,
   calculatePrestigeReward,
 } from "../config/gameConfig";
-import { formatNumber } from "../utils/format";
 
 export function useMainStageVM() {
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
-  const score = useGameStore((state) => state.score);
   const isHoldToClickEnabled = useGameStore(
     (state) => state.isHoldToClickEnabled,
   );
@@ -31,13 +29,15 @@ export function useMainStageVM() {
     [currentPokemonId],
   );
 
+  const canAfford = useGameStore(
+    (state) => state.score >= calculateNextPokemonCost(state.currentPokemonId),
+  );
+
   const isBossLevel =
     currentPokemonId % 10 === 0 &&
     currentPokemonId !== GAME_CONFIG.MAX_POKEMON_ID;
   const canUnlock =
-    score >= nextPokemonCost &&
-    !isBossLevel &&
-    currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID;
+    canAfford && !isBossLevel && currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID;
   const isMaxLevel = currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID;
 
   const intervalRef = useRef<number | null>(null);
@@ -57,6 +57,14 @@ export function useMainStageVM() {
         window.clearTimeout(comboTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID) {
+      fetch(`https://pokeapi.co/api/v2/pokemon/${currentPokemonId + 1}`).catch(
+        () => {},
+      );
+    }
+  }, [currentPokemonId]);
 
   useEffect(() => {
     if (currentPokemonId > prevPokemonId.current) {
@@ -148,38 +156,17 @@ export function useMainStageVM() {
           }
         }
 
-        const particle = document.createElement("div");
-        particle.className = "fixed z-50 pointer-events-none";
-        particle.style.left = `${clientX}px`;
-        particle.style.top = `${clientY}px`;
-        particle.style.transform = "translate(-50%, -50%)";
-
-        let textColorClass = "text-3xl text-pokeYellow";
-        if (state.isBossActive) textColorClass = "text-3xl text-orange-400";
-        if (isCritical) textColorClass = "text-5xl text-pokeRed";
-
-        const textSpan = document.createElement("span");
-        textSpan.className = `font-black animate-float-up drop-shadow-lg flex flex-col items-center ${textColorClass}`;
-
-        if (isCritical) {
-          const critSpan = document.createElement("span");
-          critSpan.className =
-            "text-xl block -mt-6 mb-1 text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(238,21,21,0.8)]";
-          critSpan.textContent = "Critical!";
-          textSpan.appendChild(critSpan);
-        }
-
-        const valueNode = document.createTextNode(
-          `+${formatNumber(gainedValue)}`,
+        window.dispatchEvent(
+          new CustomEvent("SPAWN_TEXT", {
+            detail: {
+              x: clientX,
+              y: clientY,
+              value: gainedValue,
+              isCritical,
+              isBoss: state.isBossActive,
+            },
+          }),
         );
-        textSpan.appendChild(valueNode);
-
-        particle.appendChild(textSpan);
-        document.body.appendChild(particle);
-
-        setTimeout(() => {
-          particle.remove();
-        }, 1000);
       }
     },
     [],
@@ -218,7 +205,13 @@ export function useMainStageVM() {
   };
 
   const handleCatch = () => {
-    if (canUnlock && !isCatching) {
+    const currentScore = useGameStore.getState().score;
+    if (
+      currentScore >= nextPokemonCost &&
+      !isBossLevel &&
+      currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID &&
+      !isCatching
+    ) {
       if (useGameStore.getState().isVfxEnabled) {
         setIsCatching(true);
         playCatchSound();

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Book,
   Sparkles,
@@ -14,7 +14,6 @@ import { ACHIEVEMENTS, GAME_CONFIG } from "../config/gameConfig";
 
 export function Header() {
   const {
-    score,
     passiveIncome,
     multiplier,
     rareCandies,
@@ -29,6 +28,23 @@ export function Header() {
   } = useGameStore();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const scoreRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const unsubscribe = useGameStore.subscribe((state) => {
+      if (scoreRef.current) {
+        scoreRef.current.textContent = formatNumber(state.score);
+      }
+    });
+
+    if (scoreRef.current) {
+      scoreRef.current.textContent = formatNumber(
+        useGameStore.getState().score,
+      );
+    }
+
+    return unsubscribe;
+  }, []);
 
   const partyMult = 1 + party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
 
@@ -62,8 +78,11 @@ export function Header() {
             <span className="text-pokeYellow font-bold text-xs sm:text-sm uppercase tracking-wider">
               PokeDollars
             </span>
-            <span className="text-3xl sm:text-4xl font-black text-white drop-shadow-md">
-              {formatNumber(score)}
+            <span
+              ref={scoreRef}
+              className="text-3xl sm:text-4xl font-black text-white drop-shadow-md"
+            >
+              {formatNumber(useGameStore.getState().score)}
             </span>
           </div>
         </div>
