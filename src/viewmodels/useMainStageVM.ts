@@ -9,6 +9,7 @@ import {
   playClickSound,
   playCatchSound,
   playPrestigeSound,
+  playBossWarningSound,
 } from "../utils/audio";
 import {
   GAME_CONFIG,
@@ -40,6 +41,7 @@ export function useMainStageVM() {
   }, [party]);
 
   const hasTypeAdvantage = useMemo(() => {
+    void partyLoaded;
     if (!pokemon) return false;
     const targetWeaknesses = pokemon.types.flatMap(
       (t) => TYPE_WEAKNESSES[t] || [],
@@ -74,6 +76,7 @@ export function useMainStageVM() {
 
   const intervalRef = useRef<number | null>(null);
   const prevPokemonId = useRef(currentPokemonId);
+  const prevBossLevelRef = useRef(false);
 
   const comboRef = useRef(0);
   const comboTimeoutRef = useRef<number | null>(null);
@@ -94,6 +97,13 @@ export function useMainStageVM() {
         window.clearTimeout(comboTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (isBossLevel && !prevBossLevelRef.current) {
+      playBossWarningSound();
+    }
+    prevBossLevelRef.current = isBossLevel;
+  }, [isBossLevel]);
 
   useEffect(() => {
     if (currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID) {

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Clock, Zap, TrendingUp, Timer } from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
@@ -10,6 +11,34 @@ export function OfflineModal() {
   const claimOfflineEarnings = useGameStore(
     (state) => state.claimOfflineEarnings,
   );
+
+  const [displayedEarnings, setDisplayedEarnings] = useState(0);
+
+  useEffect(() => {
+    if (offlineEarnings > 0) {
+      let startTime: number;
+      const duration = 2000;
+      let animationFrame: number;
+
+      const animate = (time: number) => {
+        if (!startTime) startTime = time;
+        const progress = Math.min((time - startTime) / duration, 1);
+        const easeProgress =
+          progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+        setDisplayedEarnings(offlineEarnings * easeProgress);
+
+        if (progress < 1) {
+          animationFrame = requestAnimationFrame(animate);
+        }
+      };
+      animationFrame = requestAnimationFrame(animate);
+
+      return () => cancelAnimationFrame(animationFrame);
+    } else {
+      setTimeout(() => setDisplayedEarnings(0), 0);
+    }
+  }, [offlineEarnings]);
 
   const formatTime = (totalSeconds: number) => {
     const h = Math.floor(totalSeconds / 3600);
@@ -53,7 +82,7 @@ export function OfflineModal() {
               Total Earnings
             </span>
             <span className="text-4xl font-black text-green-400 drop-shadow-md">
-              +${formatNumber(offlineEarnings)}
+              +${formatNumber(displayedEarnings)}
             </span>
           </div>
         </div>

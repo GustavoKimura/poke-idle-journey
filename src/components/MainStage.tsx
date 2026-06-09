@@ -184,15 +184,19 @@ export function MainStage() {
         {!isMaxLevel ? (
           isBossLevel ? (
             !isBossActive && (
-              <div className="flex flex-col items-center gap-3">
-                <span className="text-sm text-gray-300 font-semibold text-center max-w-xs">
-                  This target is too strong! You must deal massive damage in 15
-                  seconds to catch it.
+              <div className="flex flex-col items-center gap-3 animate-in slide-in-from-bottom-4 relative">
+                <div className="absolute -inset-4 bg-red-600/20 blur-xl rounded-full animate-pulse pointer-events-none" />
+                <span className="text-sm text-red-400 font-black uppercase tracking-widest text-center max-w-xs drop-shadow-md">
+                  Warning: Gym Leader!
+                </span>
+                <span className="text-xs text-gray-300 font-semibold text-center max-w-xs mb-2">
+                  You must deal massive damage in 15 seconds to win. Prepare
+                  your party!
                 </span>
                 <Button
                   onClick={handleStartBoss}
                   variant="danger"
-                  className="animate-pulse px-8 py-4 text-lg"
+                  className="animate-pulse px-8 py-4 text-lg shadow-[0_0_30px_rgba(238,21,21,0.5)]"
                 >
                   Challenge Gym Boss
                 </Button>

@@ -141,3 +141,29 @@ export function playPrestigeSound() {
     osc.stop(time + 0.5);
   });
 }
+
+export function playBossWarningSound() {
+  if (!useGameStore.getState().isSoundEnabled) return;
+  initAudio();
+  const ctx = audioCtx;
+  if (!ctx) return;
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.type = "square";
+
+  osc.frequency.setValueAtTime(400, ctx.currentTime);
+  osc.frequency.setValueAtTime(600, ctx.currentTime + 0.5);
+  osc.frequency.setValueAtTime(400, ctx.currentTime + 1.0);
+  osc.frequency.setValueAtTime(600, ctx.currentTime + 1.5);
+
+  gain.gain.setValueAtTime(0.1, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 2.0);
+
+  osc.start();
+  osc.stop(ctx.currentTime + 2.0);
+}
