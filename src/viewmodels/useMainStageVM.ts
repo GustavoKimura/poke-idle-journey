@@ -209,9 +209,11 @@ export function useMainStageVM() {
         comboText.textContent = `${currentCombo}`;
         comboMultText.textContent = `x${comboMultiplier.toFixed(2)}`;
 
-        comboText.classList.remove("animate-shake");
-        void comboText.offsetWidth;
-        comboText.classList.add("animate-shake");
+        if (state.isVfxEnabled) {
+          comboText.classList.remove("animate-shake");
+          void comboText.offsetWidth;
+          comboText.classList.add("animate-shake");
+        }
 
         comboFill.style.transition = "none";
         comboFill.style.height = "100%";
