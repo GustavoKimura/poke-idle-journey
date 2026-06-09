@@ -90,6 +90,24 @@ export const INITIAL_UPGRADES: Upgrade[] = [
     type: "passive",
     effect: 10000,
   },
+  {
+    id: "7",
+    name: "Pokedex Scholar",
+    baseCost: 5000000,
+    costMultiplier: 1.5,
+    count: 0,
+    type: "synergy",
+    effect: 0.01,
+  },
+  {
+    id: "8",
+    name: "Shiny Charm",
+    baseCost: 50000000,
+    costMultiplier: 1.5,
+    count: 0,
+    type: "synergy",
+    effect: 0.05,
+  },
 ];
 
 export interface Achievement {

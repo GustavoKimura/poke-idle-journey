@@ -22,7 +22,9 @@ export function MainStage() {
     bgGradient,
     hasTypeAdvantage,
     prestigeReward,
+    weakPoint,
     handlePointerDown,
+    handleWeakPointDown,
     stopHold,
     handleStartBoss,
     handleCatch,
@@ -150,14 +152,31 @@ export function MainStage() {
         }}
       >
         {pokemon?.sprite && (
-          <img
-            src={pokemon.sprite}
-            alt={pokemon.name}
-            className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 ${
-              isCatching ? "animate-suck-in" : "hover:brightness-125"
-            }`}
-            draggable="false"
-          />
+          <>
+            <img
+              src={pokemon.sprite}
+              alt={pokemon.name}
+              className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 ${
+                isCatching ? "animate-suck-in" : "hover:brightness-125"
+              }`}
+              draggable="false"
+            />
+            {weakPoint && (
+              <div
+                key={weakPoint.id}
+                className="absolute z-30 w-16 h-16 rounded-full flex items-center justify-center animate-pulse"
+                style={{
+                  left: `${weakPoint.x}%`,
+                  top: `${weakPoint.y}%`,
+                  transform: "translate(-50%, -50%)",
+                }}
+                onPointerDown={handleWeakPointDown}
+              >
+                <div className="w-full h-full border-4 border-pokeRed rounded-full animate-ping absolute inset-0" />
+                <div className="w-4 h-4 bg-white rounded-full shadow-[0_0_15px_rgba(238,21,21,1)]" />
+              </div>
+            )}
+          </>
         )}
       </div>
 

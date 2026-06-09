@@ -4,7 +4,7 @@ export interface Upgrade {
   baseCost: number;
   costMultiplier: number;
   count: number;
-  type: "active" | "passive";
+  type: "active" | "passive" | "synergy";
   effect: number;
 }
 

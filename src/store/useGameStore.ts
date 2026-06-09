@@ -12,18 +12,26 @@ import {
 } from "../config/gameConfig";
 import { playCatchSound } from "../utils/audio";
 
-const recalculateTotals = (upgrades: Upgrade[]) => {
-  let clickPower = 1;
-  let passiveIncome = 0;
+const recalculateTotals = (upgrades: Upgrade[], unlockedCount: number) => {
+  let baseClick = 1;
+  let basePassive = 0;
+  let synergyBonus = 0;
+
   upgrades.forEach((u) => {
     const mult = getMilestoneMultiplier(u.count);
     if (u.type === "active") {
-      clickPower += u.count * u.effect * mult;
-    } else {
-      passiveIncome += u.count * u.effect * mult;
+      baseClick += u.count * u.effect * mult;
+    } else if (u.type === "passive") {
+      basePassive += u.count * u.effect * mult;
+    } else if (u.type === "synergy") {
+      synergyBonus += u.count * u.effect * unlockedCount;
     }
   });
-  return { clickPower, passiveIncome };
+
+  return {
+    clickPower: baseClick * (1 + synergyBonus),
+    passiveIncome: basePassive * (1 + synergyBonus),
+  };
 };
 
 export const useGameStore = create<GameState>()(
@@ -86,18 +94,25 @@ export const useGameStore = create<GameState>()(
           const newHp = state.bossHp - amount;
           if (newHp <= 0) {
             playCatchSound();
+            const newUnlocked = [
+              ...state.unlockedPokemonIds,
+              state.currentPokemonId + 1,
+            ];
+            const { clickPower, passiveIncome } = recalculateTotals(
+              state.upgrades,
+              newUnlocked.length,
+            );
             return {
               isBossActive: false,
               currentPokemonId: state.currentPokemonId + 1,
-              unlockedPokemonIds: [
-                ...state.unlockedPokemonIds,
-                state.currentPokemonId + 1,
-              ],
+              unlockedPokemonIds: newUnlocked,
               multiplier:
                 state.multiplier +
                 GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId,
               score: state.score + state.bossMaxHp * 2,
               bossHp: 0,
+              clickPower,
+              passiveIncome,
             };
           }
           return { bossHp: newHp };
@@ -163,17 +178,25 @@ export const useGameStore = create<GameState>()(
             const newHp = state.bossHp - amount;
             if (newHp <= 0) {
               playCatchSound();
-              newState.isBossActive = false;
-              newState.currentPokemonId = state.currentPokemonId + 1;
-              newState.unlockedPokemonIds = [
+              const newUnlocked = [
                 ...state.unlockedPokemonIds,
                 state.currentPokemonId + 1,
               ];
+              const { clickPower, passiveIncome } = recalculateTotals(
+                state.upgrades,
+                newUnlocked.length,
+              );
+
+              newState.isBossActive = false;
+              newState.currentPokemonId = state.currentPokemonId + 1;
+              newState.unlockedPokemonIds = newUnlocked;
               newState.multiplier =
                 state.multiplier +
                 GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId;
               newState.score = newState.score! + state.bossMaxHp * 2;
               newState.bossHp = 0;
+              newState.clickPower = clickPower;
+              newState.passiveIncome = passiveIncome;
             } else {
               newState.bossHp = newHp;
             }
@@ -202,7 +225,10 @@ export const useGameStore = create<GameState>()(
             count: upgrade.count + amount,
           };
 
-          const { clickPower, passiveIncome } = recalculateTotals(newUpgrades);
+          const { clickPower, passiveIncome } = recalculateTotals(
+            newUpgrades,
+            state.unlockedPokemonIds.length,
+          );
 
           return {
             score: state.score - totalCost,
@@ -222,14 +248,21 @@ export const useGameStore = create<GameState>()(
             return state;
 
           const cost = calculateNextPokemonCost(state.currentPokemonId);
+          const newUnlocked = [...state.unlockedPokemonIds, nextId];
+          const { clickPower, passiveIncome } = recalculateTotals(
+            state.upgrades,
+            newUnlocked.length,
+          );
 
           return {
             score: state.score - cost,
             currentPokemonId: nextId,
-            unlockedPokemonIds: [...state.unlockedPokemonIds, nextId],
+            unlockedPokemonIds: newUnlocked,
             multiplier:
               state.multiplier +
               GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId,
+            clickPower,
+            passiveIncome,
           };
         }),
       prestige: () =>
@@ -241,14 +274,19 @@ export const useGameStore = create<GameState>()(
             state.currentPokemonId,
             state.totalClicks,
           );
+          const newUpgrades = INITIAL_UPGRADES.map((u) => ({ ...u }));
+          const { clickPower, passiveIncome } = recalculateTotals(
+            newUpgrades,
+            1,
+          );
 
           return {
             score: 0,
-            clickPower: 1,
-            passiveIncome: 0,
+            clickPower,
+            passiveIncome,
             multiplier: 1,
             rareCandies: state.rareCandies + reward,
-            upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
+            upgrades: newUpgrades,
             unlockedPokemonIds: [1],
             currentPokemonId: 1,
             party: [],
@@ -310,7 +348,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 11,
+      version: 12,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -402,7 +440,10 @@ export const useGameStore = create<GameState>()(
           state.upgrades = INITIAL_UPGRADES.map((u) => ({ ...u }));
         }
 
-        const totals = recalculateTotals(state.upgrades!);
+        const totals = recalculateTotals(
+          state.upgrades!,
+          state.unlockedPokemonIds!.length,
+        );
         state.clickPower = totals.clickPower;
         state.passiveIncome = totals.passiveIncome;
         state.isPokedexOpen = false;

@@ -73,8 +73,17 @@ const UpgradeItem = React.memo(
             </span>
           </div>
           <span className="text-sm text-blue-300 font-medium">
-            +{formatNumber(upgrade.effect * currentMultiplier)}{" "}
-            {upgrade.type === "active" ? "/ click" : "/ sec"}
+            +
+            {formatNumber(
+              upgrade.effect *
+                currentMultiplier *
+                (upgrade.type === "synergy" ? 100 : 1),
+            )}
+            {upgrade.type === "active"
+              ? " / click"
+              : upgrade.type === "synergy"
+                ? "% / catch"
+                : " / sec"}
           </span>
         </div>
       </button>
