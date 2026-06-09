@@ -34,7 +34,7 @@ export function useMainStageVM() {
   const [partyLoaded, setPartyLoaded] = useState(false);
 
   useEffect(() => {
-    Promise.all(party.map((id) => fetchAndCachePokemon(id))).then(() => {
+    Promise.all(party.map((p) => fetchAndCachePokemon(p.id))).then(() => {
       setPartyLoaded((prev) => !prev);
     });
   }, [party]);
@@ -45,8 +45,8 @@ export function useMainStageVM() {
       (t) => TYPE_WEAKNESSES[t] || [],
     );
 
-    for (const pId of party) {
-      const pData = getPokemonDataSync(pId);
+    for (const p of party) {
+      const pData = getPokemonDataSync(p.id);
       if (pData && pData.types.some((pt) => targetWeaknesses.includes(pt))) {
         return true;
       }
@@ -165,7 +165,11 @@ export function useMainStageVM() {
       const typeMultiplier = hasTypeAdvantage ? 3 : 1;
 
       const partyMult =
-        1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
+        1 +
+        state.party.reduce(
+          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+          0,
+        );
 
       const gainedValue =
         state.clickPower *

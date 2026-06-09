@@ -46,7 +46,12 @@ export function Header() {
     return unsubscribe;
   }, []);
 
-  const partyMult = 1 + party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
+  const partyMult =
+    1 +
+    party.reduce(
+      (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+      0,
+    );
 
   const claimableCount = ACHIEVEMENTS.filter((a) => {
     if (unlockedAchievements.includes(a.id)) return false;

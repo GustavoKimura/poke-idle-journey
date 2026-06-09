@@ -1,16 +1,32 @@
 import { useState } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { usePokeAPI } from "../hooks/usePokeAPI";
-import { Sparkles, Scale, ChevronLeft, ChevronRight } from "lucide-react";
-import { GAME_CONFIG } from "../config/gameConfig";
+import {
+  Sparkles,
+  Scale,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUp,
+} from "lucide-react";
+import { GAME_CONFIG, calculatePartyUpgradeCost } from "../config/gameConfig";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
+import { formatNumber } from "../utils/format";
 
 function PokedexEntry({ id }: { id: number }) {
   const { data, isLoading } = usePokeAPI(id);
-  const isEquipped = useGameStore((state) => state.party.includes(id));
+  const partyMember = useGameStore((state) =>
+    state.party.find((p) => p.id === id),
+  );
+  const isEquipped = !!partyMember;
   const partyLength = useGameStore((state) => state.party.length);
   const togglePartyMember = useGameStore((state) => state.togglePartyMember);
+  const upgradePartyMember = useGameStore((state) => state.upgradePartyMember);
+
+  const upgradeCost = partyMember
+    ? calculatePartyUpgradeCost(partyMember.level)
+    : 0;
+  const canAffordUpgrade = useGameStore((state) => state.score >= upgradeCost);
 
   const handleToggle = () => {
     if (!isEquipped && partyLength >= GAME_CONFIG.MAX_PARTY_SIZE) return;
@@ -31,8 +47,11 @@ function PokedexEntry({ id }: { id: number }) {
           : "border-white/10 hover:border-pokeYellow hover:shadow-pokeYellow/20"
       }`}
     >
-      <span className="absolute top-2 left-2 text-[10px] font-black text-gray-400 bg-black/60 px-1.5 py-0.5 rounded z-10">
+      <span className="absolute top-2 left-2 text-[10px] font-black text-gray-400 bg-black/60 px-1.5 py-0.5 rounded z-10 flex gap-1 items-center">
         #{id.toString().padStart(3, "0")}
+        {isEquipped && (
+          <span className="text-pokeYellow">Lv.{partyMember.level}</span>
+        )}
       </span>
 
       {data.shinySprite && (
@@ -41,7 +60,7 @@ function PokedexEntry({ id }: { id: number }) {
         </div>
       )}
 
-      <div className="relative w-20 h-20 mt-4 mb-2 shrink-0">
+      <div className="relative w-20 h-20 mt-4 mb-2 shrink-0 pointer-events-none">
         <img
           src={data.sprite}
           alt={data.name}
@@ -56,11 +75,11 @@ function PokedexEntry({ id }: { id: number }) {
         )}
       </div>
 
-      <span className="font-bold capitalize text-white text-center w-full truncate text-sm mb-1">
+      <span className="font-bold capitalize text-white text-center w-full truncate text-sm mb-1 pointer-events-none">
         {data.name}
       </span>
 
-      <div className="flex flex-wrap justify-center gap-1 mb-2">
+      <div className="flex flex-wrap justify-center gap-1 mb-2 pointer-events-none">
         {data.types.map((type) => (
           <span
             key={type}
@@ -81,19 +100,40 @@ function PokedexEntry({ id }: { id: number }) {
           <span>{(data.weight / 10).toFixed(1)} kg</span>
         </div>
 
-        <button
-          onClick={handleToggle}
-          disabled={!isEquipped && partyLength >= GAME_CONFIG.MAX_PARTY_SIZE}
-          className={`w-full py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
-            isEquipped
-              ? "bg-pokeYellow text-black shadow-[0_0_10px_rgba(255,222,0,0.3)] block"
-              : partyLength >= GAME_CONFIG.MAX_PARTY_SIZE
+        {isEquipped ? (
+          <div className="flex flex-col gap-1 w-full">
+            <button
+              onClick={() => upgradePartyMember(id)}
+              disabled={!canAffordUpgrade}
+              className={`w-full py-1 rounded-lg text-[9px] font-black uppercase transition-all flex items-center justify-center gap-1 ${
+                canAffordUpgrade
+                  ? "bg-green-500 hover:bg-green-400 text-white shadow-[0_0_10px_rgba(34,197,94,0.3)] cursor-pointer"
+                  : "bg-black/50 text-gray-500 border border-white/10 cursor-not-allowed"
+              }`}
+            >
+              <ArrowUp size={10} /> ${formatNumber(upgradeCost)}
+            </button>
+            <button
+              onClick={handleToggle}
+              className="w-full py-1 rounded-lg text-[9px] font-black uppercase bg-pokeRed/80 hover:bg-pokeRed text-white transition-all cursor-pointer hidden group-hover:block absolute bottom-3 left-0 right-0 mx-3"
+              style={{ width: "calc(100% - 24px)" }}
+            >
+              Unequip
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleToggle}
+            disabled={partyLength >= GAME_CONFIG.MAX_PARTY_SIZE}
+            className={`w-full py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
+              partyLength >= GAME_CONFIG.MAX_PARTY_SIZE
                 ? "bg-black/50 text-gray-500 cursor-not-allowed border border-white/10 hidden group-hover:block"
                 : "bg-black/60 text-white border border-white/20 hover:border-pokeYellow hover:text-pokeYellow hidden group-hover:block"
-          }`}
-        >
-          {isEquipped ? "Equipped" : "Equip"}
-        </button>
+            }`}
+          >
+            Equip
+          </button>
+        )}
       </div>
     </div>
   );

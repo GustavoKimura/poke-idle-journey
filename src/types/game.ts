@@ -8,6 +8,11 @@ export interface Upgrade {
   effect: number;
 }
 
+export interface PartyMember {
+  id: number;
+  level: number;
+}
+
 export interface GameState {
   score: number;
   clickPower: number;
@@ -17,7 +22,7 @@ export interface GameState {
   upgrades: Upgrade[];
   unlockedPokemonIds: number[];
   currentPokemonId: number;
-  party: number[];
+  party: PartyMember[];
   isPokedexOpen: boolean;
   lastSaveTime: number;
   offlineEarnings: number;
@@ -37,6 +42,7 @@ export interface GameState {
   toggleVfx: () => void;
   togglePokedex: () => void;
   togglePartyMember: (id: number) => void;
+  upgradePartyMember: (id: number) => void;
   toggleAchievements: () => void;
   claimAchievement: (id: string) => void;
   startBossFight: () => void;

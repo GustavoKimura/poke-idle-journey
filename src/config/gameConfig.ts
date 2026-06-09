@@ -292,3 +292,7 @@ export const calculatePrestigeReward = (
   }
   return total;
 };
+
+export const calculatePartyUpgradeCost = (level: number): number => {
+  return Math.floor(50000 * Math.pow(2, level - 1));
+};

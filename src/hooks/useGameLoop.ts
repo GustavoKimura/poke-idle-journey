@@ -20,7 +20,11 @@ export function useGameLoop() {
       state.passiveIncome > 0
     ) {
       const partyMult =
-        1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
+        1 +
+        state.party.reduce(
+          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+          0,
+        );
       const earned =
         state.passiveIncome *
         state.multiplier *
@@ -52,7 +56,11 @@ export function useGameLoop() {
         currentState.offlineEarnings === 0
       ) {
         const partyMult =
-          1 + currentState.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
+          1 +
+          currentState.party.reduce(
+            (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+            0,
+          );
         const incomePerSecond =
           currentState.passiveIncome *
           currentState.multiplier *

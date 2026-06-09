@@ -9,8 +9,9 @@ import {
   calculateNextPokemonCost,
   getMilestoneMultiplier,
   calculatePrestigeReward,
+  calculatePartyUpgradeCost,
 } from "../config/gameConfig";
-import { playCatchSound } from "../utils/audio";
+import { playCatchSound, playUpgradeSound } from "../utils/audio";
 
 const recalculateTotals = (upgrades: Upgrade[], unlockedCount: number) => {
   let baseClick = 1;
@@ -69,11 +70,25 @@ export const useGameStore = create<GameState>()(
         set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
       togglePartyMember: (id) =>
         set((state) => {
-          if (state.party.includes(id)) {
-            return { party: state.party.filter((p) => p !== id) };
+          if (state.party.some((p) => p.id === id)) {
+            return { party: state.party.filter((p) => p.id !== id) };
           }
           if (state.party.length >= GAME_CONFIG.MAX_PARTY_SIZE) return state;
-          return { party: [...state.party, id] };
+          return { party: [...state.party, { id, level: 1 }] };
+        }),
+      upgradePartyMember: (id) =>
+        set((state) => {
+          const member = state.party.find((p) => p.id === id);
+          if (!member) return state;
+          const cost = calculatePartyUpgradeCost(member.level);
+          if (state.score < cost) return state;
+          playUpgradeSound();
+          return {
+            score: state.score - cost,
+            party: state.party.map((p) =>
+              p.id === id ? { ...p, level: p.level + 1 } : p,
+            ),
+          };
         }),
       toggleAchievements: () =>
         set((state) => ({ isAchievementsOpen: !state.isAchievementsOpen })),
@@ -159,7 +174,11 @@ export const useGameStore = create<GameState>()(
       click: (critMultiplier = 1, comboMultiplier = 1, typeMultiplier = 1) =>
         set((state) => {
           const partyMult =
-            1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
+            1 +
+            state.party.reduce(
+              (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+              0,
+            );
           const amount =
             state.clickPower *
             state.multiplier *
@@ -348,7 +367,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 12,
+      version: 13,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -373,7 +392,19 @@ export const useGameStore = create<GameState>()(
           state.currentPokemonId = 1;
         if (!Array.isArray(state.unlockedPokemonIds))
           state.unlockedPokemonIds = [1];
-        if (!Array.isArray(state.party)) state.party = [];
+
+        if (!Array.isArray(state.party)) {
+          state.party = [];
+        } else if (
+          state.party.length > 0 &&
+          typeof state.party[0] === "number"
+        ) {
+          state.party = (state.party as unknown as number[]).map((id) => ({
+            id,
+            level: 1,
+          }));
+        }
+
         if (
           typeof state.lastSaveTime !== "number" ||
           Number.isNaN(state.lastSaveTime)
