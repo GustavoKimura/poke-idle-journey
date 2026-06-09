@@ -1,6 +1,10 @@
 import { useCallback, useMemo, useRef, useEffect, useState } from "react";
 import { useGameStore } from "../store/useGameStore";
-import { usePokeAPI } from "../hooks/usePokeAPI";
+import {
+  usePokeAPI,
+  fetchAndCachePokemon,
+  getPokemonDataSync,
+} from "../hooks/usePokeAPI";
 import {
   playClickSound,
   playCatchSound,
@@ -8,12 +12,14 @@ import {
 } from "../utils/audio";
 import {
   GAME_CONFIG,
+  TYPE_WEAKNESSES,
   calculateNextPokemonCost,
   calculatePrestigeReward,
 } from "../config/gameConfig";
 
 export function useMainStageVM() {
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
+  const totalClicks = useGameStore((state) => state.totalClicks);
   const isHoldToClickEnabled = useGameStore(
     (state) => state.isHoldToClickEnabled,
   );
@@ -21,8 +27,32 @@ export function useMainStageVM() {
   const bossHp = useGameStore((state) => state.bossHp);
   const bossMaxHp = useGameStore((state) => state.bossMaxHp);
   const bossTimeLeft = useGameStore((state) => state.bossTimeLeft);
+  const party = useGameStore((state) => state.party);
 
   const { data: pokemon, isLoading } = usePokeAPI(currentPokemonId);
+
+  const [partyLoaded, setPartyLoaded] = useState(false);
+
+  useEffect(() => {
+    Promise.all(party.map((id) => fetchAndCachePokemon(id))).then(() => {
+      setPartyLoaded((prev) => !prev);
+    });
+  }, [party]);
+
+  const hasTypeAdvantage = useMemo(() => {
+    if (!pokemon) return false;
+    const targetWeaknesses = pokemon.types.flatMap(
+      (t) => TYPE_WEAKNESSES[t] || [],
+    );
+
+    for (const pId of party) {
+      const pData = getPokemonDataSync(pId);
+      if (pData && pData.types.some((pt) => targetWeaknesses.includes(pt))) {
+        return true;
+      }
+    }
+    return false;
+  }, [pokemon, party, partyLoaded]);
 
   const nextPokemonCost = useMemo(
     () => calculateNextPokemonCost(currentPokemonId),
@@ -32,6 +62,8 @@ export function useMainStageVM() {
   const canAfford = useGameStore(
     (state) => state.score >= calculateNextPokemonCost(state.currentPokemonId),
   );
+
+  const prestigeReward = calculatePrestigeReward(currentPokemonId, totalClicks);
 
   const isBossLevel =
     currentPokemonId % 10 === 0 &&
@@ -60,9 +92,7 @@ export function useMainStageVM() {
 
   useEffect(() => {
     if (currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID) {
-      fetch(`https://pokeapi.co/api/v2/pokemon/${currentPokemonId + 1}`).catch(
-        () => {},
-      );
+      fetchAndCachePokemon(currentPokemonId + 1);
     }
   }, [currentPokemonId]);
 
@@ -91,16 +121,19 @@ export function useMainStageVM() {
       comboRef.current += 1;
       const currentCombo = comboRef.current;
       const comboMultiplier = 1 + currentCombo * 0.02;
+      const typeMultiplier = hasTypeAdvantage ? 3 : 1;
 
       const partyMult =
         1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
+
       const gainedValue =
         state.clickPower *
         state.multiplier *
         partyMult *
         (1 + state.rareCandies) *
         critMultiplier *
-        comboMultiplier;
+        comboMultiplier *
+        typeMultiplier;
 
       if (comboTimeoutRef.current) window.clearTimeout(comboTimeoutRef.current);
       comboTimeoutRef.current = window.setTimeout(() => {
@@ -143,7 +176,7 @@ export function useMainStageVM() {
         });
       }
 
-      state.click(critMultiplier, comboMultiplier);
+      state.click(critMultiplier, comboMultiplier, typeMultiplier);
       playClickSound(isCritical, comboMultiplier);
 
       if (state.isVfxEnabled) {
@@ -176,7 +209,7 @@ export function useMainStageVM() {
         );
       }
     },
-    [],
+    [hasTypeAdvantage],
   );
 
   const stopHold = useCallback(() => {
@@ -234,10 +267,9 @@ export function useMainStageVM() {
   };
 
   const handlePrestige = () => {
-    const reward = calculatePrestigeReward(currentPokemonId);
     if (
       window.confirm(
-        `Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive ${reward} Rare Cand${reward > 1 ? "ies" : "y"} (+${reward * 100}% global multiplier permanently)!`,
+        `Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive ${prestigeReward} Rare Cand${prestigeReward > 1 ? "ies" : "y"} (+${prestigeReward * 100}% global multiplier permanently)!`,
       )
     ) {
       useGameStore.getState().prestige();
@@ -285,6 +317,8 @@ export function useMainStageVM() {
     isCatching,
     spawnFlash,
     bgGradient,
+    hasTypeAdvantage,
+    prestigeReward,
     handlePointerDown,
     stopHold,
     handleStartBoss,

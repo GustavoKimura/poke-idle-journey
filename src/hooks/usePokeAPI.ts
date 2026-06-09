@@ -14,7 +14,68 @@ interface PokeAPIType {
   };
 }
 
-const memoryCache: Record<number, PokemonData> = {};
+export const memoryCache: Record<number, PokemonData> = {};
+
+export async function fetchAndCachePokemon(
+  pokemonId: number,
+): Promise<PokemonData | null> {
+  if (!pokemonId || pokemonId <= 0) return null;
+  if (memoryCache[pokemonId]) return memoryCache[pokemonId];
+
+  const localCacheKey = `pokeCache_${pokemonId}`;
+  const localCache = localStorage.getItem(localCacheKey);
+
+  if (localCache) {
+    try {
+      const parsed = JSON.parse(localCache);
+      memoryCache[pokemonId] = parsed;
+      return parsed;
+    } catch {
+      localStorage.removeItem(localCacheKey);
+    }
+  }
+
+  try {
+    const response = await fetch(
+      `https://pokeapi.co/api/v2/pokemon/${pokemonId}`,
+    );
+    const result = await response.json();
+
+    const pokemonData: PokemonData = {
+      name: result.name,
+      sprite:
+        result.sprites.other["official-artwork"].front_default ||
+        result.sprites.front_default,
+      shinySprite:
+        result.sprites.front_shiny ||
+        result.sprites.other["official-artwork"].front_shiny,
+      types: result.types.map((t: PokeAPIType) => t.type.name),
+      weight: result.weight,
+    };
+
+    memoryCache[pokemonId] = pokemonData;
+    localStorage.setItem(localCacheKey, JSON.stringify(pokemonData));
+    return pokemonData;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export function getPokemonDataSync(id: number): PokemonData | null {
+  if (memoryCache[id]) return memoryCache[id];
+  const local = localStorage.getItem(`pokeCache_${id}`);
+  if (local) {
+    try {
+      const parsed = JSON.parse(local);
+      memoryCache[id] = parsed;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
 
 export function usePokeAPI(pokemonId: number) {
   const [data, setData] = useState<PokemonData | null>(null);
@@ -23,84 +84,27 @@ export function usePokeAPI(pokemonId: number) {
   useEffect(() => {
     let isMounted = true;
 
-    if (!pokemonId || pokemonId <= 0) {
-      window.setTimeout(() => {
-        if (isMounted) {
-          setData(null);
-          setIsLoading(false);
-        }
-      }, 0);
-      return;
-    }
+    const fetchData = async () => {
+      await Promise.resolve();
 
-    const fetchPokemon = async () => {
-      if (memoryCache[pokemonId]) {
-        window.setTimeout(() => {
-          if (isMounted) {
-            setData(memoryCache[pokemonId]);
-            setIsLoading(false);
-          }
-        }, 0);
+      if (!isMounted) return;
+
+      if (!pokemonId || pokemonId <= 0) {
+        setData(null);
+        setIsLoading(false);
         return;
       }
 
-      const localCacheKey = `pokeCache_${pokemonId}`;
-      const localCache = localStorage.getItem(localCacheKey);
+      setIsLoading(true);
+      const result = await fetchAndCachePokemon(pokemonId);
 
-      if (localCache) {
-        try {
-          const parsed = JSON.parse(localCache);
-          memoryCache[pokemonId] = parsed;
-          window.setTimeout(() => {
-            if (isMounted) {
-              setData(parsed);
-              setIsLoading(false);
-            }
-          }, 0);
-          return;
-        } catch {
-          localStorage.removeItem(localCacheKey);
-        }
-      }
-
-      window.setTimeout(() => {
-        if (isMounted) setIsLoading(true);
-      }, 0);
-
-      try {
-        const response = await fetch(
-          `https://pokeapi.co/api/v2/pokemon/${pokemonId}`,
-        );
-        const result = await response.json();
-
-        const pokemonData: PokemonData = {
-          name: result.name,
-          sprite:
-            result.sprites.other["official-artwork"].front_default ||
-            result.sprites.front_default,
-          shinySprite:
-            result.sprites.front_shiny ||
-            result.sprites.other["official-artwork"].front_shiny,
-          types: result.types.map((t: PokeAPIType) => t.type.name),
-          weight: result.weight,
-        };
-
-        memoryCache[pokemonId] = pokemonData;
-        localStorage.setItem(localCacheKey, JSON.stringify(pokemonData));
-
-        if (isMounted) {
-          setData(pokemonData);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      if (isMounted) {
+        setData(result);
+        setIsLoading(false);
       }
     };
 
-    fetchPokemon();
+    fetchData();
 
     return () => {
       isMounted = false;

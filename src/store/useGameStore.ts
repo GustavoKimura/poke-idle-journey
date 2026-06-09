@@ -141,7 +141,7 @@ export const useGameStore = create<GameState>()(
             rareCandies: state.rareCandies + achievement.reward,
           };
         }),
-      click: (critMultiplier = 1, comboMultiplier = 1) =>
+      click: (critMultiplier = 1, comboMultiplier = 1, typeMultiplier = 1) =>
         set((state) => {
           const partyMult =
             1 + state.party.length * GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
@@ -151,7 +151,8 @@ export const useGameStore = create<GameState>()(
             partyMult *
             (1 + state.rareCandies) *
             critMultiplier *
-            comboMultiplier;
+            comboMultiplier *
+            typeMultiplier;
 
           const newState: Partial<GameState> = {
             score: state.score + amount,
@@ -236,7 +237,10 @@ export const useGameStore = create<GameState>()(
           if (state.currentPokemonId < GAME_CONFIG.PRESTIGE_MIN_ID)
             return state;
 
-          const reward = calculatePrestigeReward(state.currentPokemonId);
+          const reward = calculatePrestigeReward(
+            state.currentPokemonId,
+            state.totalClicks,
+          );
 
           return {
             score: 0,
@@ -254,6 +258,7 @@ export const useGameStore = create<GameState>()(
             bossHp: 0,
             bossMaxHp: 0,
             bossTimeLeft: 0,
+            totalClicks: 0,
             lastSaveTime: Date.now(),
           };
         }),

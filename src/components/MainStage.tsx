@@ -2,7 +2,7 @@ import { formatNumber } from "../utils/format";
 import { useMainStageVM } from "../viewmodels/useMainStageVM";
 import { PartyRoster } from "./PartyRoster";
 import { Button } from "./ui/Button";
-import { GAME_CONFIG, calculatePrestigeReward } from "../config/gameConfig";
+import { GAME_CONFIG } from "../config/gameConfig";
 
 export function MainStage() {
   const {
@@ -20,6 +20,8 @@ export function MainStage() {
     isCatching,
     spawnFlash,
     bgGradient,
+    hasTypeAdvantage,
+    prestigeReward,
     handlePointerDown,
     stopHold,
     handleStartBoss,
@@ -94,7 +96,7 @@ export function MainStage() {
         >
           {isBossLevel ? "Gym Leader Target" : "Current Target"}
         </span>
-        <div className="bg-black/40 border border-white/10 px-6 py-2 rounded-full flex gap-4 items-center shadow-lg mb-4">
+        <div className="bg-black/40 border border-white/10 px-6 py-2 rounded-full flex gap-4 items-center shadow-lg mb-4 relative">
           <span className="text-pokeYellow font-bold">#{currentPokemonId}</span>
           <span className="text-white capitalize font-medium">
             {pokemon?.name || "Loading..."}
@@ -102,6 +104,11 @@ export function MainStage() {
           {pokemon?.types?.[0] && (
             <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-white/20 text-white border border-white/10 shadow-sm">
               {pokemon.types[0]}
+            </span>
+          )}
+          {hasTypeAdvantage && (
+            <span className="absolute -top-3 -right-3 bg-green-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-full shadow-lg border border-green-300 animate-bounce whitespace-nowrap">
+              Type Advantage!
             </span>
           )}
         </div>
@@ -193,8 +200,7 @@ export function MainStage() {
                     onClick={handlePrestige}
                     className="bg-transparent border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-white shadow-[0_0_10px_rgba(236,72,153,0.3)]"
                   >
-                    Prestige (+{calculatePrestigeReward(currentPokemonId)}{" "}
-                    Candy)
+                    Prestige (+{prestigeReward} Candy)
                   </Button>
                 )}
               </div>
@@ -209,7 +215,7 @@ export function MainStage() {
               onClick={handlePrestige}
               className="bg-gradient-to-r from-pink-500 to-purple-600 text-white border-2 border-pink-300 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
             >
-              Prestige (+{calculatePrestigeReward(currentPokemonId)} Rare Candy)
+              Prestige (+{prestigeReward} Rare Candy)
             </Button>
           </>
         )}

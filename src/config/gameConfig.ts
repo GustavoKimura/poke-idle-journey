@@ -14,6 +14,27 @@ export const GAME_CONFIG = {
   PARTY_MEMBER_MULTIPLIER: 0.5,
 };
 
+export const TYPE_WEAKNESSES: Record<string, string[]> = {
+  normal: ["fighting"],
+  fire: ["water", "ground", "rock"],
+  water: ["electric", "grass"],
+  electric: ["ground"],
+  grass: ["fire", "ice", "poison", "flying", "bug"],
+  ice: ["fire", "fighting", "rock", "steel"],
+  fighting: ["flying", "psychic", "fairy"],
+  poison: ["ground", "psychic"],
+  ground: ["water", "grass", "ice"],
+  flying: ["electric", "ice", "rock"],
+  psychic: ["bug", "ghost", "dark"],
+  bug: ["fire", "flying", "rock"],
+  rock: ["water", "grass", "fighting", "ground", "steel"],
+  ghost: ["ghost", "dark"],
+  dragon: ["ice", "dragon", "fairy"],
+  dark: ["fighting", "bug", "fairy"],
+  steel: ["fire", "fighting", "ground"],
+  fairy: ["poison", "steel"],
+};
+
 export const INITIAL_UPGRADES: Upgrade[] = [
   {
     id: "1",
@@ -240,10 +261,16 @@ export const getNextMilestone = (count: number): number | null => {
   return null;
 };
 
-export const calculatePrestigeReward = (currentId: number): number => {
+export const calculatePrestigeReward = (
+  currentId: number,
+  totalClicks: number = 0,
+): number => {
   if (currentId < GAME_CONFIG.PRESTIGE_MIN_ID) return 0;
+  const clickBonus = Math.floor(Math.sqrt(totalClicks / 500));
+  const stageBonus = Math.floor((currentId - 40) / 10);
+  const total = stageBonus + clickBonus;
   if (currentId >= GAME_CONFIG.MAX_POKEMON_ID) {
-    return Math.floor((currentId - 40) / 10) + 5;
+    return total + 5;
   }
-  return Math.floor((currentId - 40) / 10);
+  return total;
 };
