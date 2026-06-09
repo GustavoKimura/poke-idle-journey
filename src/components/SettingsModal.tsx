@@ -59,8 +59,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <p>
               <strong className="text-green-400">Party System:</strong> Open
               your Pokédex and equip up to {GAME_CONFIG.MAX_PARTY_SIZE} Pokémon.
-              Each active party member grants a massive +
-              {GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * 100}% global multiplier!
+              Each level gives a +{GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * 100}%
+              global multiplier! You can now also{" "}
+              <strong className="text-green-300">Level Up</strong> your party
+              members.
+            </p>
+            <p>
+              <strong className="text-orange-400">Combat Tactics:</strong>{" "}
+              Matching your party's types against the current target's
+              weaknesses grants a massive{" "}
+              <strong className="text-white">x3 Damage Bonus</strong>. Keep an
+              eye out for <strong className="text-red-400">Weak Points</strong>{" "}
+              (red targets) that appear randomly for a huge combo and damage
+              boost!
             </p>
             <p>
               <strong className="text-blue-300">Offline Earnings:</strong> Close
@@ -71,10 +82,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <p>
               <strong className="text-pokeYellow">Prestige System:</strong>{" "}
               Reach Pokémon #{GAME_CONFIG.PRESTIGE_MIN_ID} to unlock Prestige.
-              This resets your money, upgrades, and caught Pokémon, but rewards
-              you with Rare Candies based on how far you got! Each Candy
-              permanently increases your global multiplier by +100%. Reaching
-              Pokémon #{GAME_CONFIG.MAX_POKEMON_ID} gives a massive bonus!
+              This resets your progress but rewards Rare Candies based on how
+              far you got and{" "}
+              <strong className="text-white">how many clicks you made</strong>!
+              Each Candy permanently increases your global multiplier by +100%.
+              Reaching Pokémon #{GAME_CONFIG.MAX_POKEMON_ID} gives a massive
+              bonus!
             </p>
           </div>
         </div>
@@ -116,7 +129,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <p className="text-xs text-gray-400 mt-2 text-center sm:col-span-2">
               Enable "Hold-to-Click" to hold down the mouse to automatically
               click and prevent RSI. Turn off "Visual FX" to disable screen
-              shake and floating numbers if the game is lagging.
+              shake, capture flashes, and floating numbers if the game is
+              lagging.
             </p>
           </div>
         </div>
