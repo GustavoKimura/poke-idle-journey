@@ -2,7 +2,71 @@ import { formatNumber } from "../utils/format";
 import { useMainStageVM } from "../viewmodels/useMainStageVM";
 import { PartyRoster } from "./PartyRoster";
 import { Button } from "./ui/Button";
-import { GAME_CONFIG } from "../config/gameConfig";
+import { GAME_CONFIG, calculatePrestigeReward } from "../config/gameConfig";
+import { useGameStore } from "../store/useGameStore";
+import { playPrestigeSound } from "../utils/audio";
+
+function BossUI() {
+  const bossHp = useGameStore((state) => state.bossHp);
+  const bossMaxHp = useGameStore((state) => state.bossMaxHp);
+  const bossTimeLeft = useGameStore((state) => state.bossTimeLeft);
+
+  return (
+    <div className="flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in slide-in-from-top-4">
+      <div className="flex justify-between w-full text-sm font-black text-pokeRed uppercase tracking-wider">
+        <span>Boss HP</span>
+        <span className="font-mono text-lg text-white">
+          {Math.max(0, bossTimeLeft).toFixed(1)}s
+        </span>
+      </div>
+      <div className="w-full bg-black/60 h-6 rounded-full overflow-hidden border-2 border-white/10 shadow-lg relative">
+        <div
+          className="bg-gradient-to-r from-red-600 to-pokeRed h-full transition-all ease-linear"
+          style={{ width: `${Math.max(0, (bossHp / bossMaxHp) * 100)}%` }}
+        />
+        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white/80 drop-shadow">
+          {formatNumber(bossHp)} / {formatNumber(bossMaxHp)}
+        </span>
+      </div>
+      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+        Required DPS: {formatNumber(bossMaxHp / 15)}/s
+      </span>
+    </div>
+  );
+}
+
+function PrestigeButton({ currentPokemonId }: { currentPokemonId: number }) {
+  const prestigeReward = useGameStore((state) =>
+    calculatePrestigeReward(currentPokemonId, state.totalClicks),
+  );
+
+  const handlePrestige = () => {
+    if (
+      window.confirm(
+        `Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive ${prestigeReward} Rare Cand${prestigeReward > 1 ? "ies" : "y"} (+${prestigeReward * 100}% global multiplier permanently)!`,
+      )
+    ) {
+      useGameStore.getState().prestige();
+      playPrestigeSound();
+    }
+  };
+
+  return (
+    <Button
+      variant={
+        currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID ? "primary" : "outline"
+      }
+      onClick={handlePrestige}
+      className={
+        currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID
+          ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white border-2 border-pink-300 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
+          : "bg-transparent border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-white shadow-[0_0_10px_rgba(236,72,153,0.3)]"
+      }
+    >
+      Prestige (+{prestigeReward} Candy)
+    </Button>
+  );
+}
 
 export function MainStage() {
   const {
@@ -14,21 +78,16 @@ export function MainStage() {
     isMaxLevel,
     isBossLevel,
     isBossActive,
-    bossHp,
-    bossMaxHp,
-    bossTimeLeft,
     isCatching,
     spawnFlash,
     bgGradient,
     hasTypeAdvantage,
-    prestigeReward,
     weakPoint,
     handlePointerDown,
     handleWeakPointDown,
     stopHold,
     handleStartBoss,
     handleCatch,
-    handlePrestige,
   } = useMainStageVM();
 
   return (
@@ -115,28 +174,7 @@ export function MainStage() {
           )}
         </div>
 
-        {isBossActive && (
-          <div className="flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in slide-in-from-top-4">
-            <div className="flex justify-between w-full text-sm font-black text-pokeRed uppercase tracking-wider">
-              <span>Boss HP</span>
-              <span className="font-mono text-lg text-white">
-                {Math.max(0, bossTimeLeft).toFixed(1)}s
-              </span>
-            </div>
-            <div className="w-full bg-black/60 h-6 rounded-full overflow-hidden border-2 border-white/10 shadow-lg relative">
-              <div
-                className="bg-gradient-to-r from-red-600 to-pokeRed h-full transition-all ease-linear"
-                style={{ width: `${Math.max(0, (bossHp / bossMaxHp) * 100)}%` }}
-              />
-              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white/80 drop-shadow">
-                {formatNumber(bossHp)} / {formatNumber(bossMaxHp)}
-              </span>
-            </div>
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-              Required DPS: {formatNumber(bossMaxHp / 15)}/s
-            </span>
-          </div>
-        )}
+        {isBossActive && <BossUI />}
       </div>
 
       <div
@@ -218,13 +256,7 @@ export function MainStage() {
                   Catch Next Pokemon
                 </Button>
                 {currentPokemonId >= GAME_CONFIG.PRESTIGE_MIN_ID && (
-                  <Button
-                    variant="outline"
-                    onClick={handlePrestige}
-                    className="bg-transparent border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-white shadow-[0_0_10px_rgba(236,72,153,0.3)]"
-                  >
-                    Prestige (+{prestigeReward} Candy)
-                  </Button>
+                  <PrestigeButton currentPokemonId={currentPokemonId} />
                 )}
               </div>
             </div>
@@ -234,12 +266,7 @@ export function MainStage() {
             <span className="text-sm text-pink-400 font-black uppercase tracking-widest animate-pulse">
               Maximum Level Reached!
             </span>
-            <Button
-              onClick={handlePrestige}
-              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white border-2 border-pink-300 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
-            >
-              Prestige (+{prestigeReward} Rare Candy)
-            </Button>
+            <PrestigeButton currentPokemonId={currentPokemonId} />
           </>
         )}
       </div>

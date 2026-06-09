@@ -8,26 +8,20 @@ import {
 import {
   playClickSound,
   playCatchSound,
-  playPrestigeSound,
   playBossWarningSound,
 } from "../utils/audio";
 import {
   GAME_CONFIG,
   TYPE_WEAKNESSES,
   calculateNextPokemonCost,
-  calculatePrestigeReward,
 } from "../config/gameConfig";
 
 export function useMainStageVM() {
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
-  const totalClicks = useGameStore((state) => state.totalClicks);
   const isHoldToClickEnabled = useGameStore(
     (state) => state.isHoldToClickEnabled,
   );
   const isBossActive = useGameStore((state) => state.isBossActive);
-  const bossHp = useGameStore((state) => state.bossHp);
-  const bossMaxHp = useGameStore((state) => state.bossMaxHp);
-  const bossTimeLeft = useGameStore((state) => state.bossTimeLeft);
   const party = useGameStore((state) => state.party);
 
   const { data: pokemon, isLoading } = usePokeAPI(currentPokemonId);
@@ -64,8 +58,6 @@ export function useMainStageVM() {
   const canAfford = useGameStore(
     (state) => state.score >= calculateNextPokemonCost(state.currentPokemonId),
   );
-
-  const prestigeReward = calculatePrestigeReward(currentPokemonId, totalClicks);
 
   const isBossLevel =
     currentPokemonId % 10 === 0 &&
@@ -332,17 +324,6 @@ export function useMainStageVM() {
     }
   };
 
-  const handlePrestige = () => {
-    if (
-      window.confirm(
-        `Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive ${prestigeReward} Rare Cand${prestigeReward > 1 ? "ies" : "y"} (+${prestigeReward * 100}% global multiplier permanently)!`,
-      )
-    ) {
-      useGameStore.getState().prestige();
-      playPrestigeSound();
-    }
-  };
-
   const TYPE_COLORS: Record<string, string> = {
     normal: "from-gray-600",
     fire: "from-red-900",
@@ -377,20 +358,15 @@ export function useMainStageVM() {
     isMaxLevel,
     isBossLevel,
     isBossActive,
-    bossHp,
-    bossMaxHp,
-    bossTimeLeft,
     isCatching,
     spawnFlash,
     bgGradient,
     hasTypeAdvantage,
-    prestigeReward,
     weakPoint,
     handlePointerDown,
     handleWeakPointDown,
     stopHold,
     handleStartBoss,
     handleCatch,
-    handlePrestige,
   };
 }

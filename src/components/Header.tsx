@@ -12,22 +12,7 @@ import { formatNumber } from "../utils/format";
 import { SettingsModal } from "./SettingsModal";
 import { ACHIEVEMENTS, GAME_CONFIG } from "../config/gameConfig";
 
-export function Header() {
-  const {
-    passiveIncome,
-    multiplier,
-    rareCandies,
-    party,
-    isSoundEnabled,
-    toggleSound,
-    togglePokedex,
-    toggleAchievements,
-    unlockedAchievements,
-    totalClicks,
-    unlockedPokemonIds,
-  } = useGameStore();
-
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+function ScoreDisplay() {
   const scoreRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -46,24 +31,75 @@ export function Header() {
     return unsubscribe;
   }, []);
 
-  const partyMult =
-    1 +
-    party.reduce(
+  return (
+    <span
+      ref={scoreRef}
+      className="text-3xl sm:text-4xl font-black text-white drop-shadow-md"
+    >
+      0
+    </span>
+  );
+}
+
+function AchievementBadge() {
+  const claimableCount = useGameStore((state) => {
+    return ACHIEVEMENTS.filter((a) => {
+      if (state.unlockedAchievements.includes(a.id)) return false;
+      if (a.condition === "clicks") return state.totalClicks >= a.target;
+      if (a.condition === "income") return state.passiveIncome >= a.target;
+      if (a.condition === "pokemon")
+        return state.unlockedPokemonIds.length >= a.target;
+      return false;
+    }).length;
+  });
+
+  if (claimableCount === 0) return null;
+
+  return (
+    <span className="absolute -top-2 -right-2 bg-pokeRed text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg border border-pokeRed/50 animate-pulse">
+      {claimableCount}
+    </span>
+  );
+}
+
+function PokedexBadge() {
+  const showBadge = useGameStore((state) => {
+    return (
+      state.party.length < GAME_CONFIG.MAX_PARTY_SIZE &&
+      state.unlockedPokemonIds.length > state.party.length
+    );
+  });
+
+  if (!showBadge) return null;
+
+  return (
+    <span className="absolute -top-2 -right-2 w-3 h-3 bg-green-400 rounded-full animate-ping" />
+  );
+}
+
+export function Header() {
+  const passiveIncome = useGameStore((state) => state.passiveIncome);
+  const multiplier = useGameStore((state) => state.multiplier);
+  const rareCandies = useGameStore((state) => state.rareCandies);
+  const partyLevelSum = useGameStore((state) =>
+    state.party.reduce(
       (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
       0,
-    );
+    ),
+  );
+  const isSoundEnabled = useGameStore((state) => state.isSoundEnabled);
 
-  const claimableCount = ACHIEVEMENTS.filter((a) => {
-    if (unlockedAchievements.includes(a.id)) return false;
-    if (a.condition === "clicks") return totalClicks >= a.target;
-    if (a.condition === "income") return passiveIncome >= a.target;
-    if (a.condition === "pokemon") return unlockedPokemonIds.length >= a.target;
-    return false;
-  }).length;
+  const toggleSound = useGameStore((state) => state.toggleSound);
+  const togglePokedex = useGameStore((state) => state.togglePokedex);
+  const toggleAchievements = useGameStore((state) => state.toggleAchievements);
+
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const partyMult = 1 + partyLevelSum;
 
   return (
     <>
-      <header className="flex justify-between items-center p-6 bg-pokeDarkBlue border-b-4 border-pokeYellow/20 shadow-lg z-10">
+      <header className="flex justify-between items-center p-6 bg-pokeDarkBlue border-b-4 border-pokeYellow/20 shadow-lg z-10 shrink-0">
         <div className="flex items-center gap-4 sm:gap-6">
           <div className="flex items-center gap-3">
             <img
@@ -83,12 +119,7 @@ export function Header() {
             <span className="text-pokeYellow font-bold text-xs sm:text-sm uppercase tracking-wider">
               PokeDollars
             </span>
-            <span
-              ref={scoreRef}
-              className="text-3xl sm:text-4xl font-black text-white drop-shadow-md"
-            >
-              {formatNumber(useGameStore.getState().score)}
-            </span>
+            <ScoreDisplay />
           </div>
         </div>
 
@@ -142,11 +173,7 @@ export function Header() {
               className="relative flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
             >
               <Trophy size={22} />
-              {claimableCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-pokeRed text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg border border-pokeRed/50 animate-pulse">
-                  {claimableCount}
-                </span>
-              )}
+              <AchievementBadge />
             </button>
 
             <button
@@ -163,10 +190,7 @@ export function Header() {
             >
               <Book size={20} className="text-pokeYellow" />
               <span className="hidden md:inline">Pokédex</span>
-              {party.length < GAME_CONFIG.MAX_PARTY_SIZE &&
-                unlockedPokemonIds.length > party.length && (
-                  <span className="absolute -top-2 -right-2 w-3 h-3 bg-green-400 rounded-full animate-ping" />
-                )}
+              <PokedexBadge />
             </button>
           </div>
         </div>

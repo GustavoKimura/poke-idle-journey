@@ -26,26 +26,30 @@ export function useUpgradeItemVM(
         )
       : 0;
 
-  const canAffordFixed = useGameStore((state) =>
-    buyMultiplier !== "max" ? state.score >= fixedCost : false,
-  );
-  const rawScore = useGameStore((state) =>
-    buyMultiplier === "max" ? state.score : 0,
-  );
+  const maxAffordableStr = useGameStore((state) => {
+    if (buyMultiplier !== "max") return "0,0";
+    const res = calculateMaxAffordable(
+      state.score,
+      upgrade.baseCost,
+      upgrade.costMultiplier,
+      upgrade.count,
+    );
+    return `${res.maxAmount},${res.totalCost}`;
+  });
+
+  const canAffordFixed = useGameStore((state) => {
+    if (buyMultiplier === "max") return false;
+    return state.score >= fixedCost;
+  });
 
   let actualCost = fixedCost;
   let actualAmount = buyMultiplier !== "max" ? buyMultiplier : 0;
   let canAfford = canAffordFixed;
 
   if (buyMultiplier === "max") {
-    const affordable = calculateMaxAffordable(
-      rawScore,
-      upgrade.baseCost,
-      upgrade.costMultiplier,
-      upgrade.count,
-    );
-    actualCost = affordable.totalCost;
-    actualAmount = affordable.maxAmount;
+    const [maxAmt, totCost] = maxAffordableStr.split(",").map(Number);
+    actualCost = totCost;
+    actualAmount = maxAmt;
     canAfford = actualAmount > 0;
   }
 
