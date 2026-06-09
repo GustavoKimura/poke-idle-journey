@@ -168,7 +168,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "p1",
     name: "Collector",
-    description: "Catch 10 different Pokémon",
+    description: "Catch 10 Pokémon",
     reward: 1,
     condition: "pokemon",
     target: 10,
@@ -176,7 +176,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "p2",
     name: "Ranger",
-    description: "Catch 50 different Pokémon",
+    description: "Catch 50 Pokémon",
     reward: 2,
     condition: "pokemon",
     target: 50,
@@ -184,7 +184,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "p3",
     name: "Master",
-    description: "Catch 100 different Pokémon",
+    description: "Catch 100 Pokémon",
     reward: 3,
     condition: "pokemon",
     target: 100,
@@ -192,7 +192,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "p4",
     name: "Champion",
-    description: "Catch 151 different Pokémon",
+    description: "Catch 151 Pokémon",
     reward: 5,
     condition: "pokemon",
     target: 151,

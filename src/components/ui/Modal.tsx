@@ -9,6 +9,8 @@ interface ModalProps {
   headerRight?: React.ReactNode;
   maxWidth?: "md" | "lg" | "4xl" | "7xl";
   children: React.ReactNode;
+  hideCloseButton?: boolean;
+  closeOnOutsideClick?: boolean;
 }
 
 export function Modal({
@@ -19,6 +21,8 @@ export function Modal({
   headerRight,
   maxWidth = "lg",
   children,
+  hideCloseButton = false,
+  closeOnOutsideClick = false,
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -30,7 +34,14 @@ export function Modal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6"
+      onPointerDown={(e) => {
+        if (e.target === e.currentTarget && closeOnOutsideClick) {
+          onClose?.();
+        }
+      }}
+    >
       <div
         className={`bg-gradient-to-b from-pokeDarkBlue to-black border-2 border-white/20 rounded-3xl w-full ${maxWidthClasses[maxWidth]} shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]`}
       >
@@ -42,7 +53,7 @@ export function Modal({
             </h2>
             {headerRight}
           </div>
-          {onClose && (
+          {onClose && !hideCloseButton && (
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-pokeRed transition-colors cursor-pointer"

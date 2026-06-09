@@ -16,6 +16,7 @@ export function HowToPlayModal() {
       title="How to Play"
       icon={<Info size={28} className="text-blue-400" />}
       maxWidth="lg"
+      hideCloseButton
     >
       <div className="space-y-4">
         <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 text-sm text-blue-100 space-y-3">

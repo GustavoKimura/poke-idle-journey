@@ -39,6 +39,54 @@ function ScoreDisplay() {
   );
 }
 
+function DpsDisplay() {
+  const [currentDps, setCurrentDps] = useState(0);
+
+  useEffect(() => {
+    let damageLastSecond = 0;
+    const handleDamage = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      damageLastSecond += customEvent.detail.value;
+    };
+
+    window.addEventListener("SPAWN_TEXT", handleDamage);
+
+    const timer = setInterval(() => {
+      const state = useGameStore.getState();
+      const partyMult =
+        1 +
+        state.party.reduce(
+          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+          0,
+        );
+      const passiveDps =
+        state.passiveIncome *
+        state.multiplier *
+        partyMult *
+        (1 + state.rareCandies);
+
+      setCurrentDps(damageLastSecond + passiveDps);
+      damageLastSecond = 0;
+    }, 1000);
+
+    return () => {
+      window.removeEventListener("SPAWN_TEXT", handleDamage);
+      clearInterval(timer);
+    };
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-gray-400 text-sm font-semibold uppercase">
+        Current DPS
+      </span>
+      <span className="text-2xl font-bold text-orange-400">
+        ${formatNumber(currentDps)}/s
+      </span>
+    </div>
+  );
+}
+
 function AchievementBadge() {
   const claimableCount = useGameStore((state) => {
     return ACHIEVEMENTS.filter((a) => {
@@ -76,7 +124,6 @@ function PokedexBadge() {
 }
 
 export function Header() {
-  const passiveIncome = useGameStore((state) => state.passiveIncome);
   const multiplier = useGameStore((state) => state.multiplier);
   const rareCandies = useGameStore((state) => state.rareCandies);
   const partyLevelSum = useGameStore((state) =>
@@ -107,10 +154,10 @@ export function Header() {
               draggable="false"
             />
             <div className="hidden lg:flex flex-col">
-              <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest leading-none">
+              <h1 className="text-[26px] font-black text-white uppercase tracking-widest leading-none mb-0.5">
                 POKE<span className="text-pokeYellow">IDLE</span>
               </h1>
-              <span className="text-[10px] sm:text-xs font-bold text-gray-400 tracking-[0.2em]">
+              <span className="text-[10px] font-bold text-gray-400 tracking-[0.27em] leading-none ml-1 whitespace-nowrap">
                 MASTER OF CLICKS
               </span>
             </div>
@@ -128,14 +175,7 @@ export function Header() {
 
         <div className="flex gap-4 sm:gap-6">
           <div className="hidden lg:flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10">
-            <div className="flex flex-col items-center">
-              <span className="text-gray-400 text-sm font-semibold uppercase">
-                Passive Income
-              </span>
-              <span className="text-2xl font-bold text-green-400">
-                +${formatNumber(passiveIncome)}/s
-              </span>
-            </div>
+            <DpsDisplay />
             <div className="flex flex-col items-center">
               <span className="text-gray-400 text-sm font-semibold uppercase">
                 Multiplier

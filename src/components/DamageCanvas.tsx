@@ -94,7 +94,7 @@ export function DamageCanvas() {
         ctx.shadowBlur = 4;
         ctx.shadowOffsetX = 2;
         ctx.shadowOffsetY = 2;
-        ctx.fillText(`+${formatNumber(p.value)}`, p.x, p.y);
+        ctx.fillText(`+$${formatNumber(p.value)}`, p.x, p.y);
 
         ctx.restore();
 

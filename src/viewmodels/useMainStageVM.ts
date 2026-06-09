@@ -73,9 +73,6 @@ export function useMainStageVM() {
   const comboRef = useRef(0);
   const comboTimeoutRef = useRef<number | null>(null);
 
-  const [isCatching, setIsCatching] = useState(false);
-  const [spawnFlash, setSpawnFlash] = useState(false);
-
   useEffect(() => {
     return () => {
       if (intervalRef.current !== null)
@@ -99,17 +96,7 @@ export function useMainStageVM() {
   }, [currentPokemonId]);
 
   useEffect(() => {
-    if (currentPokemonId > prevPokemonId.current) {
-      prevPokemonId.current = currentPokemonId;
-      if (useGameStore.getState().isVfxEnabled) {
-        const startTimer = window.setTimeout(() => setSpawnFlash(true), 0);
-        const endTimer = window.setTimeout(() => setSpawnFlash(false), 500);
-        return () => {
-          clearTimeout(startTimer);
-          clearTimeout(endTimer);
-        };
-      }
-    } else if (currentPokemonId < prevPokemonId.current) {
+    if (currentPokemonId !== prevPokemonId.current) {
       prevPokemonId.current = currentPokemonId;
     }
   }, [currentPokemonId]);
@@ -121,7 +108,6 @@ export function useMainStageVM() {
       const critMultiplier = isCritical ? GAME_CONFIG.CRIT_MULTIPLIER : 1;
 
       comboRef.current += 1;
-
       const currentCombo = comboRef.current;
       const comboMultiplier = 1 + currentCombo * 0.02;
       const typeMultiplier = hasTypeAdvantage ? 3 : 1;
@@ -189,12 +175,19 @@ export function useMainStageVM() {
       playClickSound(isCritical, comboMultiplier);
 
       if (state.isVfxEnabled) {
-        if (isCritical && targetElem) {
-          const imgElement = targetElem.querySelector("img");
-          if (imgElement) {
-            imgElement.classList.remove("animate-shake");
-            void imgElement.offsetWidth;
-            imgElement.classList.add("animate-shake");
+        if (isCritical) {
+          document.body.classList.add("invert", "brightness-150");
+          setTimeout(() => {
+            document.body.classList.remove("invert", "brightness-150");
+          }, 50);
+
+          if (targetElem) {
+            const imgElement = targetElem.querySelector("img");
+            if (imgElement) {
+              imgElement.classList.remove("animate-crit-shake");
+              void imgElement.offsetWidth;
+              imgElement.classList.add("animate-crit-shake");
+            }
           }
         }
 
@@ -248,10 +241,6 @@ export function useMainStageVM() {
 
   const handleCatch = () => {
     if (canUnlock) {
-      if (useGameStore.getState().isVfxEnabled) {
-        setIsCatching(true);
-        setTimeout(() => setIsCatching(false), 800);
-      }
       useGameStore.getState().unlockNextPokemon();
       playCatchSound();
     }
@@ -291,8 +280,6 @@ export function useMainStageVM() {
     isMaxLevel,
     isBossLevel,
     isBossActive,
-    isCatching,
-    spawnFlash,
     bgGradient,
     hasTypeAdvantage,
     handlePointerDown,

@@ -18,6 +18,12 @@ export default {
           "50%": { transform: "translate(-5px, 5px)" },
           "75%": { transform: "translate(5px, 5px)" },
         },
+        "crit-shake": {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "25%": { transform: "translate(12px, -12px) scale(1.1)" },
+          "50%": { transform: "translate(-12px, 12px) scale(1.1)" },
+          "75%": { transform: "translate(12px, 12px) scale(1.1)" },
+        },
         "suck-in": {
           "0%": {
             transform: "scale(1) rotate(0deg)",
@@ -34,6 +40,7 @@ export default {
       animation: {
         "float-up": "float-up 1s ease-out forwards",
         shake: "shake 0.2s ease-in-out",
+        "crit-shake": "crit-shake 0.15s ease-in-out",
         "suck-in": "suck-in 0.8s ease-in forwards",
       },
     },

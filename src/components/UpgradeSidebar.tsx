@@ -73,7 +73,7 @@ const UpgradeItem = React.memo(
             </span>
           </div>
           <span className="text-sm text-blue-300 font-medium">
-            +
+            +$
             {formatNumber(
               upgrade.effect *
                 currentMultiplier *

@@ -14,13 +14,15 @@ export function AchievementsModal() {
   );
   const totalClicks = useGameStore((state) => state.totalClicks);
   const passiveIncome = useGameStore((state) => state.passiveIncome);
-  const unlockedPokemonIds = useGameStore((state) => state.unlockedPokemonIds);
+  const historicalUnlockedPokemonIds = useGameStore(
+    (state) => state.historicalUnlockedPokemonIds,
+  );
   const claimAchievement = useGameStore((state) => state.claimAchievement);
 
   const getCurrentValue = (condition: string) => {
     if (condition === "clicks") return totalClicks;
     if (condition === "income") return passiveIncome;
-    if (condition === "pokemon") return unlockedPokemonIds.length;
+    if (condition === "pokemon") return historicalUnlockedPokemonIds.length;
     return 0;
   };
 
@@ -36,6 +38,7 @@ export function AchievementsModal() {
       title="Achievements"
       icon={<Trophy size={28} className="text-pokeYellow" />}
       maxWidth="4xl"
+      closeOnOutsideClick
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {ACHIEVEMENTS.map((a) => {

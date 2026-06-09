@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Clock, Zap, TrendingUp, Timer } from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
+import { playTickSound, playCashSound } from "../utils/audio";
 
 export function OfflineModal() {
   const offlineEarnings = useGameStore((state) => state.offlineEarnings);
@@ -13,6 +14,7 @@ export function OfflineModal() {
   );
 
   const [displayedEarnings, setDisplayedEarnings] = useState(0);
+  const lastTickRef = useRef(0);
 
   useEffect(() => {
     if (offlineEarnings > 0) {
@@ -27,6 +29,11 @@ export function OfflineModal() {
           progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
 
         setDisplayedEarnings(offlineEarnings * easeProgress);
+
+        if (time - lastTickRef.current > 50 && progress < 1) {
+          playTickSound();
+          lastTickRef.current = time;
+        }
 
         if (progress < 1) {
           animationFrame = requestAnimationFrame(animate);
@@ -49,8 +56,13 @@ export function OfflineModal() {
     return `${s}s`;
   };
 
+  const handleClaim = () => {
+    playCashSound();
+    claimOfflineEarnings();
+  };
+
   return (
-    <Modal isOpen={offlineEarnings > 0} title="Welcome Back!">
+    <Modal isOpen={offlineEarnings > 0} title="Welcome Back!" hideCloseButton>
       <div className="flex flex-col items-center text-center pb-2">
         <div className="w-20 h-20 bg-pokeYellow/20 rounded-full flex items-center justify-center mb-6 border border-pokeYellow/50 text-pokeYellow animate-pulse relative">
           <Clock size={40} />
@@ -87,11 +99,7 @@ export function OfflineModal() {
           </div>
         </div>
 
-        <Button
-          fullWidth
-          onClick={claimOfflineEarnings}
-          className="text-lg py-4"
-        >
+        <Button fullWidth onClick={handleClaim} className="text-lg py-4">
           Claim & Play
         </Button>
       </div>

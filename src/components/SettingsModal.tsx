@@ -46,6 +46,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       onClose={closeSettings}
       title="Settings"
       icon={<Settings size={28} />}
+      closeOnOutsideClick
     >
       <div className="space-y-8">
         <div className="space-y-4">
@@ -85,8 +86,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <p className="text-xs text-gray-400 mt-2 text-center sm:col-span-2">
               Enable "Hold-to-Click" to hold down the mouse to automatically
               click and prevent RSI. Turn off "Visual FX" to disable screen
-              shake, capture flashes, and floating numbers if the game is
-              lagging.
+              shake and floating numbers if the game is lagging.
             </p>
           </div>
         </div>

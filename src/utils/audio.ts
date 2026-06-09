@@ -156,14 +156,59 @@ export function playBossWarningSound() {
 
   osc.type = "sine";
 
-  osc.frequency.setValueAtTime(300, ctx.currentTime);
-  osc.frequency.linearRampToValueAtTime(400, ctx.currentTime + 0.5);
-  osc.frequency.linearRampToValueAtTime(300, ctx.currentTime + 1.0);
-  osc.frequency.linearRampToValueAtTime(400, ctx.currentTime + 1.5);
+  osc.frequency.setValueAtTime(150, ctx.currentTime);
+  osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 1.5);
 
-  gain.gain.setValueAtTime(0.05, ctx.currentTime);
-  gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 2.0);
+  gain.gain.setValueAtTime(0.1, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
 
   osc.start();
-  osc.stop(ctx.currentTime + 2.0);
+  osc.stop(ctx.currentTime + 1.5);
+}
+
+export function playTickSound() {
+  if (!useGameStore.getState().isSoundEnabled) return;
+  initAudio();
+  const ctx = audioCtx;
+  if (!ctx) return;
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(800, ctx.currentTime);
+
+  gain.gain.setValueAtTime(0.02, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+  osc.start();
+  osc.stop(ctx.currentTime + 0.05);
+}
+
+export function playCashSound() {
+  if (!useGameStore.getState().isSoundEnabled) return;
+  initAudio();
+  const ctx = audioCtx;
+  if (!ctx) return;
+
+  const freqs = [1200, 1600];
+  freqs.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.type = "square";
+    osc.frequency.value = freq;
+
+    const time = ctx.currentTime + i * 0.1;
+    gain.gain.setValueAtTime(0.05, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+
+    osc.start(time);
+    osc.stop(time + 0.2);
+  });
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useGameStore } from "../store/useGameStore";
 
 export function useSettingsVM(onClose: () => void) {
-  const hardReset = useGameStore((state) => state.hardReset);
+  const storeHardReset = useGameStore((state) => state.hardReset);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [importInput, setImportInput] = useState("");
 
@@ -30,6 +30,11 @@ export function useSettingsVM(onClose: () => void) {
     onClose();
     setIsResetConfirmOpen(false);
     setImportInput("");
+  };
+
+  const hardReset = () => {
+    storeHardReset();
+    closeSettings();
   };
 
   return {

@@ -105,8 +105,6 @@ export function MainStage() {
     isMaxLevel,
     isBossLevel,
     isBossActive,
-    isCatching,
-    spawnFlash,
     bgGradient,
     hasTypeAdvantage,
     handlePointerDown,
@@ -125,12 +123,6 @@ export function MainStage() {
             : bgGradient
       } to-black`}
     >
-      <div
-        className={`absolute inset-0 bg-white pointer-events-none z-50 transition-opacity duration-500 ${
-          spawnFlash ? "opacity-100" : "opacity-0"
-        }`}
-      />
-
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
 
       <div className="absolute top-4 z-20">
@@ -220,9 +212,7 @@ export function MainStage() {
           <img
             src={pokemon.sprite}
             alt={pokemon.name}
-            className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 ${
-              isCatching ? "animate-suck-in" : "hover:brightness-125"
-            }`}
+            className="w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 hover:brightness-125"
             draggable="false"
           />
         )}

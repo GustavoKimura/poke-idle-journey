@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { usePokeAPI } from "../hooks/usePokeAPI";
-import {
-  Sparkles,
-  Scale,
-  ChevronLeft,
-  ChevronRight,
-  ArrowUp,
-} from "lucide-react";
+import { Scale, ChevronLeft, ChevronRight, ArrowUp } from "lucide-react";
 import {
   GAME_CONFIG,
   calculatePartyUpgradeCost,
@@ -58,25 +52,12 @@ function PokedexEntry({ id }: { id: number }) {
         )}
       </span>
 
-      {data.shinySprite && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <Sparkles size={12} className="text-pokeYellow" />
-        </div>
-      )}
-
       <div className="relative w-20 h-20 mt-4 mb-2 shrink-0 pointer-events-none">
         <img
           src={data.sprite}
           alt={data.name}
-          className="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 group-hover:opacity-0 drop-shadow-md"
+          className="absolute inset-0 w-full h-full object-contain drop-shadow-md"
         />
-        {data.shinySprite && (
-          <img
-            src={data.shinySprite}
-            alt={`${data.name} shiny`}
-            className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 drop-shadow-lg"
-          />
-        )}
       </div>
 
       <span className="font-bold capitalize text-white text-center w-full truncate text-sm mb-1 pointer-events-none">
@@ -119,7 +100,8 @@ function PokedexEntry({ id }: { id: number }) {
             </button>
             <button
               onClick={handleToggle}
-              className="w-full py-1 rounded-lg text-[9px] font-black uppercase bg-pokeRed/80 hover:bg-pokeRed text-white transition-all cursor-pointer hidden group-hover:block"
+              className="w-full py-1 rounded-lg text-[9px] font-black uppercase bg-pokeRed/80 hover:bg-pokeRed text-white transition-all cursor-pointer hidden group-hover:block absolute bottom-3 left-0 right-0 mx-3"
+              style={{ width: "calc(100% - 24px)" }}
             >
               Unequip
             </button>
@@ -179,6 +161,7 @@ export function PokedexModal() {
       title="Pokédex"
       maxWidth="7xl"
       headerRight={headerRight}
+      closeOnOutsideClick
     >
       <div className="flex flex-col h-full">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 flex-1 min-h-[50vh]">

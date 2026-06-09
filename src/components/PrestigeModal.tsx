@@ -25,6 +25,7 @@ export function PrestigeModal() {
       title="Prestige Journey"
       icon={<Sparkles size={28} className="text-pink-400" />}
       maxWidth="lg"
+      closeOnOutsideClick
     >
       <div className="space-y-6 flex flex-col items-center text-center">
         <p className="text-gray-300">
