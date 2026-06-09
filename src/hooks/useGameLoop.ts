@@ -22,7 +22,7 @@ export function useGameLoop() {
       const partyMult =
         1 +
         state.party.reduce(
-          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p,
           0,
         );
       const earned =
@@ -58,7 +58,7 @@ export function useGameLoop() {
         const partyMult =
           1 +
           currentState.party.reduce(
-            (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+            (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p,
             0,
           );
         const incomePerSecond =
