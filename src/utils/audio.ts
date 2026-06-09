@@ -17,7 +17,10 @@ function initAudio() {
   }
 }
 
-export function playClickSound(isCritical: boolean = false) {
+export function playClickSound(
+  isCritical: boolean = false,
+  comboMultiplier: number = 1,
+) {
   if (!useGameStore.getState().isSoundEnabled) return;
   initAudio();
   const ctx = audioCtx;
@@ -52,7 +55,11 @@ export function playClickSound(isCritical: boolean = false) {
   gainNode.connect(ctx.destination);
 
   oscillator.type = isCritical ? "square" : "sine";
-  oscillator.frequency.setValueAtTime(isCritical ? 800 : 400, ctx.currentTime);
+
+  const baseFreq = isCritical ? 800 : 400;
+  const targetFreq = baseFreq * Math.min(comboMultiplier, 3);
+
+  oscillator.frequency.setValueAtTime(targetFreq, ctx.currentTime);
   oscillator.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.1);
 
   gainNode.gain.setValueAtTime(isCritical ? 0.2 : 0.05, ctx.currentTime);

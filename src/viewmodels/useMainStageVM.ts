@@ -144,15 +144,22 @@ export function useMainStageVM() {
       }
 
       state.click(critMultiplier, comboMultiplier);
-      playClickSound(isCritical);
+      playClickSound(isCritical, comboMultiplier);
 
       if (state.isVfxEnabled) {
-        if (isCritical && targetElem) {
-          const imgElement = targetElem.querySelector("img");
-          if (imgElement) {
-            imgElement.classList.remove("animate-shake");
-            void imgElement.offsetWidth;
-            imgElement.classList.add("animate-shake");
+        if (isCritical) {
+          document.body.classList.add("invert", "brightness-150");
+          setTimeout(() => {
+            document.body.classList.remove("invert", "brightness-150");
+          }, 50);
+
+          if (targetElem) {
+            const imgElement = targetElem.querySelector("img");
+            if (imgElement) {
+              imgElement.classList.remove("animate-shake");
+              void imgElement.offsetWidth;
+              imgElement.classList.add("animate-shake");
+            }
           }
         }
 

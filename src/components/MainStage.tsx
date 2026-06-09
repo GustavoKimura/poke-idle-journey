@@ -99,6 +99,11 @@ export function MainStage() {
           <span className="text-white capitalize font-medium">
             {pokemon?.name || "Loading..."}
           </span>
+          {pokemon?.types?.[0] && (
+            <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-white/20 text-white border border-white/10 shadow-sm">
+              {pokemon.types[0]}
+            </span>
+          )}
         </div>
 
         {isBossActive && (
@@ -118,6 +123,9 @@ export function MainStage() {
                 {formatNumber(bossHp)} / {formatNumber(bossMaxHp)}
               </span>
             </div>
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+              Required DPS: {formatNumber(bossMaxHp / 15)}/s
+            </span>
           </div>
         )}
       </div>
