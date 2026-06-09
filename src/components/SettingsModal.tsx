@@ -3,14 +3,12 @@ import {
   Upload,
   AlertTriangle,
   Settings,
-  Info,
   Hand,
   Volume2,
   VolumeX,
   Sparkles,
 } from "lucide-react";
 import { useSettingsVM } from "../viewmodels/useSettingsVM";
-import { GAME_CONFIG } from "../config/gameConfig";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
 import { useGameStore } from "../store/useGameStore";
@@ -50,48 +48,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       icon={<Settings size={28} />}
     >
       <div className="space-y-8">
-        <div className="space-y-4">
-          <h3 className="text-blue-400 font-bold uppercase tracking-wider text-sm border-b border-white/10 pb-2 flex items-center gap-2">
-            <Info size={16} />
-            How to Play
-          </h3>
-          <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 text-sm text-blue-100 space-y-3">
-            <p>
-              <strong className="text-green-400">Party System:</strong> Open
-              your Pokédex and equip up to {GAME_CONFIG.MAX_PARTY_SIZE} Pokémon.
-              Each level gives a +{GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * 100}%
-              global multiplier! You can now also{" "}
-              <strong className="text-green-300">Level Up</strong> your party
-              members.
-            </p>
-            <p>
-              <strong className="text-orange-400">Combat Tactics:</strong>{" "}
-              Matching your party's types against the current target's
-              weaknesses grants a massive{" "}
-              <strong className="text-white">x3 Damage Bonus</strong>. Keep an
-              eye out for <strong className="text-red-400">Weak Points</strong>{" "}
-              (red targets) that appear randomly for a huge combo and damage
-              boost!
-            </p>
-            <p>
-              <strong className="text-blue-300">Offline Earnings:</strong> Close
-              the game and return later! Your trainers will continue to collect
-              PokeDollars automatically (triggers after{" "}
-              {GAME_CONFIG.OFFLINE_MIN_SECONDS} seconds offline).
-            </p>
-            <p>
-              <strong className="text-pokeYellow">Prestige System:</strong>{" "}
-              Reach Pokémon #{GAME_CONFIG.PRESTIGE_MIN_ID} to unlock Prestige.
-              This resets your progress but rewards Rare Candies based on how
-              far you got and{" "}
-              <strong className="text-white">how many clicks you made</strong>!
-              Each Candy permanently increases your global multiplier by +100%.
-              Reaching Pokémon #{GAME_CONFIG.MAX_POKEMON_ID} gives a massive
-              bonus!
-            </p>
-          </div>
-        </div>
-
         <div className="space-y-4">
           <h3 className="text-green-400 font-bold uppercase tracking-wider text-sm border-b border-white/10 pb-2 flex items-center gap-2">
             <Hand size={16} />
@@ -176,7 +132,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           ) : (
             <div className="bg-pokeRed/20 border border-pokeRed rounded-xl p-4 text-center space-y-4">
               <p className="text-white font-bold">
-                Are you absolutely sure? This will delete EVERYTHING!
+                Are you absolutely sure? This will delete EVERYTHING except your
+                local settings!
               </p>
               <div className="flex gap-4">
                 <Button

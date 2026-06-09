@@ -4,6 +4,8 @@ import { UpgradeSidebar } from "../components/UpgradeSidebar";
 import { PokedexModal } from "../components/PokedexModal";
 import { OfflineModal } from "../components/OfflineModal";
 import { AchievementsModal } from "../components/AchievementsModal";
+import { HowToPlayModal } from "../components/HowToPlayModal";
+import { PrestigeModal } from "../components/PrestigeModal";
 import { DamageCanvas } from "../components/DamageCanvas";
 import { useGameLoop } from "../hooks/useGameLoop";
 
@@ -20,6 +22,8 @@ export function Game() {
       <PokedexModal />
       <AchievementsModal />
       <OfflineModal />
+      <HowToPlayModal />
+      <PrestigeModal />
       <DamageCanvas />
     </div>
   );

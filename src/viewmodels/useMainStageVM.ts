@@ -75,11 +75,6 @@ export function useMainStageVM() {
 
   const [isCatching, setIsCatching] = useState(false);
   const [spawnFlash, setSpawnFlash] = useState(false);
-  const [weakPoint, setWeakPoint] = useState<{
-    x: number;
-    y: number;
-    id: number;
-  } | null>(null);
 
   useEffect(() => {
     return () => {
@@ -106,7 +101,6 @@ export function useMainStageVM() {
   useEffect(() => {
     if (currentPokemonId > prevPokemonId.current) {
       prevPokemonId.current = currentPokemonId;
-      setWeakPoint(null);
       if (useGameStore.getState().isVfxEnabled) {
         const startTimer = window.setTimeout(() => setSpawnFlash(true), 0);
         const endTimer = window.setTimeout(() => setSpawnFlash(false), 500);
@@ -117,50 +111,16 @@ export function useMainStageVM() {
       }
     } else if (currentPokemonId < prevPokemonId.current) {
       prevPokemonId.current = currentPokemonId;
-      setWeakPoint(null);
     }
   }, [currentPokemonId]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isBossLevel && !isCatching && !weakPoint && Math.random() > 0.6) {
-        setWeakPoint({
-          x: 20 + Math.random() * 60,
-          y: 20 + Math.random() * 60,
-          id: Date.now(),
-        });
-      }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isBossLevel, isCatching, weakPoint]);
-
-  useEffect(() => {
-    if (weakPoint) {
-      const timeout = setTimeout(() => setWeakPoint(null), 2000);
-      return () => clearTimeout(timeout);
-    }
-  }, [weakPoint]);
-
   const triggerClick = useCallback(
-    (
-      clientX: number,
-      clientY: number,
-      targetElem: HTMLElement | null,
-      isWeakPoint = false,
-    ) => {
+    (clientX: number, clientY: number, targetElem: HTMLElement | null) => {
       const state = useGameStore.getState();
-      const isCritical = isWeakPoint || Math.random() < GAME_CONFIG.CRIT_CHANCE;
-      const critMultiplier = isWeakPoint
-        ? 10
-        : isCritical
-          ? GAME_CONFIG.CRIT_MULTIPLIER
-          : 1;
+      const isCritical = Math.random() < GAME_CONFIG.CRIT_CHANCE;
+      const critMultiplier = isCritical ? GAME_CONFIG.CRIT_MULTIPLIER : 1;
 
-      if (isWeakPoint) {
-        comboRef.current += 5;
-      } else {
-        comboRef.current += 1;
-      }
+      comboRef.current += 1;
 
       const currentCombo = comboRef.current;
       const comboMultiplier = 1 + currentCombo * 0.02;
@@ -229,19 +189,12 @@ export function useMainStageVM() {
       playClickSound(isCritical, comboMultiplier);
 
       if (state.isVfxEnabled) {
-        if (isCritical) {
-          document.body.classList.add("invert", "brightness-150");
-          setTimeout(() => {
-            document.body.classList.remove("invert", "brightness-150");
-          }, 50);
-
-          if (targetElem) {
-            const imgElement = targetElem.querySelector("img");
-            if (imgElement) {
-              imgElement.classList.remove("animate-shake");
-              void imgElement.offsetWidth;
-              imgElement.classList.add("animate-shake");
-            }
+        if (isCritical && targetElem) {
+          const imgElement = targetElem.querySelector("img");
+          if (imgElement) {
+            imgElement.classList.remove("animate-shake");
+            void imgElement.offsetWidth;
+            imgElement.classList.add("animate-shake");
           }
         }
 
@@ -289,40 +242,18 @@ export function useMainStageVM() {
     [triggerClick, isHoldToClickEnabled, stopHold],
   );
 
-  const handleWeakPointDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      e.stopPropagation();
-      if (e.button !== 0) return;
-      const target = e.currentTarget.parentElement;
-      triggerClick(e.clientX, e.clientY, target, true);
-      setWeakPoint(null);
-    },
-    [triggerClick],
-  );
-
   const handleStartBoss = () => {
     useGameStore.getState().startBossFight();
   };
 
   const handleCatch = () => {
-    const currentScore = useGameStore.getState().score;
-    if (
-      currentScore >= nextPokemonCost &&
-      !isBossLevel &&
-      currentPokemonId < GAME_CONFIG.MAX_POKEMON_ID &&
-      !isCatching
-    ) {
+    if (canUnlock) {
       if (useGameStore.getState().isVfxEnabled) {
         setIsCatching(true);
-        playCatchSound();
-        setTimeout(() => {
-          useGameStore.getState().unlockNextPokemon();
-          setIsCatching(false);
-        }, 800);
-      } else {
-        useGameStore.getState().unlockNextPokemon();
-        playCatchSound();
+        setTimeout(() => setIsCatching(false), 800);
       }
+      useGameStore.getState().unlockNextPokemon();
+      playCatchSound();
     }
   };
 
@@ -364,9 +295,7 @@ export function useMainStageVM() {
     spawnFlash,
     bgGradient,
     hasTypeAdvantage,
-    weakPoint,
     handlePointerDown,
-    handleWeakPointDown,
     stopHold,
     handleStartBoss,
     handleCatch,

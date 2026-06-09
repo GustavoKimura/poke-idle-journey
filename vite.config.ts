@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "logo.png"],
       manifest: {
-        name: "PokeIdle — Master of Clicks",
+        name: "PokeIdle - Master of Clicks",
         short_name: "PokeIdle",
         description:
           "An incremental idle game where you catch Pokémon, hire trainers, and climb to the top.",

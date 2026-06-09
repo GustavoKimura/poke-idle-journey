@@ -5,6 +5,8 @@ export const createSystemSlice: StateCreator<GameState, [], [], SystemSlice> = (
   set,
 ) => ({
   isPokedexOpen: false,
+  isPrestigeModalOpen: false,
+  hasSeenHowToPlay: false,
   lastSaveTime: Date.now(),
   offlineEarnings: 0,
   offlineSeconds: 0,
@@ -21,6 +23,9 @@ export const createSystemSlice: StateCreator<GameState, [], [], SystemSlice> = (
     set((state) => ({ isPokedexOpen: !state.isPokedexOpen })),
   toggleAchievements: () =>
     set((state) => ({ isAchievementsOpen: !state.isAchievementsOpen })),
+  togglePrestigeModal: () =>
+    set((state) => ({ isPrestigeModalOpen: !state.isPrestigeModalOpen })),
+  setHasSeenHowToPlay: (val) => set({ hasSeenHowToPlay: val }),
   updateSaveTime: () => set({ lastSaveTime: Date.now() }),
   setOfflineEarnings: (amount, seconds) =>
     set({

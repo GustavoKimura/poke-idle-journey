@@ -8,7 +8,11 @@ import {
   ChevronRight,
   ArrowUp,
 } from "lucide-react";
-import { GAME_CONFIG, calculatePartyUpgradeCost } from "../config/gameConfig";
+import {
+  GAME_CONFIG,
+  calculatePartyUpgradeCost,
+  TYPE_BADGE_COLORS,
+} from "../config/gameConfig";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
 import { formatNumber } from "../utils/format";
@@ -35,13 +39,13 @@ function PokedexEntry({ id }: { id: number }) {
 
   if (isLoading || !data) {
     return (
-      <div className="h-48 bg-white/5 animate-pulse rounded-xl border border-white/10" />
+      <div className="h-56 bg-white/5 animate-pulse rounded-xl border border-white/10" />
     );
   }
 
   return (
     <div
-      className={`relative group flex flex-col items-center p-3 bg-black/40 rounded-xl border transition-all hover:-translate-y-1 hover:shadow-lg overflow-hidden h-48 ${
+      className={`relative group flex flex-col items-center p-3 bg-black/40 rounded-xl border transition-all hover:-translate-y-1 hover:shadow-lg overflow-hidden h-56 ${
         isEquipped
           ? "border-pokeYellow shadow-[0_0_15px_rgba(255,222,0,0.2)]"
           : "border-white/10 hover:border-pokeYellow hover:shadow-pokeYellow/20"
@@ -83,14 +87,14 @@ function PokedexEntry({ id }: { id: number }) {
         {data.types.map((type) => (
           <span
             key={type}
-            className="text-[9px] uppercase font-black px-1.5 py-0.5 rounded-full bg-pokeDarkBlue text-gray-300 border border-white/10"
+            className={`text-[9px] uppercase font-black px-1.5 py-0.5 rounded-full border shadow-sm ${TYPE_BADGE_COLORS[type] || "bg-pokeDarkBlue text-gray-300 border-white/10"}`}
           >
             {type}
           </span>
         ))}
       </div>
 
-      <div className="mt-auto w-full">
+      <div className="mt-auto w-full flex flex-col gap-1">
         <div
           className={`flex justify-center items-center gap-1 text-[10px] text-gray-400 transition-opacity ${
             isEquipped ? "hidden" : "group-hover:hidden"
@@ -101,7 +105,7 @@ function PokedexEntry({ id }: { id: number }) {
         </div>
 
         {isEquipped ? (
-          <div className="flex flex-col gap-1 w-full">
+          <>
             <button
               onClick={() => upgradePartyMember(id)}
               disabled={!canAffordUpgrade}
@@ -115,12 +119,11 @@ function PokedexEntry({ id }: { id: number }) {
             </button>
             <button
               onClick={handleToggle}
-              className="w-full py-1 rounded-lg text-[9px] font-black uppercase bg-pokeRed/80 hover:bg-pokeRed text-white transition-all cursor-pointer hidden group-hover:block absolute bottom-3 left-0 right-0 mx-3"
-              style={{ width: "calc(100% - 24px)" }}
+              className="w-full py-1 rounded-lg text-[9px] font-black uppercase bg-pokeRed/80 hover:bg-pokeRed text-white transition-all cursor-pointer hidden group-hover:block"
             >
               Unequip
             </button>
-          </div>
+          </>
         ) : (
           <button
             onClick={handleToggle}

@@ -1,15 +1,50 @@
+import { useEffect, useState } from "react";
 import { formatNumber } from "../utils/format";
 import { useMainStageVM } from "../viewmodels/useMainStageVM";
 import { PartyRoster } from "./PartyRoster";
 import { Button } from "./ui/Button";
-import { GAME_CONFIG, calculatePrestigeReward } from "../config/gameConfig";
+import { GAME_CONFIG, TYPE_BADGE_COLORS } from "../config/gameConfig";
 import { useGameStore } from "../store/useGameStore";
-import { playPrestigeSound } from "../utils/audio";
 
 function BossUI() {
   const bossHp = useGameStore((state) => state.bossHp);
   const bossMaxHp = useGameStore((state) => state.bossMaxHp);
   const bossTimeLeft = useGameStore((state) => state.bossTimeLeft);
+
+  const [currentDps, setCurrentDps] = useState(0);
+
+  useEffect(() => {
+    let damageLastSecond = 0;
+    const handleDamage = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      damageLastSecond += customEvent.detail.value;
+    };
+
+    window.addEventListener("SPAWN_TEXT", handleDamage);
+
+    const timer = setInterval(() => {
+      const state = useGameStore.getState();
+      const partyMult =
+        1 +
+        state.party.reduce(
+          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+          0,
+        );
+      const passiveDps =
+        state.passiveIncome *
+        state.multiplier *
+        partyMult *
+        (1 + state.rareCandies);
+
+      setCurrentDps(damageLastSecond + passiveDps);
+      damageLastSecond = 0;
+    }, 1000);
+
+    return () => {
+      window.removeEventListener("SPAWN_TEXT", handleDamage);
+      clearInterval(timer);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in slide-in-from-top-4">
@@ -28,42 +63,34 @@ function BossUI() {
           {formatNumber(bossHp)} / {formatNumber(bossMaxHp)}
         </span>
       </div>
-      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-        Required DPS: {formatNumber(bossMaxHp / 15)}/s
-      </span>
+      <div className="flex justify-between w-full text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+        <span className="text-pokeYellow">
+          DPS: {formatNumber(currentDps)}/s
+        </span>
+        <span>Req: {formatNumber(bossMaxHp / 15)}/s</span>
+      </div>
     </div>
   );
 }
 
 function PrestigeButton({ currentPokemonId }: { currentPokemonId: number }) {
-  const prestigeReward = useGameStore((state) =>
-    calculatePrestigeReward(currentPokemonId, state.totalClicks),
+  const togglePrestigeModal = useGameStore(
+    (state) => state.togglePrestigeModal,
   );
-
-  const handlePrestige = () => {
-    if (
-      window.confirm(
-        `Are you sure you want to prestige? You will lose all your current resources, upgrades, and caught Pokémon, but you will receive ${prestigeReward} Rare Cand${prestigeReward > 1 ? "ies" : "y"} (+${prestigeReward * 100}% global multiplier permanently)!`,
-      )
-    ) {
-      useGameStore.getState().prestige();
-      playPrestigeSound();
-    }
-  };
 
   return (
     <Button
       variant={
         currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID ? "primary" : "outline"
       }
-      onClick={handlePrestige}
+      onClick={togglePrestigeModal}
       className={
         currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID
           ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white border-2 border-pink-300 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
           : "bg-transparent border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-white shadow-[0_0_10px_rgba(236,72,153,0.3)]"
       }
     >
-      Prestige (+{prestigeReward} Candy)
+      Prestige
     </Button>
   );
 }
@@ -82,9 +109,7 @@ export function MainStage() {
     spawnFlash,
     bgGradient,
     hasTypeAdvantage,
-    weakPoint,
     handlePointerDown,
-    handleWeakPointDown,
     stopHold,
     handleStartBoss,
     handleCatch,
@@ -163,7 +188,9 @@ export function MainStage() {
             {pokemon?.name || "Loading..."}
           </span>
           {pokemon?.types?.[0] && (
-            <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-white/20 text-white border border-white/10 shadow-sm">
+            <span
+              className={`text-[10px] uppercase font-black px-2 py-0.5 rounded shadow-sm ${TYPE_BADGE_COLORS[pokemon.types[0]] || "bg-white/20 text-white border border-white/10"}`}
+            >
               {pokemon.types[0]}
             </span>
           )}
@@ -190,31 +217,14 @@ export function MainStage() {
         }}
       >
         {pokemon?.sprite && (
-          <>
-            <img
-              src={pokemon.sprite}
-              alt={pokemon.name}
-              className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 ${
-                isCatching ? "animate-suck-in" : "hover:brightness-125"
-              }`}
-              draggable="false"
-            />
-            {weakPoint && (
-              <div
-                key={weakPoint.id}
-                className="absolute z-30 w-16 h-16 rounded-full flex items-center justify-center animate-pulse"
-                style={{
-                  left: `${weakPoint.x}%`,
-                  top: `${weakPoint.y}%`,
-                  transform: "translate(-50%, -50%)",
-                }}
-                onPointerDown={handleWeakPointDown}
-              >
-                <div className="w-full h-full border-4 border-pokeRed rounded-full animate-ping absolute inset-0" />
-                <div className="w-4 h-4 bg-white rounded-full shadow-[0_0_15px_rgba(238,21,21,1)]" />
-              </div>
-            )}
-          </>
+          <img
+            src={pokemon.sprite}
+            alt={pokemon.name}
+            className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 ${
+              isCatching ? "animate-suck-in" : "hover:brightness-125"
+            }`}
+            draggable="false"
+          />
         )}
       </div>
 
@@ -249,10 +259,7 @@ export function MainStage() {
                 </span>
               </span>
               <div className="flex gap-4">
-                <Button
-                  onClick={handleCatch}
-                  disabled={!canUnlock || isCatching}
-                >
+                <Button onClick={handleCatch} disabled={!canUnlock}>
                   Catch Next Pokemon
                 </Button>
                 {currentPokemonId >= GAME_CONFIG.PRESTIGE_MIN_ID && (

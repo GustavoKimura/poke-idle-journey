@@ -14,6 +14,27 @@ export const GAME_CONFIG = {
   PARTY_MEMBER_MULTIPLIER: 0.5,
 };
 
+export const TYPE_BADGE_COLORS: Record<string, string> = {
+  normal: "bg-[#A8A878] text-white border-[#A8A878]",
+  fire: "bg-[#F08030] text-white border-[#F08030]",
+  water: "bg-[#6890F0] text-white border-[#6890F0]",
+  electric: "bg-[#F8D030] text-black border-[#F8D030]",
+  grass: "bg-[#78C850] text-white border-[#78C850]",
+  ice: "bg-[#98D8D8] text-black border-[#98D8D8]",
+  fighting: "bg-[#C03028] text-white border-[#C03028]",
+  poison: "bg-[#A040A0] text-white border-[#A040A0]",
+  ground: "bg-[#E0C068] text-black border-[#E0C068]",
+  flying: "bg-[#A890F0] text-white border-[#A890F0]",
+  psychic: "bg-[#F85888] text-white border-[#F85888]",
+  bug: "bg-[#A8B820] text-white border-[#A8B820]",
+  rock: "bg-[#B8A038] text-white border-[#B8A038]",
+  ghost: "bg-[#705898] text-white border-[#705898]",
+  dragon: "bg-[#7038F8] text-white border-[#7038F8]",
+  dark: "bg-[#705848] text-white border-[#705848]",
+  steel: "bg-[#B8B8D0] text-black border-[#B8B8D0]",
+  fairy: "bg-[#EE99AC] text-black border-[#EE99AC]",
+};
+
 export const TYPE_WEAKNESSES: Record<string, string[]> = {
   normal: ["fighting"],
   fire: ["water", "ground", "rock"],
@@ -147,7 +168,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "p1",
     name: "Collector",
-    description: "Catch 10 Pokémon",
+    description: "Catch 10 different Pokémon",
     reward: 1,
     condition: "pokemon",
     target: 10,
@@ -155,7 +176,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "p2",
     name: "Ranger",
-    description: "Catch 50 Pokémon",
+    description: "Catch 50 different Pokémon",
     reward: 2,
     condition: "pokemon",
     target: 50,
@@ -163,7 +184,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "p3",
     name: "Master",
-    description: "Catch 100 Pokémon",
+    description: "Catch 100 different Pokémon",
     reward: 3,
     condition: "pokemon",
     target: 100,
@@ -171,7 +192,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "p4",
     name: "Champion",
-    description: "Catch 151 Pokémon",
+    description: "Catch 151 different Pokémon",
     reward: 5,
     condition: "pokemon",
     target: 151,

@@ -18,14 +18,12 @@ function ScoreDisplay() {
   useEffect(() => {
     const unsubscribe = useGameStore.subscribe((state) => {
       if (scoreRef.current) {
-        scoreRef.current.textContent = formatNumber(state.score);
+        scoreRef.current.textContent = `$${formatNumber(state.score)}`;
       }
     });
 
     if (scoreRef.current) {
-      scoreRef.current.textContent = formatNumber(
-        useGameStore.getState().score,
-      );
+      scoreRef.current.textContent = `$${formatNumber(useGameStore.getState().score)}`;
     }
 
     return unsubscribe;
@@ -36,7 +34,7 @@ function ScoreDisplay() {
       ref={scoreRef}
       className="text-3xl sm:text-4xl font-black text-white drop-shadow-md"
     >
-      0
+      $0
     </span>
   );
 }
@@ -48,7 +46,7 @@ function AchievementBadge() {
       if (a.condition === "clicks") return state.totalClicks >= a.target;
       if (a.condition === "income") return state.passiveIncome >= a.target;
       if (a.condition === "pokemon")
-        return state.unlockedPokemonIds.length >= a.target;
+        return state.historicalUnlockedPokemonIds.length >= a.target;
       return false;
     }).length;
   });
@@ -108,9 +106,14 @@ export function Header() {
               className="w-12 h-12 sm:w-14 sm:h-14 drop-shadow-lg"
               draggable="false"
             />
-            <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest hidden lg:block">
-              Poke<span className="text-pokeYellow">Idle</span>
-            </h1>
+            <div className="hidden lg:flex flex-col">
+              <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-widest leading-none">
+                POKE<span className="text-pokeYellow">IDLE</span>
+              </h1>
+              <span className="text-[10px] sm:text-xs font-bold text-gray-400 tracking-[0.2em]">
+                MASTER OF CLICKS
+              </span>
+            </div>
           </div>
 
           <div className="w-px h-12 bg-white/10 hidden sm:block"></div>
@@ -130,7 +133,7 @@ export function Header() {
                 Passive Income
               </span>
               <span className="text-2xl font-bold text-green-400">
-                +{formatNumber(passiveIncome)}/s
+                +${formatNumber(passiveIncome)}/s
               </span>
             </div>
             <div className="flex flex-col items-center">

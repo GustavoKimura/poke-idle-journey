@@ -9,7 +9,11 @@ import {
   calculatePrestigeReward,
   calculatePartyUpgradeCost,
 } from "../../config/gameConfig";
-import { playCatchSound, playUpgradeSound } from "../../utils/audio";
+import {
+  playCatchSound,
+  playUpgradeSound,
+  playPrestigeSound,
+} from "../../utils/audio";
 import { recalculateTotals } from "../../utils/calculations";
 
 export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
@@ -22,6 +26,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
   rareCandies: 0,
   upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
   unlockedPokemonIds: [1],
+  historicalUnlockedPokemonIds: [1],
   currentPokemonId: 1,
   party: [],
   totalClicks: 0,
@@ -70,7 +75,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         isCompleted = true;
       if (
         achievement.condition === "pokemon" &&
-        state.unlockedPokemonIds.length >= achievement.target
+        state.historicalUnlockedPokemonIds.length >= achievement.target
       )
         isCompleted = true;
 
@@ -112,6 +117,12 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
             ...state.unlockedPokemonIds,
             state.currentPokemonId + 1,
           ];
+          const newHistorical = Array.from(
+            new Set([
+              ...state.historicalUnlockedPokemonIds,
+              state.currentPokemonId + 1,
+            ]),
+          );
           const { clickPower, passiveIncome } = recalculateTotals(
             state.upgrades,
             newUnlocked.length,
@@ -120,6 +131,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
           newState.isBossActive = false;
           newState.currentPokemonId = state.currentPokemonId + 1;
           newState.unlockedPokemonIds = newUnlocked;
+          newState.historicalUnlockedPokemonIds = newHistorical;
           newState.multiplier =
             state.multiplier +
             GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId;
@@ -181,6 +193,9 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
 
       const cost = calculateNextPokemonCost(state.currentPokemonId);
       const newUnlocked = [...state.unlockedPokemonIds, nextId];
+      const newHistorical = Array.from(
+        new Set([...state.historicalUnlockedPokemonIds, nextId]),
+      );
       const { clickPower, passiveIncome } = recalculateTotals(
         state.upgrades,
         newUnlocked.length,
@@ -190,6 +205,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         score: state.score - cost,
         currentPokemonId: nextId,
         unlockedPokemonIds: newUnlocked,
+        historicalUnlockedPokemonIds: newHistorical,
         multiplier:
           state.multiplier +
           GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId,
@@ -209,6 +225,8 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       const newUpgrades = INITIAL_UPGRADES.map((u) => ({ ...u }));
       const { clickPower, passiveIncome } = recalculateTotals(newUpgrades, 1);
 
+      playPrestigeSound();
+
       return {
         score: 0,
         clickPower,
@@ -226,12 +244,13 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         bossMaxHp: 0,
         bossTimeLeft: 0,
         totalClicks: 0,
+        isPrestigeModalOpen: false,
         lastSaveTime: Date.now(),
       };
     }),
 
-  hardReset: () => {
-    set({
+  hardReset: () =>
+    set(() => ({
       score: 0,
       clickPower: 1,
       passiveIncome: 0,
@@ -239,26 +258,21 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       rareCandies: 0,
       upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
       unlockedPokemonIds: [1],
+      historicalUnlockedPokemonIds: [1],
       currentPokemonId: 1,
       party: [],
-      isPokedexOpen: false,
-      offlineEarnings: 0,
-      offlineSeconds: 0,
-      isHoldToClickEnabled: false,
-      isSoundEnabled: true,
-      isVfxEnabled: true,
       totalClicks: 0,
       unlockedAchievements: [],
-      isAchievementsOpen: false,
       isBossActive: false,
       bossHp: 0,
       bossMaxHp: 0,
       bossTimeLeft: 0,
+      isPokedexOpen: false,
+      isPrestigeModalOpen: false,
+      offlineEarnings: 0,
+      offlineSeconds: 0,
       lastSaveTime: Date.now(),
-    });
-
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
-  },
+      hasSeenHowToPlay: false,
+      isAchievementsOpen: false,
+    })),
 });

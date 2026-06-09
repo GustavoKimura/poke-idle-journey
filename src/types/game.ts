@@ -21,6 +21,7 @@ export interface PlayerSlice {
   rareCandies: number;
   upgrades: Upgrade[];
   unlockedPokemonIds: number[];
+  historicalUnlockedPokemonIds: number[];
   currentPokemonId: number;
   party: PartyMember[];
   totalClicks: number;
@@ -52,6 +53,8 @@ export interface BossSlice {
 
 export interface SystemSlice {
   isPokedexOpen: boolean;
+  isPrestigeModalOpen: boolean;
+  hasSeenHowToPlay: boolean;
   lastSaveTime: number;
   offlineEarnings: number;
   offlineSeconds: number;
@@ -64,6 +67,8 @@ export interface SystemSlice {
   toggleVfx: () => void;
   togglePokedex: () => void;
   toggleAchievements: () => void;
+  togglePrestigeModal: () => void;
+  setHasSeenHowToPlay: (val: boolean) => void;
   updateSaveTime: () => void;
   setOfflineEarnings: (amount: number, seconds: number) => void;
   claimOfflineEarnings: () => void;

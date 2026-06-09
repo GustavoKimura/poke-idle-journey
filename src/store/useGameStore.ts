@@ -17,7 +17,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 14,
+      version: 16,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -42,6 +42,8 @@ export const useGameStore = create<GameState>()(
           state.currentPokemonId = 1;
         if (!Array.isArray(state.unlockedPokemonIds))
           state.unlockedPokemonIds = [1];
+        if (!Array.isArray(state.historicalUnlockedPokemonIds))
+          state.historicalUnlockedPokemonIds = [...state.unlockedPokemonIds];
 
         if (!Array.isArray(state.party)) {
           state.party = [];
@@ -95,6 +97,8 @@ export const useGameStore = create<GameState>()(
           Number.isNaN(state.bossTimeLeft)
         )
           state.bossTimeLeft = 0;
+        if (typeof state.hasSeenHowToPlay !== "boolean")
+          state.hasSeenHowToPlay = false;
 
         if (Array.isArray(state.upgrades)) {
           state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {
@@ -128,6 +132,7 @@ export const useGameStore = create<GameState>()(
         state.clickPower = totals.clickPower;
         state.passiveIncome = totals.passiveIncome;
         state.isPokedexOpen = false;
+        state.isPrestigeModalOpen = false;
         state.isAchievementsOpen = false;
 
         return state as GameState;

@@ -47,8 +47,8 @@ export async function fetchAndCachePokemon(
         result.sprites.other["official-artwork"].front_default ||
         result.sprites.front_default,
       shinySprite:
-        result.sprites.front_shiny ||
-        result.sprites.other["official-artwork"].front_shiny,
+        result.sprites.other["official-artwork"].front_shiny ||
+        result.sprites.front_shiny,
       types: result.types.map((t: PokeAPIType) => t.type.name),
       weight: result.weight,
     };
