@@ -1,17 +1,28 @@
 import { ArrowUp } from "lucide-react";
 import { usePokeAPI } from "../hooks/usePokeAPI";
 import { useGameStore } from "../store/useGameStore";
-import { GAME_CONFIG, calculatePartyUpgradeCost } from "../config/gameConfig";
+import {
+  GAME_CONFIG,
+  calculatePartyUpgradeCost,
+  TYPE_WEAKNESSES,
+} from "../config/gameConfig";
 import { formatNumber } from "../utils/format";
 import type { PartyMember } from "../types/game";
 
 function PartySlot({ member, index }: { member?: PartyMember; index: number }) {
   const { data, isLoading } = usePokeAPI(member?.id || 0);
   const score = useGameStore((state) => state.score);
+  const currentPokemonId = useGameStore((state) => state.currentPokemonId);
   const upgradePartyMember = useGameStore((state) => state.upgradePartyMember);
+  const { data: targetData } = usePokeAPI(currentPokemonId);
 
   const upgradeCost = member ? calculatePartyUpgradeCost(member.level) : 0;
   const canAfford = score >= upgradeCost;
+
+  const targetWeaknesses =
+    targetData?.types.flatMap((t) => TYPE_WEAKNESSES[t] || []) || [];
+  const hasAdvantage =
+    member && data?.types.some((t) => targetWeaknesses.includes(t));
 
   return (
     <div
@@ -31,6 +42,11 @@ function PartySlot({ member, index }: { member?: PartyMember; index: number }) {
             className="w-11 h-11 object-contain drop-shadow-md transition-transform group-hover:opacity-20"
             draggable="false"
           />
+          {hasAdvantage && (
+            <span className="absolute top-0 right-0 bg-green-500 text-white text-[8px] font-black px-1 rounded-bl shadow-sm z-10 pointer-events-none">
+              x3 DMG
+            </span>
+          )}
           <span className="absolute bottom-0 right-0 bg-pokeYellow text-black text-[9px] font-black px-1 rounded-tl shadow-sm z-10 pointer-events-none group-hover:hidden">
             Lv.{member.level}
           </span>

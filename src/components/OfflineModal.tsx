@@ -28,9 +28,16 @@ export function OfflineModal() {
         const easeProgress =
           progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
 
-        setDisplayedEarnings(offlineEarnings * easeProgress);
+        const currentVal = offlineEarnings * easeProgress;
+        setDisplayedEarnings(currentVal);
 
-        if (time - lastTickRef.current > 50 && progress < 1) {
+        const currentFormatted = formatNumber(currentVal);
+        const targetFormatted = formatNumber(offlineEarnings);
+
+        if (
+          currentFormatted !== targetFormatted &&
+          time - lastTickRef.current > 50
+        ) {
           playTickSound();
           lastTickRef.current = time;
         }

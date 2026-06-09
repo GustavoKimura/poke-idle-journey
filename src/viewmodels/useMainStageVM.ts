@@ -69,16 +69,31 @@ export function useMainStageVM() {
   const intervalRef = useRef<number | null>(null);
   const prevPokemonId = useRef(currentPokemonId);
   const prevBossLevelRef = useRef(false);
+  const pointerPos = useRef({
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+  });
 
   const comboRef = useRef(0);
   const comboTimeoutRef = useRef<number | null>(null);
 
+  const [isCatching, setIsCatching] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
+  const clickTimeoutRef = useRef<number | null>(null);
+
   useEffect(() => {
+    const handleGlobalPointerMove = (e: PointerEvent) => {
+      pointerPos.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener("pointermove", handleGlobalPointerMove);
     return () => {
+      window.removeEventListener("pointermove", handleGlobalPointerMove);
       if (intervalRef.current !== null)
         window.clearInterval(intervalRef.current);
       if (comboTimeoutRef.current !== null)
         window.clearTimeout(comboTimeoutRef.current);
+      if (clickTimeoutRef.current !== null)
+        window.clearTimeout(clickTimeoutRef.current);
     };
   }, []);
 
@@ -108,6 +123,7 @@ export function useMainStageVM() {
       const critMultiplier = isCritical ? GAME_CONFIG.CRIT_MULTIPLIER : 1;
 
       comboRef.current += 1;
+
       const currentCombo = comboRef.current;
       const comboMultiplier = 1 + currentCombo * 0.02;
       const typeMultiplier = hasTypeAdvantage ? 3 : 1;
@@ -127,6 +143,13 @@ export function useMainStageVM() {
         critMultiplier *
         comboMultiplier *
         typeMultiplier;
+
+      setIsClicking(true);
+      if (clickTimeoutRef.current) window.clearTimeout(clickTimeoutRef.current);
+      clickTimeoutRef.current = window.setTimeout(
+        () => setIsClicking(false),
+        50,
+      );
 
       if (comboTimeoutRef.current) window.clearTimeout(comboTimeoutRef.current);
       comboTimeoutRef.current = window.setTimeout(() => {
@@ -175,19 +198,12 @@ export function useMainStageVM() {
       playClickSound(isCritical, comboMultiplier);
 
       if (state.isVfxEnabled) {
-        if (isCritical) {
-          document.body.classList.add("invert", "brightness-150");
-          setTimeout(() => {
-            document.body.classList.remove("invert", "brightness-150");
-          }, 50);
-
-          if (targetElem) {
-            const imgElement = targetElem.querySelector("img");
-            if (imgElement) {
-              imgElement.classList.remove("animate-crit-shake");
-              void imgElement.offsetWidth;
-              imgElement.classList.add("animate-crit-shake");
-            }
+        if (isCritical && targetElem) {
+          const imgElement = targetElem.querySelector("img");
+          if (imgElement) {
+            imgElement.classList.remove("animate-crit-shake");
+            void imgElement.offsetWidth;
+            imgElement.classList.add("animate-crit-shake");
           }
         }
 
@@ -220,14 +236,15 @@ export function useMainStageVM() {
       const target = e.currentTarget;
       const startX = e.clientX;
       const startY = e.clientY;
+      pointerPos.current = { x: startX, y: startY };
 
       triggerClick(startX, startY, target);
 
       if (isHoldToClickEnabled) {
         stopHold();
         intervalRef.current = window.setInterval(() => {
-          const offsetX = startX + (Math.random() * 40 - 20);
-          const offsetY = startY + (Math.random() * 40 - 20);
+          const offsetX = pointerPos.current.x + (Math.random() * 40 - 20);
+          const offsetY = pointerPos.current.y + (Math.random() * 40 - 20);
           triggerClick(offsetX, offsetY, target);
         }, 150);
       }
@@ -241,6 +258,10 @@ export function useMainStageVM() {
 
   const handleCatch = () => {
     if (canUnlock) {
+      if (useGameStore.getState().isVfxEnabled) {
+        setIsCatching(true);
+        setTimeout(() => setIsCatching(false), 800);
+      }
       useGameStore.getState().unlockNextPokemon();
       playCatchSound();
     }
@@ -280,6 +301,8 @@ export function useMainStageVM() {
     isMaxLevel,
     isBossLevel,
     isBossActive,
+    isCatching,
+    isClicking,
     bgGradient,
     hasTypeAdvantage,
     handlePointerDown,

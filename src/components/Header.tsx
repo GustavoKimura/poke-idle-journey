@@ -6,6 +6,7 @@ import {
   Trophy,
   Volume2,
   VolumeX,
+  HelpCircle,
 } from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
@@ -39,54 +40,6 @@ function ScoreDisplay() {
   );
 }
 
-function DpsDisplay() {
-  const [currentDps, setCurrentDps] = useState(0);
-
-  useEffect(() => {
-    let damageLastSecond = 0;
-    const handleDamage = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      damageLastSecond += customEvent.detail.value;
-    };
-
-    window.addEventListener("SPAWN_TEXT", handleDamage);
-
-    const timer = setInterval(() => {
-      const state = useGameStore.getState();
-      const partyMult =
-        1 +
-        state.party.reduce(
-          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
-          0,
-        );
-      const passiveDps =
-        state.passiveIncome *
-        state.multiplier *
-        partyMult *
-        (1 + state.rareCandies);
-
-      setCurrentDps(damageLastSecond + passiveDps);
-      damageLastSecond = 0;
-    }, 1000);
-
-    return () => {
-      window.removeEventListener("SPAWN_TEXT", handleDamage);
-      clearInterval(timer);
-    };
-  }, []);
-
-  return (
-    <div className="flex flex-col items-center">
-      <span className="text-gray-400 text-sm font-semibold uppercase">
-        Current DPS
-      </span>
-      <span className="text-2xl font-bold text-orange-400">
-        ${formatNumber(currentDps)}/s
-      </span>
-    </div>
-  );
-}
-
 function AchievementBadge() {
   const claimableCount = useGameStore((state) => {
     return ACHIEVEMENTS.filter((a) => {
@@ -94,7 +47,7 @@ function AchievementBadge() {
       if (a.condition === "clicks") return state.totalClicks >= a.target;
       if (a.condition === "income") return state.passiveIncome >= a.target;
       if (a.condition === "pokemon")
-        return state.historicalUnlockedPokemonIds.length >= a.target;
+        return state.unlockedPokemonIds.length >= a.target;
       return false;
     }).length;
   });
@@ -137,6 +90,7 @@ export function Header() {
   const toggleSound = useGameStore((state) => state.toggleSound);
   const togglePokedex = useGameStore((state) => state.togglePokedex);
   const toggleAchievements = useGameStore((state) => state.toggleAchievements);
+  const toggleHowToPlay = useGameStore((state) => state.toggleHowToPlay);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -157,9 +111,16 @@ export function Header() {
               <h1 className="text-[26px] font-black text-white uppercase tracking-widest leading-none mb-0.5">
                 POKE<span className="text-pokeYellow">IDLE</span>
               </h1>
-              <span className="text-[10px] font-bold text-gray-400 tracking-[0.27em] leading-none ml-1 whitespace-nowrap">
-                MASTER OF CLICKS
-              </span>
+              <div className="flex w-full justify-between px-[1px] mt-[1px]">
+                {"MASTER OF CLICKS".split("").map((char, i) => (
+                  <span
+                    key={i}
+                    className="text-[9px] font-bold text-gray-400 leading-none"
+                  >
+                    {char === " " ? "\u00A0" : char}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -174,8 +135,7 @@ export function Header() {
         </div>
 
         <div className="flex gap-4 sm:gap-6">
-          <div className="hidden lg:flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10">
-            <DpsDisplay />
+          <div className="hidden lg:flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10 items-center">
             <div className="flex flex-col items-center">
               <span className="text-gray-400 text-sm font-semibold uppercase">
                 Multiplier
@@ -198,6 +158,14 @@ export function Header() {
           </div>
 
           <div className="flex gap-2 sm:gap-4">
+            <button
+              onClick={toggleHowToPlay}
+              title="How to Play"
+              className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
+            >
+              <HelpCircle size={22} />
+            </button>
+
             <button
               onClick={toggleSound}
               title="Toggle Sound"

@@ -78,7 +78,7 @@ export function DamageCanvas() {
           ctx.fillStyle = "#ffffff";
           ctx.shadowColor = "rgba(238,21,21,0.8)";
           ctx.shadowBlur = 5;
-          ctx.fillText("CRITICAL!", p.x, p.y - 30);
+          ctx.fillText("CRITICAL!", p.x, p.y - 45);
 
           ctx.font = "900 48px system-ui";
           ctx.fillStyle = "#EE1515";

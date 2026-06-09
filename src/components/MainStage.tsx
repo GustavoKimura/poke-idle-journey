@@ -105,6 +105,8 @@ export function MainStage() {
     isMaxLevel,
     isBossLevel,
     isBossActive,
+    isCatching,
+    isClicking,
     bgGradient,
     hasTypeAdvantage,
     handlePointerDown,
@@ -197,9 +199,9 @@ export function MainStage() {
       </div>
 
       <div
-        className={`relative cursor-pointer transition-all duration-75 active:scale-90 active:brightness-150 hover:scale-105 z-10 mt-8 ${
+        className={`relative cursor-pointer transition-all duration-75 active:brightness-150 z-10 mt-8 ${
           isLoading ? "opacity-50" : "opacity-100"
-        }`}
+        } ${isClicking ? "scale-90" : "scale-100"} hover:scale-[1.02]`}
         onPointerDown={handlePointerDown}
         onPointerUp={stopHold}
         onPointerLeave={stopHold}
@@ -212,7 +214,9 @@ export function MainStage() {
           <img
             src={pokemon.sprite}
             alt={pokemon.name}
-            className="w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 hover:brightness-125"
+            className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 ${
+              isCatching ? "animate-suck-in" : "hover:brightness-125"
+            }`}
             draggable="false"
           />
         )}
