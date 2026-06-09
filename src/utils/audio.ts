@@ -154,15 +154,27 @@ export function playBossWarningSound() {
   osc.connect(gain);
   gain.connect(ctx.destination);
 
-  osc.type = "sawtooth";
-  osc.frequency.setValueAtTime(100, ctx.currentTime);
-  osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.5);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(120, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3);
 
   gain.gain.setValueAtTime(0.2, ctx.currentTime);
-  gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 1.0);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
 
   osc.start();
-  osc.stop(ctx.currentTime + 1.0);
+  osc.stop(ctx.currentTime + 0.3);
+
+  const osc2 = ctx.createOscillator();
+  const gain2 = ctx.createGain();
+  osc2.connect(gain2);
+  gain2.connect(ctx.destination);
+  osc2.type = "sine";
+  osc2.frequency.setValueAtTime(120, ctx.currentTime + 0.4);
+  osc2.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.7);
+  gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.4);
+  gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.7);
+  osc2.start(ctx.currentTime + 0.4);
+  osc2.stop(ctx.currentTime + 0.7);
 }
 
 export function playTickSound() {

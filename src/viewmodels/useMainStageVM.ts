@@ -29,7 +29,7 @@ export function useMainStageVM() {
   const [partyLoaded, setPartyLoaded] = useState(false);
 
   useEffect(() => {
-    Promise.all(party.map((p) => fetchAndCachePokemon(p.id))).then(() => {
+    Promise.all(party.map((id) => fetchAndCachePokemon(id))).then(() => {
       setPartyLoaded((prev) => !prev);
     });
   }, [party]);
@@ -41,8 +41,8 @@ export function useMainStageVM() {
       (t) => TYPE_WEAKNESSES[t] || [],
     );
 
-    for (const p of party) {
-      const pData = getPokemonDataSync(p.id);
+    for (const pId of party) {
+      const pData = getPokemonDataSync(pId);
       if (pData && pData.types.some((pt) => targetWeaknesses.includes(pt))) {
         return true;
       }
@@ -79,6 +79,7 @@ export function useMainStageVM() {
 
   const [isCatching, setIsCatching] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
+  const [spawnFlash, setSpawnFlash] = useState(false);
   const clickTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -113,6 +114,14 @@ export function useMainStageVM() {
   useEffect(() => {
     if (currentPokemonId !== prevPokemonId.current) {
       prevPokemonId.current = currentPokemonId;
+      if (useGameStore.getState().isVfxEnabled) {
+        const startTimer = window.setTimeout(() => setSpawnFlash(true), 0);
+        const endTimer = window.setTimeout(() => setSpawnFlash(false), 600);
+        return () => {
+          clearTimeout(startTimer);
+          clearTimeout(endTimer);
+        };
+      }
     }
   }, [currentPokemonId]);
 
@@ -131,7 +140,10 @@ export function useMainStageVM() {
       const partyMult =
         1 +
         state.party.reduce(
-          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+          (acc, pId) =>
+            acc +
+            GAME_CONFIG.PARTY_MEMBER_MULTIPLIER *
+              (state.pokemonLevels[pId] || 1),
           0,
         );
 
@@ -144,12 +156,15 @@ export function useMainStageVM() {
         comboMultiplier *
         typeMultiplier;
 
-      setIsClicking(true);
-      if (clickTimeoutRef.current) window.clearTimeout(clickTimeoutRef.current);
-      clickTimeoutRef.current = window.setTimeout(
-        () => setIsClicking(false),
-        50,
-      );
+      if (state.isVfxEnabled) {
+        setIsClicking(true);
+        if (clickTimeoutRef.current)
+          window.clearTimeout(clickTimeoutRef.current);
+        clickTimeoutRef.current = window.setTimeout(
+          () => setIsClicking(false),
+          100,
+        );
+      }
 
       if (comboTimeoutRef.current) window.clearTimeout(comboTimeoutRef.current);
       comboTimeoutRef.current = window.setTimeout(() => {
@@ -199,7 +214,9 @@ export function useMainStageVM() {
 
       if (state.isVfxEnabled) {
         if (isCritical && targetElem) {
-          const imgElement = targetElem.querySelector("img");
+          const imgElement =
+            targetElem.querySelector("img") ||
+            (targetElem.tagName === "IMG" ? targetElem : null);
           if (imgElement) {
             imgElement.classList.remove("animate-crit-shake");
             void imgElement.offsetWidth;
@@ -303,6 +320,7 @@ export function useMainStageVM() {
     isBossActive,
     isCatching,
     isClicking,
+    spawnFlash,
     bgGradient,
     hasTypeAdvantage,
     handlePointerDown,

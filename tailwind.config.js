@@ -24,24 +24,30 @@ export default {
           "50%": { transform: "translate(-12px, 12px) scale(1.1)" },
           "75%": { transform: "translate(12px, 12px) scale(1.1)" },
         },
-        "suck-in": {
+        "spin-in": {
           "0%": {
+            transform: "scale(0) rotate(-720deg)",
+            opacity: "0",
+            filter: "brightness(3)",
+          },
+          "100%": {
             transform: "scale(1) rotate(0deg)",
             opacity: "1",
             filter: "brightness(1)",
           },
-          "100%": {
-            transform: "scale(0) rotate(720deg)",
-            opacity: "0",
-            filter: "brightness(3)",
-          },
+        },
+        "click-bounce": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(0.85)" },
         },
       },
       animation: {
         "float-up": "float-up 1s ease-out forwards",
         shake: "shake 0.2s ease-in-out",
         "crit-shake": "crit-shake 0.15s ease-in-out",
-        "suck-in": "suck-in 0.8s ease-in forwards",
+        "spin-in":
+          "spin-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards",
+        "click-bounce": "click-bounce 0.1s ease-in-out",
       },
     },
   },

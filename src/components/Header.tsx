@@ -40,6 +40,57 @@ function ScoreDisplay() {
   );
 }
 
+function DpsDisplay() {
+  const [currentDps, setCurrentDps] = useState(0);
+
+  useEffect(() => {
+    let damageLastSecond = 0;
+    const handleDamage = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      damageLastSecond += customEvent.detail.value;
+    };
+
+    window.addEventListener("SPAWN_TEXT", handleDamage);
+
+    const timer = setInterval(() => {
+      const state = useGameStore.getState();
+      const partyMult =
+        1 +
+        state.party.reduce(
+          (acc, pId) =>
+            acc +
+            GAME_CONFIG.PARTY_MEMBER_MULTIPLIER *
+              (state.pokemonLevels[pId] || 1),
+          0,
+        );
+      const passiveDps =
+        state.passiveIncome *
+        state.multiplier *
+        partyMult *
+        (1 + state.rareCandies);
+
+      setCurrentDps(damageLastSecond + passiveDps);
+      damageLastSecond = 0;
+    }, 1000);
+
+    return () => {
+      window.removeEventListener("SPAWN_TEXT", handleDamage);
+      clearInterval(timer);
+    };
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-gray-400 text-sm font-semibold uppercase">
+        Current DPS
+      </span>
+      <span className="text-2xl font-bold text-orange-400">
+        ${formatNumber(currentDps)}/s
+      </span>
+    </div>
+  );
+}
+
 function AchievementBadge() {
   const claimableCount = useGameStore((state) => {
     return ACHIEVEMENTS.filter((a) => {
@@ -47,7 +98,7 @@ function AchievementBadge() {
       if (a.condition === "clicks") return state.totalClicks >= a.target;
       if (a.condition === "income") return state.passiveIncome >= a.target;
       if (a.condition === "pokemon")
-        return state.unlockedPokemonIds.length >= a.target;
+        return state.historicalUnlockedPokemonIds.length >= a.target;
       return false;
     }).length;
   });
@@ -81,7 +132,9 @@ export function Header() {
   const rareCandies = useGameStore((state) => state.rareCandies);
   const partyLevelSum = useGameStore((state) =>
     state.party.reduce(
-      (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+      (acc, pId) =>
+        acc +
+        GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * (state.pokemonLevels[pId] || 1),
       0,
     ),
   );
@@ -107,11 +160,18 @@ export function Header() {
               className="w-12 h-12 sm:w-14 sm:h-14 drop-shadow-lg"
               draggable="false"
             />
-            <div className="hidden lg:flex flex-col">
-              <h1 className="text-[26px] font-black text-white uppercase tracking-widest leading-none mb-0.5">
-                POKE<span className="text-pokeYellow">IDLE</span>
-              </h1>
-              <div className="flex w-full justify-between px-[1px] mt-[1px]">
+            <div className="hidden lg:flex flex-col w-[170px] select-none">
+              <div className="flex justify-between items-end w-full">
+                {"POKEIDLE".split("").map((char, i) => (
+                  <span
+                    key={i}
+                    className={`text-[28px] font-black leading-none ${i > 3 ? "text-pokeYellow" : "text-white"}`}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </div>
+              <div className="flex justify-between w-full mt-1 px-[2px]">
                 {"MASTER OF CLICKS".split("").map((char, i) => (
                   <span
                     key={i}
@@ -136,6 +196,7 @@ export function Header() {
 
         <div className="flex gap-4 sm:gap-6">
           <div className="hidden lg:flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10 items-center">
+            <DpsDisplay />
             <div className="flex flex-col items-center">
               <span className="text-gray-400 text-sm font-semibold uppercase">
                 Multiplier

@@ -1,22 +1,20 @@
 import { Info } from "lucide-react";
 import { Modal } from "./ui/Modal";
-import { Button } from "./ui/Button";
 import { useGameStore } from "../store/useGameStore";
 import { GAME_CONFIG } from "../config/gameConfig";
 
 export function HowToPlayModal() {
-  const hasSeenHowToPlay = useGameStore((state) => state.hasSeenHowToPlay);
-  const setHasSeenHowToPlay = useGameStore(
-    (state) => state.setHasSeenHowToPlay,
-  );
+  const isHowToPlayOpen = useGameStore((state) => state.isHowToPlayOpen);
+  const toggleHowToPlay = useGameStore((state) => state.toggleHowToPlay);
 
   return (
     <Modal
-      isOpen={!hasSeenHowToPlay}
+      isOpen={isHowToPlayOpen}
+      onClose={toggleHowToPlay}
       title="How to Play"
       icon={<Info size={28} className="text-blue-400" />}
       maxWidth="lg"
-      hideCloseButton
+      closeOnOutsideClick
     >
       <div className="space-y-4">
         <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 text-sm text-blue-100 space-y-3">
@@ -26,7 +24,7 @@ export function HowToPlayModal() {
             level gives a +{GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * 100}% global
             multiplier! You can{" "}
             <strong className="text-green-300">Level Up</strong> your party
-            members by clicking on them in your roster.
+            members by clicking on them in your roster or Pokédex.
           </p>
           <p>
             <strong className="text-orange-400">Combat Tactics:</strong>{" "}
@@ -50,9 +48,6 @@ export function HowToPlayModal() {
             bonus!
           </p>
         </div>
-        <Button fullWidth onClick={() => setHasSeenHowToPlay(true)}>
-          Let's Play!
-        </Button>
       </div>
     </Modal>
   );

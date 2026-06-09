@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { usePokeAPI } from "../hooks/usePokeAPI";
-import { Scale, ChevronLeft, ChevronRight, ArrowUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUp } from "lucide-react";
 import {
   GAME_CONFIG,
   calculatePartyUpgradeCost,
@@ -13,17 +13,13 @@ import { formatNumber } from "../utils/format";
 
 function PokedexEntry({ id }: { id: number }) {
   const { data, isLoading } = usePokeAPI(id);
-  const partyMember = useGameStore((state) =>
-    state.party.find((p) => p.id === id),
-  );
-  const isEquipped = !!partyMember;
+  const isEquipped = useGameStore((state) => state.party.includes(id));
+  const memberLevel = useGameStore((state) => state.pokemonLevels[id] || 1);
   const partyLength = useGameStore((state) => state.party.length);
   const togglePartyMember = useGameStore((state) => state.togglePartyMember);
-  const upgradePartyMember = useGameStore((state) => state.upgradePartyMember);
+  const upgradePokemon = useGameStore((state) => state.upgradePokemon);
 
-  const upgradeCost = partyMember
-    ? calculatePartyUpgradeCost(partyMember.level)
-    : 0;
+  const upgradeCost = calculatePartyUpgradeCost(memberLevel);
   const canAffordUpgrade = useGameStore((state) => state.score >= upgradeCost);
 
   const handleToggle = () => {
@@ -33,13 +29,13 @@ function PokedexEntry({ id }: { id: number }) {
 
   if (isLoading || !data) {
     return (
-      <div className="h-auto min-h-[14rem] bg-white/5 animate-pulse rounded-xl border border-white/10" />
+      <div className="h-[15.5rem] bg-white/5 animate-pulse rounded-xl border border-white/10" />
     );
   }
 
   return (
     <div
-      className={`relative group flex flex-col items-center p-3 bg-black/40 rounded-xl border transition-all hover:-translate-y-1 hover:shadow-lg overflow-hidden h-auto min-h-[14rem] ${
+      className={`relative group flex flex-col items-center p-3 bg-black/40 rounded-xl border transition-all hover:-translate-y-1 hover:shadow-lg overflow-hidden h-[15.5rem] ${
         isEquipped
           ? "border-pokeYellow shadow-[0_0_15px_rgba(255,222,0,0.2)]"
           : "border-white/10 hover:border-pokeYellow hover:shadow-pokeYellow/20"
@@ -47,9 +43,7 @@ function PokedexEntry({ id }: { id: number }) {
     >
       <span className="absolute top-2 left-2 text-[10px] font-black text-gray-400 bg-black/60 px-1.5 py-0.5 rounded z-10 flex gap-1 items-center">
         #{id.toString().padStart(3, "0")}
-        {isEquipped && (
-          <span className="text-pokeYellow">Lv.{partyMember.level}</span>
-        )}
+        <span className="text-pokeYellow">Lv.{memberLevel}</span>
       </span>
 
       <div className="relative w-20 h-20 mt-4 mb-2 shrink-0 pointer-events-none">
@@ -75,49 +69,31 @@ function PokedexEntry({ id }: { id: number }) {
         ))}
       </div>
 
-      <div className="mt-auto w-full flex flex-col gap-1 pt-1">
-        <div
-          className={`flex justify-center items-center gap-1 text-[10px] text-gray-400 transition-opacity pb-1 ${
-            isEquipped ? "hidden" : "group-hover:hidden"
+      <div className="mt-auto w-full flex flex-col gap-1.5 pt-2 border-t border-white/5">
+        <button
+          onClick={() => upgradePokemon(id)}
+          disabled={!canAffordUpgrade}
+          className={`w-full py-1.5 rounded-lg text-[10px] font-black uppercase transition-all flex items-center justify-center gap-1 ${
+            canAffordUpgrade
+              ? "bg-green-500 hover:bg-green-400 text-white shadow-[0_0_10px_rgba(34,197,94,0.3)] cursor-pointer"
+              : "bg-black/50 text-gray-500 border border-white/10 cursor-not-allowed"
           }`}
         >
-          <Scale size={10} />
-          <span>{(data.weight / 10).toFixed(1)} kg</span>
-        </div>
-
-        {isEquipped ? (
-          <>
-            <button
-              onClick={() => upgradePartyMember(id)}
-              disabled={!canAffordUpgrade}
-              className={`w-full py-1 rounded-lg text-[9px] font-black uppercase transition-all flex items-center justify-center gap-1 ${
-                canAffordUpgrade
-                  ? "bg-green-500 hover:bg-green-400 text-white shadow-[0_0_10px_rgba(34,197,94,0.3)] cursor-pointer"
-                  : "bg-black/50 text-gray-500 border border-white/10 cursor-not-allowed"
-              }`}
-            >
-              <ArrowUp size={10} /> ${formatNumber(upgradeCost)}
-            </button>
-            <button
-              onClick={handleToggle}
-              className="w-full py-1 rounded-lg text-[9px] font-black uppercase bg-pokeRed/80 hover:bg-pokeRed text-white transition-all cursor-pointer hidden group-hover:block"
-            >
-              Unequip
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={handleToggle}
-            disabled={partyLength >= GAME_CONFIG.MAX_PARTY_SIZE}
-            className={`w-full py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
-              partyLength >= GAME_CONFIG.MAX_PARTY_SIZE
-                ? "bg-black/50 text-gray-500 cursor-not-allowed border border-white/10 hidden group-hover:block"
-                : "bg-black/60 text-white border border-white/20 hover:border-pokeYellow hover:text-pokeYellow hidden group-hover:block"
-            }`}
-          >
-            Equip
-          </button>
-        )}
+          <ArrowUp size={12} /> ${formatNumber(upgradeCost)}
+        </button>
+        <button
+          onClick={handleToggle}
+          disabled={!isEquipped && partyLength >= GAME_CONFIG.MAX_PARTY_SIZE}
+          className={`w-full py-1.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
+            isEquipped
+              ? "bg-pokeRed/80 hover:bg-pokeRed text-white"
+              : partyLength >= GAME_CONFIG.MAX_PARTY_SIZE
+                ? "bg-black/50 text-gray-500 border border-white/10 cursor-not-allowed"
+                : "bg-black/60 text-white border border-white/20 hover:border-pokeYellow hover:text-pokeYellow"
+          }`}
+        >
+          {isEquipped ? "Unequip" : "Equip"}
+        </button>
       </div>
     </div>
   );

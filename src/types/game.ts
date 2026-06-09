@@ -21,12 +21,14 @@ export interface PlayerSlice {
   rareCandies: number;
   upgrades: Upgrade[];
   unlockedPokemonIds: number[];
+  historicalUnlockedPokemonIds: number[];
   currentPokemonId: number;
-  party: PartyMember[];
+  party: number[];
+  pokemonLevels: Record<number, number>;
   totalClicks: number;
   unlockedAchievements: string[];
   togglePartyMember: (id: number) => void;
-  upgradePartyMember: (id: number) => void;
+  upgradePokemon: (id: number) => void;
   claimAchievement: (id: string) => void;
   click: (
     critMultiplier?: number,

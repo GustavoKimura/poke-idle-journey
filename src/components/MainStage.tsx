@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { formatNumber } from "../utils/format";
 import { useMainStageVM } from "../viewmodels/useMainStageVM";
 import { PartyRoster } from "./PartyRoster";
@@ -11,45 +10,10 @@ function BossUI() {
   const bossMaxHp = useGameStore((state) => state.bossMaxHp);
   const bossTimeLeft = useGameStore((state) => state.bossTimeLeft);
 
-  const [currentDps, setCurrentDps] = useState(0);
-
-  useEffect(() => {
-    let damageLastSecond = 0;
-    const handleDamage = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      damageLastSecond += customEvent.detail.value;
-    };
-
-    window.addEventListener("SPAWN_TEXT", handleDamage);
-
-    const timer = setInterval(() => {
-      const state = useGameStore.getState();
-      const partyMult =
-        1 +
-        state.party.reduce(
-          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
-          0,
-        );
-      const passiveDps =
-        state.passiveIncome *
-        state.multiplier *
-        partyMult *
-        (1 + state.rareCandies);
-
-      setCurrentDps(damageLastSecond + passiveDps);
-      damageLastSecond = 0;
-    }, 1000);
-
-    return () => {
-      window.removeEventListener("SPAWN_TEXT", handleDamage);
-      clearInterval(timer);
-    };
-  }, []);
-
   return (
     <div className="flex flex-col items-center gap-2 w-full max-w-sm animate-in fade-in slide-in-from-top-4">
       <div className="flex justify-between w-full text-sm font-black text-pokeRed uppercase tracking-wider">
-        <span>Boss HP</span>
+        <span>Boss Resistance</span>
         <span className="font-mono text-lg text-white">
           {Math.max(0, bossTimeLeft).toFixed(1)}s
         </span>
@@ -60,14 +24,8 @@ function BossUI() {
           style={{ width: `${Math.max(0, (bossHp / bossMaxHp) * 100)}%` }}
         />
         <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white/80 drop-shadow">
-          {formatNumber(bossHp)} / {formatNumber(bossMaxHp)}
+          ${formatNumber(bossHp)} / ${formatNumber(bossMaxHp)}
         </span>
-      </div>
-      <div className="flex justify-between w-full text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-        <span className="text-pokeYellow">
-          DPS: {formatNumber(currentDps)}/s
-        </span>
-        <span>Req: {formatNumber(bossMaxHp / 15)}/s</span>
       </div>
     </div>
   );
@@ -107,6 +65,7 @@ export function MainStage() {
     isBossActive,
     isCatching,
     isClicking,
+    spawnFlash,
     bgGradient,
     hasTypeAdvantage,
     handlePointerDown,
@@ -199,9 +158,9 @@ export function MainStage() {
       </div>
 
       <div
-        className={`relative cursor-pointer transition-all duration-75 active:brightness-150 z-10 mt-8 ${
+        className={`relative cursor-pointer z-10 mt-8 ${
           isLoading ? "opacity-50" : "opacity-100"
-        } ${isClicking ? "scale-90" : "scale-100"} hover:scale-[1.02]`}
+        }`}
         onPointerDown={handlePointerDown}
         onPointerUp={stopHold}
         onPointerLeave={stopHold}
@@ -214,8 +173,14 @@ export function MainStage() {
           <img
             src={pokemon.sprite}
             alt={pokemon.name}
-            className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-all duration-200 ${
-              isCatching ? "animate-suck-in" : "hover:brightness-125"
+            className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-transform duration-[50ms] ${
+              isCatching
+                ? "animate-suck-in"
+                : spawnFlash
+                  ? "animate-spin-in"
+                  : isClicking
+                    ? "scale-90"
+                    : "hover:brightness-125 hover:scale-105"
             }`}
             draggable="false"
           />
@@ -253,7 +218,10 @@ export function MainStage() {
                 </span>
               </span>
               <div className="flex gap-4">
-                <Button onClick={handleCatch} disabled={!canUnlock}>
+                <Button
+                  onClick={handleCatch}
+                  disabled={!canUnlock || isCatching}
+                >
                   Catch Next Pokemon
                 </Button>
                 {currentPokemonId >= GAME_CONFIG.PRESTIGE_MIN_ID && (

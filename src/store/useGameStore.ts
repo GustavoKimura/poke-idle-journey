@@ -17,7 +17,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 16,
+      version: 19,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -45,16 +45,29 @@ export const useGameStore = create<GameState>()(
         if (!Array.isArray(state.historicalUnlockedPokemonIds))
           state.historicalUnlockedPokemonIds = [...state.unlockedPokemonIds];
 
+        if (!state.pokemonLevels || typeof state.pokemonLevels !== "object") {
+          state.pokemonLevels = {};
+        }
+
         if (!Array.isArray(state.party)) {
           state.party = [];
         } else if (
           state.party.length > 0 &&
-          typeof state.party[0] === "number"
+          typeof state.party[0] === "object"
         ) {
-          state.party = (state.party as unknown as number[]).map((id) => ({
-            id,
-            level: 1,
-          }));
+          const oldParty = state.party as unknown as {
+            id: number;
+            level: number;
+          }[];
+          state.party = oldParty.map((p) => p.id);
+          oldParty.forEach((p) => {
+            if (
+              !state.pokemonLevels![p.id] ||
+              state.pokemonLevels![p.id] < p.level
+            ) {
+              state.pokemonLevels![p.id] = p.level;
+            }
+          });
         }
 
         if (
@@ -97,8 +110,8 @@ export const useGameStore = create<GameState>()(
           Number.isNaN(state.bossTimeLeft)
         )
           state.bossTimeLeft = 0;
-        if (typeof state.hasSeenHowToPlay !== "boolean")
-          state.hasSeenHowToPlay = false;
+        if (typeof state.isHowToPlayOpen !== "boolean")
+          state.isHowToPlayOpen = false;
 
         if (Array.isArray(state.upgrades)) {
           state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {

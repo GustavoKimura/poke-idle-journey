@@ -9,11 +9,7 @@ import {
   calculatePrestigeReward,
   calculatePartyUpgradeCost,
 } from "../../config/gameConfig";
-import {
-  playCatchSound,
-  playUpgradeSound,
-  playPrestigeSound,
-} from "../../utils/audio";
+import { playCatchSound, playUpgradeSound } from "../../utils/audio";
 import { recalculateTotals } from "../../utils/calculations";
 
 export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
@@ -26,32 +22,31 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
   rareCandies: 0,
   upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
   unlockedPokemonIds: [1],
+  historicalUnlockedPokemonIds: [1],
   currentPokemonId: 1,
   party: [],
+  pokemonLevels: {},
   totalClicks: 0,
   unlockedAchievements: [],
 
   togglePartyMember: (id) =>
     set((state) => {
-      if (state.party.some((p) => p.id === id)) {
-        return { party: state.party.filter((p) => p.id !== id) };
+      if (state.party.includes(id)) {
+        return { party: state.party.filter((pId) => pId !== id) };
       }
       if (state.party.length >= GAME_CONFIG.MAX_PARTY_SIZE) return state;
-      return { party: [...state.party, { id, level: 1 }] };
+      return { party: [...state.party, id] };
     }),
 
-  upgradePartyMember: (id) =>
+  upgradePokemon: (id) =>
     set((state) => {
-      const member = state.party.find((p) => p.id === id);
-      if (!member) return state;
-      const cost = calculatePartyUpgradeCost(member.level);
+      const currentLevel = state.pokemonLevels[id] || 1;
+      const cost = calculatePartyUpgradeCost(currentLevel);
       if (state.score < cost) return state;
       playUpgradeSound();
       return {
         score: state.score - cost,
-        party: state.party.map((p) =>
-          p.id === id ? { ...p, level: p.level + 1 } : p,
-        ),
+        pokemonLevels: { ...state.pokemonLevels, [id]: currentLevel + 1 },
       };
     }),
 
@@ -74,7 +69,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         isCompleted = true;
       if (
         achievement.condition === "pokemon" &&
-        state.unlockedPokemonIds.length >= achievement.target
+        state.historicalUnlockedPokemonIds.length >= achievement.target
       )
         isCompleted = true;
 
@@ -91,7 +86,10 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       const partyMult =
         1 +
         state.party.reduce(
-          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p.level,
+          (acc, pId) =>
+            acc +
+            GAME_CONFIG.PARTY_MEMBER_MULTIPLIER *
+              (state.pokemonLevels[pId] || 1),
           0,
         );
       const amount =
@@ -116,6 +114,12 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
             ...state.unlockedPokemonIds,
             state.currentPokemonId + 1,
           ];
+          const newHistorical = Array.from(
+            new Set([
+              ...state.historicalUnlockedPokemonIds,
+              state.currentPokemonId + 1,
+            ]),
+          );
           const { clickPower, passiveIncome } = recalculateTotals(
             state.upgrades,
             newUnlocked.length,
@@ -124,6 +128,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
           newState.isBossActive = false;
           newState.currentPokemonId = state.currentPokemonId + 1;
           newState.unlockedPokemonIds = newUnlocked;
+          newState.historicalUnlockedPokemonIds = newHistorical;
           newState.multiplier =
             state.multiplier +
             GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId;
@@ -185,6 +190,9 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
 
       const cost = calculateNextPokemonCost(state.currentPokemonId);
       const newUnlocked = [...state.unlockedPokemonIds, nextId];
+      const newHistorical = Array.from(
+        new Set([...state.historicalUnlockedPokemonIds, nextId]),
+      );
       const { clickPower, passiveIncome } = recalculateTotals(
         state.upgrades,
         newUnlocked.length,
@@ -194,6 +202,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         score: state.score - cost,
         currentPokemonId: nextId,
         unlockedPokemonIds: newUnlocked,
+        historicalUnlockedPokemonIds: newHistorical,
         multiplier:
           state.multiplier +
           GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId,
@@ -213,8 +222,6 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       const newUpgrades = INITIAL_UPGRADES.map((u) => ({ ...u }));
       const { clickPower, passiveIncome } = recalculateTotals(newUpgrades, 1);
 
-      playPrestigeSound();
-
       return {
         score: 0,
         clickPower,
@@ -225,6 +232,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         unlockedPokemonIds: [1],
         currentPokemonId: 1,
         party: [],
+        pokemonLevels: {},
         offlineEarnings: 0,
         offlineSeconds: 0,
         isBossActive: false,
@@ -247,8 +255,10 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       rareCandies: 0,
       upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
       unlockedPokemonIds: [1],
+      historicalUnlockedPokemonIds: [1],
       currentPokemonId: 1,
       party: [],
+      pokemonLevels: {},
       totalClicks: 0,
       unlockedAchievements: [],
       isBossActive: false,
@@ -261,6 +271,6 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       offlineSeconds: 0,
       lastSaveTime: Date.now(),
       isAchievementsOpen: false,
-      isHowToPlayOpen: true,
+      isHowToPlayOpen: false,
     })),
 });
