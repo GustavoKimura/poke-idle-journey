@@ -123,3 +123,20 @@ export const getActiveSynergies = (
   });
   return active;
 };
+
+export const calculateShinyChance = (
+  upgrades: Upgrade[],
+  ascensionUpgrades: Record<string, number>,
+): number => {
+  const shinyCharm = upgrades.find(
+    (u) => u.id === "10" || u.name === "Shiny Charm",
+  );
+  const charmCount = shinyCharm ? shinyCharm.count : 0;
+
+  const ascensionCount = ascensionUpgrades.shiny_luck || 0;
+
+  const charmBonus = charmCount * 0.001;
+  const ascensionBonus = ascensionCount * 0.005;
+
+  return GAME_CONFIG.SHINY_CHANCE + charmBonus + ascensionBonus;
+};

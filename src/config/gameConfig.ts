@@ -83,6 +83,14 @@ export const ASCENSION_UPGRADES = [
     costMultiplier: 2.5,
     maxLevel: 10,
   },
+  {
+    id: "shiny_luck",
+    name: "Shiny Blessing",
+    desc: "+0.5% Shiny Chance per level",
+    baseCost: 15,
+    costMultiplier: 4,
+    maxLevel: 5,
+  },
 ];
 
 export const calculateAscensionCost = (

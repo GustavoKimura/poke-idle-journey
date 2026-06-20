@@ -2,7 +2,10 @@ import type { StateCreator } from "zustand";
 import type { GameState, BossSlice } from "../../types/game";
 import { GAME_CONFIG, calculateNextPokemonCost } from "../../config/gameConfig";
 import { playCatchSound } from "../../utils/audio";
-import { recalculateTotals } from "../../utils/calculations";
+import {
+  recalculateTotals,
+  calculateShinyChance,
+} from "../../utils/calculations";
 
 export const createBossSlice: StateCreator<GameState, [], [], BossSlice> = (
   set,
@@ -46,7 +49,10 @@ export const createBossSlice: StateCreator<GameState, [], [], BossSlice> = (
               new Set([...state.shinyPokemonIds, state.currentPokemonId]),
             )
           : state.shinyPokemonIds;
-        const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
+
+        const nextShiny =
+          Math.random() <
+          calculateShinyChance(state.upgrades, state.ascensionUpgrades);
 
         return {
           isBossActive: false,

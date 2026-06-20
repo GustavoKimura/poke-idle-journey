@@ -20,6 +20,7 @@ import {
   recalculateTotals,
   calculatePartyMultiplier,
   calculateTypeSynergyMultiplier,
+  calculateShinyChance,
 } from "../../utils/calculations";
 import { ParticleManager } from "../../utils/ParticleManager";
 import { triggerHitStop } from "../../utils/hitStop";
@@ -128,7 +129,10 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
                 new Set([...state.shinyPokemonIds, state.currentPokemonId]),
               )
             : state.shinyPokemonIds;
-          const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
+
+          const nextShiny =
+            Math.random() <
+            calculateShinyChance(state.upgrades, state.ascensionUpgrades);
 
           newState.isBossActive = false;
           newState.currentPokemonId = nextId;
@@ -273,7 +277,10 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
                 new Set([...state.shinyPokemonIds, state.currentPokemonId]),
               )
             : state.shinyPokemonIds;
-          const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
+
+          const nextShiny =
+            Math.random() <
+            calculateShinyChance(state.upgrades, state.ascensionUpgrades);
 
           newState.isBossActive = false;
           newState.currentPokemonId = nextId;
@@ -359,7 +366,10 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
             new Set([...state.shinyPokemonIds, state.currentPokemonId]),
           )
         : state.shinyPokemonIds;
-      const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
+
+      const nextShiny =
+        Math.random() <
+        calculateShinyChance(state.upgrades, state.ascensionUpgrades);
 
       return {
         score: state.score - cost,
@@ -396,7 +406,9 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         rareCandies: state.rareCandies + reward,
         upgrades: newUpgrades,
         unlockedPokemonIds: [1],
-        isCurrentPokemonShiny: Math.random() < GAME_CONFIG.SHINY_CHANCE,
+        isCurrentPokemonShiny:
+          Math.random() <
+          calculateShinyChance(newUpgrades, state.ascensionUpgrades),
         currentPokemonId: 1,
         party: [],
         partyCooldowns: {},
