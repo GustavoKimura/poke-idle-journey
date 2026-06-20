@@ -41,7 +41,7 @@ export const useGameStore = create<GameState>()(
     {
       name: "poke-idle-storage",
       storage: createJSONStorage(() => idbStorage),
-      version: 26,
+      version: 27,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
