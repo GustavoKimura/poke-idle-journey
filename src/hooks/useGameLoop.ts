@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { GAME_CONFIG } from "../config/gameConfig";
+import { calculatePartyMultiplier } from "../utils/calculations";
 
 export function useGameLoop() {
   const requestRef = useRef<number>(0);
@@ -19,13 +20,11 @@ export function useGameLoop() {
       timeDiffSeconds > GAME_CONFIG.OFFLINE_MIN_SECONDS &&
       state.passiveIncome > 0
     ) {
-      const partyMult =
-        1 +
-        state.party.reduce(
-          (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p,
-          0,
-        );
-
+      const partyMult = calculatePartyMultiplier(
+        state.party,
+        state.pokemonLevels,
+        state.shinyPokemonIds,
+      );
       const ascensionMult =
         1 +
         state.rareCandies * 0.1 +
@@ -62,13 +61,11 @@ export function useGameLoop() {
         currentState.passiveIncome > 0 &&
         currentState.offlineEarnings === 0
       ) {
-        const partyMult =
-          1 +
-          currentState.party.reduce(
-            (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p,
-            0,
-          );
-
+        const partyMult = calculatePartyMultiplier(
+          currentState.party,
+          currentState.pokemonLevels,
+          currentState.shinyPokemonIds,
+        );
         const ascensionMult =
           1 +
           currentState.rareCandies * 0.1 +

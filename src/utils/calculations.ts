@@ -1,5 +1,5 @@
 import type { Upgrade } from "../types/game";
-import { getMilestoneMultiplier } from "../config/gameConfig";
+import { getMilestoneMultiplier, GAME_CONFIG } from "../config/gameConfig";
 
 export const recalculateTotals = (
   upgrades: Upgrade[],
@@ -24,4 +24,21 @@ export const recalculateTotals = (
     clickPower: baseClick * (1 + synergyBonus),
     passiveIncome: basePassive * (1 + synergyBonus),
   };
+};
+
+export const calculatePartyMultiplier = (
+  party: number[],
+  pokemonLevels: Record<number, number>,
+  shinyPokemonIds: number[],
+): number => {
+  return (
+    1 +
+    party.reduce((acc, pId) => {
+      const isShiny = shinyPokemonIds.includes(pId);
+      const mult = isShiny
+        ? GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * 2
+        : GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
+      return acc + mult * (pokemonLevels[pId] || 1);
+    }, 0)
+  );
 };

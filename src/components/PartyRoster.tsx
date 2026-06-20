@@ -13,6 +13,9 @@ function PartySlot({ id, index }: { id?: number; index: number }) {
   const score = useGameStore((state) => state.score);
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
   const pokemonLevels = useGameStore((state) => state.pokemonLevels);
+  const isShiny = useGameStore((state) =>
+    id ? state.shinyPokemonIds.includes(id) : false,
+  );
   const upgradePokemon = useGameStore((state) => state.upgradePokemon);
   const { data: targetData } = usePokeAPI(currentPokemonId);
 
@@ -37,15 +40,20 @@ function PartySlot({ id, index }: { id?: number; index: number }) {
     >
       {id && !isLoading && data ? (
         <>
+          {isShiny && (
+            <div className="absolute top-0 left-0 text-[8px] z-10 pointer-events-none drop-shadow-[0_0_2px_rgba(255,222,0,1)]">
+              ✨
+            </div>
+          )}
           <img
-            src={data.sprite}
+            src={isShiny ? data.shinySprite : data.sprite}
             alt={data.name}
             className="w-11 h-11 object-contain drop-shadow-md transition-transform group-hover:opacity-20"
             draggable="false"
           />
           {hasAdvantage && (
             <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl-lg shadow-sm z-10 pointer-events-none flex items-center justify-center border-b border-l border-green-300">
-              x3 DMG
+              x3
             </div>
           )}
           <span className="absolute bottom-0 right-0 bg-pokeYellow text-black text-[9px] font-black px-1 rounded-tl shadow-sm z-10 pointer-events-none group-hover:hidden">

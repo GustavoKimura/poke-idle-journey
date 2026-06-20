@@ -16,6 +16,7 @@ import {
   calculateNextPokemonCost,
 } from "../config/gameConfig";
 import { ParticleManager } from "../utils/ParticleManager";
+import { calculatePartyMultiplier } from "../utils/calculations";
 
 export function useMainStageVM() {
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
@@ -141,16 +142,11 @@ export function useMainStageVM() {
       const comboMultiplier = 1 + currentCombo * 0.02;
       const typeMultiplier = hasTypeAdvantage ? 3 : 1;
 
-      const partyMult =
-        1 +
-        state.party.reduce(
-          (acc, pId) =>
-            acc +
-            GAME_CONFIG.PARTY_MEMBER_MULTIPLIER *
-              (state.pokemonLevels[pId] || 1),
-          0,
-        );
-
+      const partyMult = calculatePartyMultiplier(
+        state.party,
+        state.pokemonLevels,
+        state.shinyPokemonIds,
+      );
       const ascensionMult =
         1 +
         state.rareCandies * 0.1 +

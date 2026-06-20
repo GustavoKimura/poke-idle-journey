@@ -13,6 +13,7 @@ import { formatNumber } from "../utils/format";
 import { SettingsModal } from "./SettingsModal";
 import { ACHIEVEMENTS, GAME_CONFIG } from "../config/gameConfig";
 import { ParticleManager } from "../utils/ParticleManager";
+import { calculatePartyMultiplier } from "../utils/calculations";
 
 function ScoreDisplay() {
   const scoreRef = useRef<HTMLSpanElement>(null);
@@ -47,16 +48,11 @@ function DpsDisplay() {
   useEffect(() => {
     const timer = setInterval(() => {
       const state = useGameStore.getState();
-      const partyMult =
-        1 +
-        state.party.reduce(
-          (acc, pId) =>
-            acc +
-            GAME_CONFIG.PARTY_MEMBER_MULTIPLIER *
-              (state.pokemonLevels[pId] || 1),
-          0,
-        );
-
+      const partyMult = calculatePartyMultiplier(
+        state.party,
+        state.pokemonLevels,
+        state.shinyPokemonIds,
+      );
       const ascensionMultDPS =
         1 +
         state.rareCandies * 0.1 +
@@ -127,14 +123,15 @@ export function Header() {
   const multiplier = useGameStore((state) => state.multiplier);
   const rareCandies = useGameStore((state) => state.rareCandies);
   const ascensionUpgrades = useGameStore((state) => state.ascensionUpgrades);
-  const partyLevelSum = useGameStore((state) =>
-    state.party.reduce(
-      (acc, pId) =>
-        acc +
-        GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * (state.pokemonLevels[pId] || 1),
-      0,
+
+  const partyMult = useGameStore((state) =>
+    calculatePartyMultiplier(
+      state.party,
+      state.pokemonLevels,
+      state.shinyPokemonIds,
     ),
   );
+
   const isSoundEnabled = useGameStore((state) => state.isSoundEnabled);
 
   const toggleSound = useGameStore((state) => state.toggleSound);
@@ -147,7 +144,6 @@ export function Header() {
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const partyMult = 1 + partyLevelSum;
   const ascensionMult =
     1 + rareCandies * 0.1 + (ascensionUpgrades.click_power || 0) * 1.0;
   const displayMult = multiplier * partyMult * ascensionMult;

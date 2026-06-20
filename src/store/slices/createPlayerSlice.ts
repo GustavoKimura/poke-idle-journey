@@ -12,7 +12,10 @@ import {
   calculateAscensionCost,
 } from "../../config/gameConfig";
 import { playCatchSound, playUpgradeSound } from "../../utils/audio";
-import { recalculateTotals } from "../../utils/calculations";
+import {
+  recalculateTotals,
+  calculatePartyMultiplier,
+} from "../../utils/calculations";
 
 export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
   set,
@@ -25,6 +28,8 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
   upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
   unlockedPokemonIds: [1],
   historicalUnlockedPokemonIds: [1],
+  shinyPokemonIds: [],
+  isCurrentPokemonShiny: false,
   currentPokemonId: 1,
   party: [],
   pokemonLevels: {},
@@ -112,15 +117,11 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
 
   click: (critMultiplier = 1, comboMultiplier = 1, typeMultiplier = 1) =>
     set((state) => {
-      const partyMult =
-        1 +
-        state.party.reduce(
-          (acc, pId) =>
-            acc +
-            GAME_CONFIG.PARTY_MEMBER_MULTIPLIER *
-              (state.pokemonLevels[pId] || 1),
-          0,
-        );
+      const partyMult = calculatePartyMultiplier(
+        state.party,
+        state.pokemonLevels,
+        state.shinyPokemonIds,
+      );
 
       const ascensionMult =
         1 +
@@ -160,10 +161,19 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
             newUnlocked.length,
           );
 
+          const newShinies = state.isCurrentPokemonShiny
+            ? Array.from(
+                new Set([...state.shinyPokemonIds, state.currentPokemonId]),
+              )
+            : state.shinyPokemonIds;
+          const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
+
           newState.isBossActive = false;
           newState.currentPokemonId = state.currentPokemonId + 1;
           newState.unlockedPokemonIds = newUnlocked;
           newState.historicalUnlockedPokemonIds = newHistorical;
+          newState.shinyPokemonIds = newShinies;
+          newState.isCurrentPokemonShiny = nextShiny;
           newState.multiplier =
             state.multiplier +
             GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId;
@@ -233,11 +243,20 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         newUnlocked.length,
       );
 
+      const newShinies = state.isCurrentPokemonShiny
+        ? Array.from(
+            new Set([...state.shinyPokemonIds, state.currentPokemonId]),
+          )
+        : state.shinyPokemonIds;
+      const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
+
       return {
         score: state.score - cost,
         currentPokemonId: nextId,
         unlockedPokemonIds: newUnlocked,
         historicalUnlockedPokemonIds: newHistorical,
+        shinyPokemonIds: newShinies,
+        isCurrentPokemonShiny: nextShiny,
         multiplier:
           state.multiplier +
           GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId,
@@ -265,6 +284,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         rareCandies: state.rareCandies + reward,
         upgrades: newUpgrades,
         unlockedPokemonIds: [1],
+        isCurrentPokemonShiny: Math.random() < GAME_CONFIG.SHINY_CHANCE,
         currentPokemonId: 1,
         party: [],
         pokemonLevels: {},
@@ -291,6 +311,8 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       upgrades: INITIAL_UPGRADES.map((u) => ({ ...u })),
       unlockedPokemonIds: [1],
       historicalUnlockedPokemonIds: [1],
+      shinyPokemonIds: [],
+      isCurrentPokemonShiny: false,
       currentPokemonId: 1,
       party: [],
       pokemonLevels: {},

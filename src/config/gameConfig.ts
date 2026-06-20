@@ -12,6 +12,7 @@ export const GAME_CONFIG = {
   POKEMON_MULTIPLIER_REWARD: 0.1,
   MAX_PARTY_SIZE: 6,
   PARTY_MEMBER_MULTIPLIER: 0.5,
+  SHINY_CHANCE: 0.005,
 };
 
 export const ASCENSION_UPGRADES = [
@@ -76,6 +77,27 @@ export const TYPE_BADGE_COLORS: Record<string, string> = {
   dark: "bg-[#705848] text-white border-[#705848]",
   steel: "bg-[#B8B8D0] text-black border-[#B8B8D0]",
   fairy: "bg-[#EE99AC] text-black border-[#EE99AC]",
+};
+
+export const TYPE_ICONS: Record<string, string> = {
+  normal: "⏺",
+  fire: "🔥",
+  water: "💧",
+  electric: "⚡",
+  grass: "🌿",
+  ice: "❄️",
+  fighting: "🥊",
+  poison: "☠️",
+  ground: "⛰️",
+  flying: "💨",
+  psychic: "👁️",
+  bug: "🐛",
+  rock: "🪨",
+  ghost: "👻",
+  dragon: "🐉",
+  dark: "🌙",
+  steel: "⚙️",
+  fairy: "✨",
 };
 
 export const TYPE_WEAKNESSES: Record<string, string[]> = {

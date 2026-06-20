@@ -6,6 +6,7 @@ import {
   GAME_CONFIG,
   calculatePartyUpgradeCost,
   TYPE_BADGE_COLORS,
+  TYPE_ICONS,
 } from "../config/gameConfig";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
@@ -20,6 +21,7 @@ function PokedexEntry({
 }) {
   const { data, isLoading } = usePokeAPI(id);
   const isEquipped = useGameStore((state) => state.party.includes(id));
+  const isShiny = useGameStore((state) => state.shinyPokemonIds.includes(id));
   const memberLevel = useGameStore((state) => state.pokemonLevels[id] || 1);
   const partyLength = useGameStore((state) => state.party.length);
   const togglePartyMember = useGameStore((state) => state.togglePartyMember);
@@ -44,7 +46,9 @@ function PokedexEntry({
       className={`relative group flex flex-col items-center p-3 bg-black/40 rounded-xl border transition-all hover:-translate-y-1 hover:shadow-lg overflow-hidden h-[15.5rem] ${
         isEquipped
           ? "border-pokeYellow shadow-[0_0_15px_rgba(255,222,0,0.2)]"
-          : "border-white/10 hover:border-pokeYellow hover:shadow-pokeYellow/20"
+          : isShiny
+            ? "border-yellow-400/50 hover:border-yellow-400 hover:shadow-[0_0_15px_rgba(250,204,21,0.2)]"
+            : "border-white/10 hover:border-pokeYellow hover:shadow-pokeYellow/20"
       }`}
     >
       <span className="absolute top-2 left-2 text-[10px] font-black text-gray-400 bg-black/60 px-1.5 py-0.5 rounded z-10 flex gap-1 items-center">
@@ -52,15 +56,24 @@ function PokedexEntry({
         <span className="text-pokeYellow">Lv.{memberLevel}</span>
       </span>
 
+      {isShiny && (
+        <span
+          className="absolute top-2 right-2 text-xs z-10 drop-shadow-[0_0_5px_rgba(255,222,0,0.8)]"
+          title="Shiny Captured!"
+        >
+          ✨
+        </span>
+      )}
+
       <div className="relative w-20 h-20 mt-4 mb-2 shrink-0 pointer-events-none">
         <img
-          src={data.sprite}
+          src={isShiny ? data.shinySprite : data.sprite}
           alt={data.name}
           className="absolute inset-0 w-full h-full object-contain drop-shadow-md"
         />
       </div>
 
-      <span className="font-bold capitalize text-white text-center w-full truncate text-sm mb-1 pointer-events-none">
+      <span className="font-bold capitalize text-white text-center w-full truncate text-sm mb-1 pointer-events-none flex items-center justify-center gap-1">
         {data.name}
       </span>
 
@@ -68,8 +81,9 @@ function PokedexEntry({
         {data.types.map((type) => (
           <span
             key={type}
-            className={`text-[9px] uppercase font-black px-1.5 py-0.5 rounded-full border shadow-sm ${TYPE_BADGE_COLORS[type] || "bg-pokeDarkBlue text-gray-300 border-white/10"}`}
+            className={`text-[9px] uppercase font-black px-1.5 py-0.5 rounded-full border shadow-sm flex items-center gap-1 ${TYPE_BADGE_COLORS[type] || "bg-pokeDarkBlue text-gray-300 border-white/10"}`}
           >
+            <span className="text-xs">{TYPE_ICONS[type]}</span>
             {type}
           </span>
         ))}

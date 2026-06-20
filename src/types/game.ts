@@ -22,6 +22,8 @@ export interface PlayerSlice {
   upgrades: Upgrade[];
   unlockedPokemonIds: number[];
   historicalUnlockedPokemonIds: number[];
+  shinyPokemonIds: number[];
+  isCurrentPokemonShiny: boolean;
   currentPokemonId: number;
   party: number[];
   pokemonLevels: Record<number, number>;

@@ -17,7 +17,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 20,
+      version: 22,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -44,6 +44,10 @@ export const useGameStore = create<GameState>()(
           state.unlockedPokemonIds = [1];
         if (!Array.isArray(state.historicalUnlockedPokemonIds))
           state.historicalUnlockedPokemonIds = [...state.unlockedPokemonIds];
+
+        if (!Array.isArray(state.shinyPokemonIds)) state.shinyPokemonIds = [];
+        if (typeof state.isCurrentPokemonShiny !== "boolean")
+          state.isCurrentPokemonShiny = false;
 
         if (!state.pokemonLevels || typeof state.pokemonLevels !== "object") {
           state.pokemonLevels = {};

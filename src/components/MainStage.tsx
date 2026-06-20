@@ -2,7 +2,11 @@ import { formatNumber } from "../utils/format";
 import { useMainStageVM } from "../viewmodels/useMainStageVM";
 import { PartyRoster } from "./PartyRoster";
 import { Button } from "./ui/Button";
-import { GAME_CONFIG, TYPE_BADGE_COLORS } from "../config/gameConfig";
+import {
+  GAME_CONFIG,
+  TYPE_BADGE_COLORS,
+  TYPE_ICONS,
+} from "../config/gameConfig";
 import { useGameStore } from "../store/useGameStore";
 
 function BossUI() {
@@ -74,6 +78,10 @@ export function MainStage() {
     handleCatch,
   } = useMainStageVM();
 
+  const isCurrentPokemonShiny = useGameStore(
+    (state) => state.isCurrentPokemonShiny,
+  );
+
   return (
     <main
       className={`flex-1 relative flex flex-col items-center justify-center transition-colors duration-1000 overflow-hidden bg-gradient-to-b ${
@@ -140,15 +148,22 @@ export function MainStage() {
           <span className="text-white capitalize font-medium">
             {pokemon?.name || "Loading..."}
           </span>
+          {isCurrentPokemonShiny && (
+            <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded shadow-sm bg-yellow-400 text-black border border-yellow-200">
+              ✨ SHINY
+            </span>
+          )}
           {pokemon?.types?.[0] && (
             <span
-              className={`text-[10px] uppercase font-black px-2 py-0.5 rounded shadow-sm ${TYPE_BADGE_COLORS[pokemon.types[0]] || "bg-white/20 text-white border border-white/10"}`}
+              className={`text-[10px] uppercase font-black px-2 py-0.5 rounded shadow-sm flex items-center gap-1 ${TYPE_BADGE_COLORS[pokemon.types[0]] || "bg-white/20 text-white border border-white/10"}`}
             >
+              <span className="text-xs">{TYPE_ICONS[pokemon.types[0]]}</span>
               {pokemon.types[0]}
             </span>
           )}
           {hasTypeAdvantage && (
-            <span className="absolute -top-3 -right-3 bg-green-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-full shadow-lg border border-green-300 animate-bounce whitespace-nowrap">
+            <span className="absolute -top-3 -right-3 bg-green-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-full shadow-lg border border-green-300 animate-bounce whitespace-nowrap flex items-center gap-1">
+              <span>🎯</span>
               Type Advantage!
             </span>
           )}
@@ -169,11 +184,16 @@ export function MainStage() {
           stopHold();
         }}
       >
+        {isCurrentPokemonShiny && (
+          <div className="absolute inset-0 z-0 animate-spin-slow opacity-60 flex items-center justify-center pointer-events-none">
+            <div className="w-full h-full bg-[radial-gradient(circle,rgba(255,222,0,0.5)_0%,transparent_60%)] blur-md"></div>
+          </div>
+        )}
         {pokemon?.sprite && (
           <img
-            src={pokemon.sprite}
+            src={isCurrentPokemonShiny ? pokemon.shinySprite : pokemon.sprite}
             alt={pokemon.name}
-            className={`w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-transform duration-[50ms] ${
+            className={`relative z-10 w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-transform duration-[50ms] ${
               isCatching
                 ? "animate-suck-in"
                 : spawnFlash

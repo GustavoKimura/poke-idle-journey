@@ -34,14 +34,31 @@ export const createBossSlice: StateCreator<GameState, [], [], BossSlice> = (
           ...state.unlockedPokemonIds,
           state.currentPokemonId + 1,
         ];
+        const newHistorical = Array.from(
+          new Set([
+            ...state.historicalUnlockedPokemonIds,
+            state.currentPokemonId + 1,
+          ]),
+        );
         const { clickPower, passiveIncome } = recalculateTotals(
           state.upgrades,
           newUnlocked.length,
         );
+
+        const newShinies = state.isCurrentPokemonShiny
+          ? Array.from(
+              new Set([...state.shinyPokemonIds, state.currentPokemonId]),
+            )
+          : state.shinyPokemonIds;
+        const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
+
         return {
           isBossActive: false,
           currentPokemonId: state.currentPokemonId + 1,
           unlockedPokemonIds: newUnlocked,
+          historicalUnlockedPokemonIds: newHistorical,
+          shinyPokemonIds: newShinies,
+          isCurrentPokemonShiny: nextShiny,
           multiplier:
             state.multiplier +
             GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId,
