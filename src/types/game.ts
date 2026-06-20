@@ -63,6 +63,7 @@ export interface SystemSlice {
   isPrestigeModalOpen: boolean;
   isHowToPlayOpen: boolean;
   isAscensionModalOpen: boolean;
+  isStatsOpen: boolean;
   lastSaveTime: number;
   offlineEarnings: number;
   offlineSeconds: number;
@@ -78,6 +79,7 @@ export interface SystemSlice {
   togglePrestigeModal: () => void;
   toggleHowToPlay: () => void;
   toggleAscensionModal: () => void;
+  toggleStats: () => void;
   updateSaveTime: () => void;
   setOfflineEarnings: (amount: number, seconds: number) => void;
   claimOfflineEarnings: (boost?: boolean) => void;

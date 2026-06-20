@@ -7,22 +7,12 @@ import {
   Volume2,
   VolumeX,
   HelpCircle,
+  BarChart3,
 } from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
 import { SettingsModal } from "./SettingsModal";
-import {
-  ACHIEVEMENTS,
-  GAME_CONFIG,
-  TYPE_BADGE_COLORS,
-  TYPE_ICONS,
-} from "../config/gameConfig";
-import { ParticleManager } from "../utils/ParticleManager";
-import {
-  calculatePartyMultiplier,
-  calculateTypeSynergyMultiplier,
-  getActiveSynergies,
-} from "../utils/calculations";
+import { ACHIEVEMENTS, GAME_CONFIG } from "../config/gameConfig";
 
 function ScoreDisplay() {
   const scoreRef = useRef<HTMLSpanElement>(null);
@@ -48,50 +38,6 @@ function ScoreDisplay() {
     >
       $0
     </span>
-  );
-}
-
-function DpsDisplay() {
-  const [currentDps, setCurrentDps] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const state = useGameStore.getState();
-      const partyMult = calculatePartyMultiplier(
-        state.party,
-        state.pokemonLevels,
-        state.shinyPokemonIds,
-      );
-      const synergyMult = calculateTypeSynergyMultiplier(state.party);
-      const ascensionMultDPS =
-        1 +
-        state.rareCandies * 0.1 +
-        (state.ascensionUpgrades.click_power || 0) * 1.0;
-
-      const passiveDps =
-        state.passiveIncome *
-        state.multiplier *
-        partyMult *
-        synergyMult *
-        ascensionMultDPS;
-
-      const clickDamage = ParticleManager.flushDamage();
-
-      setCurrentDps(clickDamage + passiveDps);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="flex flex-col items-center">
-      <span className="text-gray-400 text-sm font-semibold uppercase">
-        Current DPS
-      </span>
-      <span className="text-2xl font-bold text-orange-400">
-        ${formatNumber(currentDps)}/s
-      </span>
-    </div>
   );
 }
 
@@ -134,26 +80,8 @@ function PokedexBadge() {
 }
 
 export function Header() {
-  const multiplier = useGameStore((state) => state.multiplier);
   const rareCandies = useGameStore((state) => state.rareCandies);
-  const ascensionUpgrades = useGameStore((state) => state.ascensionUpgrades);
-
-  const party = useGameStore((state) => state.party);
-  const partyMult = useGameStore((state) =>
-    calculatePartyMultiplier(
-      state.party,
-      state.pokemonLevels,
-      state.shinyPokemonIds,
-    ),
-  );
-  const synergyMult = useGameStore((state) =>
-    calculateTypeSynergyMultiplier(state.party),
-  );
-
-  const activeSynergies = getActiveSynergies(party);
-
   const isSoundEnabled = useGameStore((state) => state.isSoundEnabled);
-
   const highestUnlocked = useGameStore(
     (state) => state.historicalUnlockedPokemonIds.length,
   );
@@ -169,12 +97,9 @@ export function Header() {
   const toggleAscensionModal = useGameStore(
     (state) => state.toggleAscensionModal,
   );
+  const toggleStats = useGameStore((state) => state.toggleStats);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  const ascensionMult =
-    1 + rareCandies * 0.1 + (ascensionUpgrades.click_power || 0) * 1.0;
-  const displayMult = multiplier * partyMult * synergyMult * ascensionMult;
 
   return (
     <>
@@ -221,108 +146,79 @@ export function Header() {
           </div>
         </div>
 
-        <div className="flex gap-4 sm:gap-6">
-          {showStats && (
-            <div className="hidden xl:flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10 items-center">
-              <DpsDisplay />
-
-              <div className="flex flex-col items-center">
-                <span className="text-gray-400 text-sm font-semibold uppercase">
-                  Multiplier
-                </span>
-                <span className="text-2xl font-bold text-blue-400">
-                  x
-                  {displayMult < 1000
-                    ? displayMult.toFixed(1)
-                    : formatNumber(displayMult)}
-                </span>
-              </div>
-
-              {activeSynergies.length > 0 && (
-                <div className="flex flex-col items-center pl-8 border-l border-white/10">
-                  <span className="text-green-300 text-sm font-semibold uppercase">
-                    Synergy
-                  </span>
-                  <div className="flex gap-1 mt-1">
-                    {activeSynergies.map((s) => (
-                      <span
-                        key={s.type}
-                        className={`text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1 ${TYPE_BADGE_COLORS[s.type]}`}
-                      >
-                        <span className="text-xs">{TYPE_ICONS[s.type]}</span> +
-                        {s.bonus * 100}%
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {rareCandies > 0 && (
-                <button
-                  onClick={toggleAscensionModal}
-                  className="flex flex-col items-center pl-8 border-l border-white/10 hover:scale-105 transition-transform cursor-pointer"
-                >
-                  <span className="text-pink-300 text-sm font-semibold uppercase flex items-center gap-1 animate-pulse">
-                    <Sparkles size={14} className="text-pink-400" />
-                    Skill Tree
-                  </span>
-                  <span className="text-2xl font-black text-pink-400 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">
-                    {rareCandies}
-                  </span>
-                </button>
-              )}
-            </div>
+        <div className="flex gap-2 sm:gap-4 items-center">
+          {rareCandies > 0 && (
+            <button
+              onClick={toggleAscensionModal}
+              className="hidden lg:flex flex-col items-center px-6 border-r border-white/10 hover:scale-105 transition-transform cursor-pointer"
+            >
+              <span className="text-pink-300 text-sm font-semibold uppercase flex items-center gap-1 animate-pulse">
+                <Sparkles size={14} className="text-pink-400" />
+                Skill Tree
+              </span>
+              <span className="text-2xl font-black text-pink-400 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">
+                {rareCandies}
+              </span>
+            </button>
           )}
 
-          <div className="flex gap-2 sm:gap-4">
+          {showStats && (
             <button
-              onClick={toggleHowToPlay}
-              title="How to Play"
-              className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
+              onClick={toggleStats}
+              title="Statistics"
+              className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-blue-400 hover:bg-blue-400/10 hover:text-blue-400 text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer animate-in zoom-in"
             >
-              <HelpCircle size={22} />
+              <BarChart3 size={22} />
             </button>
+          )}
 
-            <button
-              onClick={toggleSound}
-              title="Toggle Sound"
-              className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
-            >
-              {isSoundEnabled ? (
-                <Volume2 size={22} />
-              ) : (
-                <VolumeX size={22} className="text-red-400" />
-              )}
-            </button>
+          <button
+            onClick={toggleHowToPlay}
+            title="How to Play"
+            className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
+          >
+            <HelpCircle size={22} />
+          </button>
 
-            <button
-              onClick={toggleAchievements}
-              title="Achievements"
-              className="relative flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
-            >
-              <Trophy size={22} />
-              <AchievementBadge />
-            </button>
-
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              title="Settings"
-              className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
-            >
-              <SettingsIcon size={22} />
-            </button>
-
-            {showPokedex && (
-              <button
-                onClick={togglePokedex}
-                className="flex items-center gap-2 bg-pokeDarkBlue border-2 border-pokeYellow/50 hover:border-pokeYellow hover:bg-pokeYellow/10 text-white px-3 sm:px-6 rounded-xl font-bold uppercase transition-all shadow-lg cursor-pointer relative animate-in zoom-in"
-              >
-                <Book size={20} className="text-pokeYellow" />
-                <span className="hidden md:inline">Pokédex</span>
-                <PokedexBadge />
-              </button>
+          <button
+            onClick={toggleSound}
+            title="Toggle Sound"
+            className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
+          >
+            {isSoundEnabled ? (
+              <Volume2 size={22} />
+            ) : (
+              <VolumeX size={22} className="text-red-400" />
             )}
-          </div>
+          </button>
+
+          <button
+            onClick={toggleAchievements}
+            title="Achievements"
+            className="relative flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
+          >
+            <Trophy size={22} />
+            <AchievementBadge />
+          </button>
+
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            title="Settings"
+            className="flex items-center justify-center bg-black/20 border-2 border-white/10 hover:border-pokeYellow hover:bg-pokeYellow/10 hover:text-pokeYellow text-gray-400 w-12 h-12 sm:w-14 sm:h-auto rounded-xl transition-all cursor-pointer"
+          >
+            <SettingsIcon size={22} />
+          </button>
+
+          {showPokedex && (
+            <button
+              onClick={togglePokedex}
+              className="flex items-center gap-2 bg-pokeDarkBlue border-2 border-pokeYellow/50 hover:border-pokeYellow hover:bg-pokeYellow/10 text-white px-3 sm:px-6 rounded-xl font-bold uppercase transition-all shadow-lg cursor-pointer relative animate-in zoom-in"
+            >
+              <Book size={20} className="text-pokeYellow" />
+              <span className="hidden md:inline">Pokédex</span>
+              <PokedexBadge />
+            </button>
+          )}
         </div>
       </header>
 

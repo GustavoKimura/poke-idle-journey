@@ -27,6 +27,42 @@ export const recalculateTotals = (
   };
 };
 
+export const getAwakeningTier = (level: number) => {
+  if (level >= 100)
+    return {
+      name: "Diamond",
+      mult: 10,
+      color:
+        "border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.5)] bg-cyan-900/40 text-cyan-300",
+    };
+  if (level >= 50)
+    return {
+      name: "Gold",
+      mult: 5,
+      color:
+        "border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.5)] bg-yellow-900/40 text-yellow-300",
+    };
+  if (level >= 25)
+    return {
+      name: "Silver",
+      mult: 3,
+      color:
+        "border-gray-300 shadow-[0_0_15px_rgba(209,213,219,0.5)] bg-gray-700/40 text-gray-200",
+    };
+  if (level >= 10)
+    return {
+      name: "Bronze",
+      mult: 2,
+      color:
+        "border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.5)] bg-orange-900/40 text-orange-300",
+    };
+  return {
+    name: "Basic",
+    mult: 1,
+    color: "border-pokeYellow bg-black/60 text-white",
+  };
+};
+
 export const calculatePartyMultiplier = (
   party: number[],
   pokemonLevels: Record<number, number>,
@@ -36,10 +72,11 @@ export const calculatePartyMultiplier = (
     1 +
     party.reduce((acc, pId) => {
       const isShiny = shinyPokemonIds.includes(pId);
-      const mult = isShiny
-        ? GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * 2
-        : GAME_CONFIG.PARTY_MEMBER_MULTIPLIER;
-      return acc + mult * (pokemonLevels[pId] || 1);
+      const level = pokemonLevels[pId] || 1;
+      const tier = getAwakeningTier(level);
+      const baseMult =
+        GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * (isShiny ? 2 : 1) * tier.mult;
+      return acc + baseMult * level;
     }, 0)
   );
 };

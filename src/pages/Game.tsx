@@ -8,6 +8,7 @@ import { HowToPlayModal } from "../components/HowToPlayModal";
 import { PrestigeModal } from "../components/PrestigeModal";
 import { DamageCanvas } from "../components/DamageCanvas";
 import { AscensionModal } from "../components/AscensionModal";
+import { StatsModal } from "../components/StatsModal";
 import { useGameLoop } from "../hooks/useGameLoop";
 
 export function Game() {
@@ -26,6 +27,7 @@ export function Game() {
       <HowToPlayModal />
       <PrestigeModal />
       <AscensionModal />
+      <StatsModal />
       <DamageCanvas />
     </div>
   );
