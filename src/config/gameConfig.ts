@@ -8,7 +8,7 @@ export const GAME_CONFIG = {
   CRIT_CHANCE: 0.05,
   CRIT_MULTIPLIER: 3,
   BASE_POKEMON_COST: 1000,
-  POKEMON_COST_MULTIPLIER: 1.22,
+  POKEMON_COST_MULTIPLIER: 1.75,
   PRESTIGE_MIN_ID: 40,
   POKEMON_MULTIPLIER_REWARD: 0.1,
   MAX_PARTY_SIZE: 6,
@@ -187,109 +187,190 @@ export const TYPE_WEAKNESSES: Record<string, string[]> = {
 
 export const INITIAL_UPGRADES: Upgrade[] = [
   {
-    id: "1",
-    name: "Extra Pokeball",
-    baseCost: 10,
+    id: "c1",
+    name: "Pokeball",
+    baseCost: 15,
     costMultiplier: 1.15,
     count: 0,
     type: "active",
     effect: 1,
   },
   {
-    id: "2",
-    name: "Youngster Trainer",
-    baseCost: 50,
-    costMultiplier: 1.15,
-    count: 0,
-    type: "passive",
-    effect: 2,
-  },
-  {
-    id: "3",
-    name: "Local Gym",
-    baseCost: 500,
-    costMultiplier: 1.15,
-    count: 0,
-    type: "passive",
-    effect: 25,
-  },
-  {
-    id: "4",
-    name: "Pokemon Daycare",
-    baseCost: 5000,
-    costMultiplier: 1.15,
-    count: 0,
-    type: "passive",
-    effect: 150,
-  },
-  {
-    id: "5",
-    name: "Silph Co. Scope",
-    baseCost: 25000,
-    costMultiplier: 1.15,
+    id: "c2",
+    name: "Great Ball",
+    baseCost: 50000,
+    costMultiplier: 1.5,
     count: 0,
     type: "active",
-    effect: 1000,
+    effect: 50,
   },
   {
-    id: "6",
-    name: "Safari Zone Pass",
-    baseCost: 100000,
-    costMultiplier: 1.18,
+    id: "c3",
+    name: "Ultra Ball",
+    baseCost: 5000000,
+    costMultiplier: 5,
+    count: 0,
+    type: "active",
+    effect: 1,
+  },
+  {
+    id: "c4",
+    name: "Master Ball",
+    baseCost: 5000000000,
+    costMultiplier: 10,
+    count: 0,
+    type: "active",
+    effect: 5,
+  },
+  {
+    id: "p1",
+    name: "Youngster Trainer",
+    baseCost: 100,
+    costMultiplier: 1.15,
     count: 0,
     type: "passive",
-    effect: 4000,
+    effect: 1,
   },
   {
-    id: "7",
-    name: "Master Ball Factory",
-    baseCost: 1000000,
-    costMultiplier: 1.25,
+    id: "p2",
+    name: "Berry Farm",
+    baseCost: 1100,
+    costMultiplier: 1.15,
     count: 0,
     type: "passive",
-    effect: 25000,
+    effect: 8,
   },
   {
-    id: "8",
+    id: "p3",
+    name: "Evolution Mine",
+    baseCost: 12000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 47,
+  },
+  {
+    id: "p4",
+    name: "Pokeblock Factory",
+    baseCost: 130000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 260,
+  },
+  {
+    id: "p5",
+    name: "Game Corner",
+    baseCost: 1400000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 1400,
+  },
+  {
+    id: "p6",
+    name: "Pokemon Tower",
+    baseCost: 20000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 7800,
+  },
+  {
+    id: "p7",
+    name: "Silph Co. Lab",
+    baseCost: 330000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 44000,
+  },
+  {
+    id: "p8",
+    name: "Space Center",
+    baseCost: 5100000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 260000,
+  },
+  {
+    id: "p9",
+    name: "Cinnabar Lab",
+    baseCost: 75000000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 1600000,
+  },
+  {
+    id: "p10",
+    name: "Ultra Wormhole",
+    baseCost: 1000000000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 10000000,
+  },
+  {
+    id: "p11",
+    name: "Celebi's Shrine",
+    baseCost: 14000000000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 65000000,
+  },
+  {
+    id: "p12",
+    name: "Aether Paradise",
+    baseCost: 170000000000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 430000000,
+  },
+  {
+    id: "p13",
+    name: "Necrozma Prism",
+    baseCost: 2100000000000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 2900000000,
+  },
+  {
+    id: "p14",
+    name: "Jirachi's Grove",
+    baseCost: 26000000000000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 21000000000,
+  },
+  {
+    id: "p15",
+    name: "Arceus Realm",
+    baseCost: 310000000000000000,
+    costMultiplier: 1.15,
+    count: 0,
+    type: "passive",
+    effect: 150000000000,
+  },
+  {
+    id: "s1",
     name: "Pokedex Scholar",
-    baseCost: 15000000,
-    costMultiplier: 1.4,
+    baseCost: 100000000,
+    costMultiplier: 2.5,
     count: 0,
     type: "synergy",
     effect: 0.01,
   },
   {
-    id: "9",
-    name: "Pokemon Breeder",
-    baseCost: 250000000,
-    costMultiplier: 1.2,
-    count: 0,
-    type: "passive",
-    effect: 850000,
-  },
-  {
-    id: "10",
+    id: "s2",
     name: "Shiny Charm",
-    baseCost: 5000000000,
-    costMultiplier: 1.5,
-    count: 0,
-    type: "synergy",
-    effect: 0.02,
-  },
-  {
-    id: "11",
-    name: "Elite Four Sponsorship",
     baseCost: 100000000000,
-    costMultiplier: 1.22,
-    count: 0,
-    type: "passive",
-    effect: 25000000,
-  },
-  {
-    id: "12",
-    name: "Professor's Lab",
-    baseCost: 5000000000000,
-    costMultiplier: 1.6,
+    costMultiplier: 3.5,
     count: 0,
     type: "synergy",
     effect: 0.05,
@@ -470,6 +551,12 @@ export const getMilestoneMultiplier = (count: number): number => {
   if (count >= 25) mult *= 2;
   if (count >= 50) mult *= 2;
   if (count >= 100) mult *= 2;
+  if (count >= 150) mult *= 2;
+  if (count >= 200) mult *= 2;
+  if (count >= 250) mult *= 2;
+  if (count >= 300) mult *= 2;
+  if (count >= 350) mult *= 2;
+  if (count >= 400) mult *= 2;
   return mult;
 };
 
@@ -478,6 +565,12 @@ export const getNextMilestone = (count: number): number | null => {
   if (count < 25) return 25;
   if (count < 50) return 50;
   if (count < 100) return 100;
+  if (count < 150) return 150;
+  if (count < 200) return 200;
+  if (count < 250) return 250;
+  if (count < 300) return 300;
+  if (count < 350) return 350;
+  if (count < 400) return 400;
   return null;
 };
 
@@ -486,11 +579,11 @@ export const calculatePrestigeReward = (
   totalClicks: number = 0,
 ): number => {
   if (currentId < GAME_CONFIG.PRESTIGE_MIN_ID) return 0;
-  const clickBonus = Math.floor(Math.sqrt(totalClicks / 500));
-  const stageBonus = Math.floor(Math.pow(currentId - 30, 1.2) / 5);
+  const clickBonus = Math.floor(Math.sqrt(totalClicks / 1000));
+  const stageBonus = Math.floor(Math.pow(currentId - 35, 1.8) / 2);
   const total = stageBonus + clickBonus;
   if (currentId >= GAME_CONFIG.MAX_POKEMON_ID) {
-    return total + 5;
+    return total + 500;
   }
   return total;
 };
@@ -499,7 +592,7 @@ export const calculatePartyUpgradeCost = (
   level: number,
   discountLevels: number = 0,
 ): number => {
-  const base = Math.floor(50000 * Math.pow(1.35, level - 1));
+  const base = Math.floor(50000 * Math.pow(1.6, level - 1));
   const discount = 1 - discountLevels * 0.05;
   return Math.floor(base * Math.max(0.5, discount));
 };

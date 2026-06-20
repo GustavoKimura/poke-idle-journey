@@ -41,7 +41,7 @@ export const useGameStore = create<GameState>()(
     {
       name: "poke-idle-storage",
       storage: createJSONStorage(() => idbStorage),
-      version: 29,
+      version: 30,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -156,24 +156,23 @@ export const useGameStore = create<GameState>()(
           state.isVictoryModalOpen = false;
 
         if (Array.isArray(state.upgrades)) {
-          state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {
-            const initialMatch = INITIAL_UPGRADES.find(
-              (init) => init.id === u.id,
-            );
-            if (!initialMatch) return u as Upgrade;
-            return {
-              ...initialMatch,
-              count:
-                typeof u.count !== "number" || Number.isNaN(u.count)
-                  ? 0
-                  : u.count,
-            };
-          });
+          const validUpgrades = state.upgrades.filter((u: Partial<Upgrade>) =>
+            INITIAL_UPGRADES.some((init) => init.id === u.id),
+          );
 
-          INITIAL_UPGRADES.forEach((init) => {
-            if (!state.upgrades!.find((u: Upgrade) => u.id === init.id)) {
-              state.upgrades!.push({ ...init });
-            }
+          state.upgrades = INITIAL_UPGRADES.map((init) => {
+            const existing = validUpgrades.find(
+              (u: Partial<Upgrade>) => u.id === init.id,
+            );
+            return {
+              ...init,
+              count:
+                existing &&
+                typeof existing.count === "number" &&
+                !Number.isNaN(existing.count)
+                  ? existing.count
+                  : 0,
+            };
           });
         } else {
           state.upgrades = INITIAL_UPGRADES.map((u) => ({ ...u }));

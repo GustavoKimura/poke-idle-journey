@@ -9,11 +9,16 @@ export const recalculateTotals = (
   let baseClick = 1;
   let basePassive = 0;
   let synergyBonus = 0;
+  let passiveToClickPct = 0;
 
   upgrades.forEach((u) => {
     const mult = getMilestoneMultiplier(u.count);
     if (u.type === "active") {
-      baseClick += u.count * u.effect * mult;
+      if (u.id === "c3" || u.id === "c4") {
+        passiveToClickPct += u.count * (u.effect / 100) * mult;
+      } else {
+        baseClick += u.count * u.effect * mult;
+      }
     } else if (u.type === "passive") {
       basePassive += u.count * u.effect * mult;
     } else if (u.type === "synergy") {
@@ -21,9 +26,13 @@ export const recalculateTotals = (
     }
   });
 
+  const finalPassive = basePassive * (1 + synergyBonus);
+  const finalClick =
+    (baseClick + finalPassive * passiveToClickPct) * (1 + synergyBonus);
+
   return {
-    clickPower: baseClick * (1 + synergyBonus),
-    passiveIncome: basePassive * (1 + synergyBonus),
+    clickPower: finalClick,
+    passiveIncome: finalPassive,
   };
 };
 
@@ -129,7 +138,7 @@ export const calculateShinyChance = (
   ascensionUpgrades: Record<string, number>,
 ): number => {
   const shinyCharm = upgrades.find(
-    (u) => u.id === "10" || u.name === "Shiny Charm",
+    (u) => u.id === "s2" || u.name === "Shiny Charm",
   );
   const charmCount = shinyCharm ? shinyCharm.count : 0;
 
