@@ -4,6 +4,7 @@ import { useUpgradeItemVM } from "../viewmodels/useUpgradesVM";
 import type { BuyMultiplierOption } from "../viewmodels/useUpgradesVM";
 import { getMilestoneMultiplier, getNextMilestone } from "../config/gameConfig";
 import { useGameStore } from "../store/useGameStore";
+import { Lock } from "lucide-react";
 
 const MULTIPLIERS: BuyMultiplierOption[] = [1, 10, 100, "max"];
 
@@ -95,7 +96,30 @@ export function UpgradeSidebar() {
   const upgradeIdsHash = useGameStore((state) =>
     state.upgrades.map((u) => u.id).join(","),
   );
+
+  const highestUnlocked = useGameStore(
+    (state) => state.historicalUnlockedPokemonIds.length,
+  );
+  const hasPrestiged = useGameStore((state) => state.rareCandies > 0);
+  const showUpgrades = highestUnlocked >= 3 || hasPrestiged;
+
   const [buyMultiplier, setBuyMultiplier] = useState<BuyMultiplierOption>(1);
+
+  if (!showUpgrades) {
+    return (
+      <aside className="w-full lg:w-96 h-[45%] lg:h-full shrink-0 bg-pokeDarkBlue border-t-4 lg:border-t-0 lg:border-l-4 border-pokeYellow/20 flex flex-col shadow-2xl z-20">
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-black/40 border border-white/5 m-4 rounded-2xl">
+          <Lock size={48} className="mb-4 text-gray-500 animate-pulse" />
+          <h2 className="text-xl font-black text-gray-400 uppercase tracking-widest mb-2">
+            Locked Area
+          </h2>
+          <p className="text-gray-500 text-sm">
+            Defeat 3 Pokémon to unlock the Trainer Upgrades store.
+          </p>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside className="w-full lg:w-96 h-[45%] lg:h-full shrink-0 bg-pokeDarkBlue border-t-4 lg:border-t-0 lg:border-l-4 border-pokeYellow/20 flex flex-col shadow-2xl z-20">

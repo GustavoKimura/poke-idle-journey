@@ -13,7 +13,7 @@ function initAudio() {
     }
   }
   if (audioCtx?.state === "suspended") {
-    audioCtx.resume();
+    audioCtx.resume().catch(() => {});
   }
 }
 
@@ -56,8 +56,15 @@ export function playClickSound(
 
   oscillator.type = isCritical ? "square" : "sine";
 
-  const baseFreq = isCritical ? 800 : 400;
-  const targetFreq = baseFreq * Math.min(comboMultiplier, 3);
+  const pentatonicRatios = [1, 1.122, 1.259, 1.498, 1.681];
+  const clicksCount = Math.round((comboMultiplier - 1) / 0.02);
+  const octave = Math.floor(clicksCount / 5);
+  const scaleIndex = clicksCount % 5;
+  const harmonicMult =
+    pentatonicRatios[scaleIndex] * Math.pow(2, Math.min(octave, 3));
+
+  const baseFreq = isCritical ? 600 : 300;
+  const targetFreq = baseFreq * harmonicMult;
 
   oscillator.frequency.setValueAtTime(targetFreq, ctx.currentTime);
   oscillator.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.1);

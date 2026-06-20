@@ -11,9 +11,18 @@ import {
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
 import { SettingsModal } from "./SettingsModal";
-import { ACHIEVEMENTS, GAME_CONFIG } from "../config/gameConfig";
+import {
+  ACHIEVEMENTS,
+  GAME_CONFIG,
+  TYPE_BADGE_COLORS,
+  TYPE_ICONS,
+} from "../config/gameConfig";
 import { ParticleManager } from "../utils/ParticleManager";
-import { calculatePartyMultiplier } from "../utils/calculations";
+import {
+  calculatePartyMultiplier,
+  calculateTypeSynergyMultiplier,
+  getActiveSynergies,
+} from "../utils/calculations";
 
 function ScoreDisplay() {
   const scoreRef = useRef<HTMLSpanElement>(null);
@@ -53,13 +62,18 @@ function DpsDisplay() {
         state.pokemonLevels,
         state.shinyPokemonIds,
       );
+      const synergyMult = calculateTypeSynergyMultiplier(state.party);
       const ascensionMultDPS =
         1 +
         state.rareCandies * 0.1 +
         (state.ascensionUpgrades.click_power || 0) * 1.0;
 
       const passiveDps =
-        state.passiveIncome * state.multiplier * partyMult * ascensionMultDPS;
+        state.passiveIncome *
+        state.multiplier *
+        partyMult *
+        synergyMult *
+        ascensionMultDPS;
 
       const clickDamage = ParticleManager.flushDamage();
 
@@ -124,6 +138,7 @@ export function Header() {
   const rareCandies = useGameStore((state) => state.rareCandies);
   const ascensionUpgrades = useGameStore((state) => state.ascensionUpgrades);
 
+  const party = useGameStore((state) => state.party);
   const partyMult = useGameStore((state) =>
     calculatePartyMultiplier(
       state.party,
@@ -131,8 +146,21 @@ export function Header() {
       state.shinyPokemonIds,
     ),
   );
+  const synergyMult = useGameStore((state) =>
+    calculateTypeSynergyMultiplier(state.party),
+  );
+
+  const activeSynergies = getActiveSynergies(party);
 
   const isSoundEnabled = useGameStore((state) => state.isSoundEnabled);
+
+  const highestUnlocked = useGameStore(
+    (state) => state.historicalUnlockedPokemonIds.length,
+  );
+  const hasPrestiged = rareCandies > 0;
+
+  const showStats = highestUnlocked >= 3 || hasPrestiged;
+  const showPokedex = highestUnlocked >= 2 || hasPrestiged;
 
   const toggleSound = useGameStore((state) => state.toggleSound);
   const togglePokedex = useGameStore((state) => state.togglePokedex);
@@ -146,7 +174,7 @@ export function Header() {
 
   const ascensionMult =
     1 + rareCandies * 0.1 + (ascensionUpgrades.click_power || 0) * 1.0;
-  const displayMult = multiplier * partyMult * ascensionMult;
+  const displayMult = multiplier * partyMult * synergyMult * ascensionMult;
 
   return (
     <>
@@ -194,34 +222,57 @@ export function Header() {
         </div>
 
         <div className="flex gap-4 sm:gap-6">
-          <div className="hidden lg:flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10 items-center">
-            <DpsDisplay />
-            <div className="flex flex-col items-center">
-              <span className="text-gray-400 text-sm font-semibold uppercase">
-                Multiplier
-              </span>
-              <span className="text-2xl font-bold text-blue-400">
-                x
-                {displayMult < 1000
-                  ? displayMult.toFixed(1)
-                  : formatNumber(displayMult)}
-              </span>
+          {showStats && (
+            <div className="hidden xl:flex gap-8 bg-black/20 p-4 rounded-xl border border-white/10 items-center">
+              <DpsDisplay />
+
+              <div className="flex flex-col items-center">
+                <span className="text-gray-400 text-sm font-semibold uppercase">
+                  Multiplier
+                </span>
+                <span className="text-2xl font-bold text-blue-400">
+                  x
+                  {displayMult < 1000
+                    ? displayMult.toFixed(1)
+                    : formatNumber(displayMult)}
+                </span>
+              </div>
+
+              {activeSynergies.length > 0 && (
+                <div className="flex flex-col items-center pl-8 border-l border-white/10">
+                  <span className="text-green-300 text-sm font-semibold uppercase">
+                    Synergy
+                  </span>
+                  <div className="flex gap-1 mt-1">
+                    {activeSynergies.map((s) => (
+                      <span
+                        key={s.type}
+                        className={`text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1 ${TYPE_BADGE_COLORS[s.type]}`}
+                      >
+                        <span className="text-xs">{TYPE_ICONS[s.type]}</span> +
+                        {s.bonus * 100}%
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {rareCandies > 0 && (
+                <button
+                  onClick={toggleAscensionModal}
+                  className="flex flex-col items-center pl-8 border-l border-white/10 hover:scale-105 transition-transform cursor-pointer"
+                >
+                  <span className="text-pink-300 text-sm font-semibold uppercase flex items-center gap-1 animate-pulse">
+                    <Sparkles size={14} className="text-pink-400" />
+                    Skill Tree
+                  </span>
+                  <span className="text-2xl font-black text-pink-400 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">
+                    {rareCandies}
+                  </span>
+                </button>
+              )}
             </div>
-            {rareCandies > 0 && (
-              <button
-                onClick={toggleAscensionModal}
-                className="flex flex-col items-center pl-8 border-l border-white/10 hover:scale-105 transition-transform cursor-pointer"
-              >
-                <span className="text-pink-300 text-sm font-semibold uppercase flex items-center gap-1 animate-pulse">
-                  <Sparkles size={14} className="text-pink-400" />
-                  Skill Tree
-                </span>
-                <span className="text-2xl font-black text-pink-400 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">
-                  {rareCandies}
-                </span>
-              </button>
-            )}
-          </div>
+          )}
 
           <div className="flex gap-2 sm:gap-4">
             <button
@@ -261,14 +312,16 @@ export function Header() {
               <SettingsIcon size={22} />
             </button>
 
-            <button
-              onClick={togglePokedex}
-              className="flex items-center gap-2 bg-pokeDarkBlue border-2 border-pokeYellow/50 hover:border-pokeYellow hover:bg-pokeYellow/10 text-white px-3 sm:px-6 rounded-xl font-bold uppercase transition-all shadow-lg cursor-pointer relative"
-            >
-              <Book size={20} className="text-pokeYellow" />
-              <span className="hidden md:inline">Pokédex</span>
-              <PokedexBadge />
-            </button>
+            {showPokedex && (
+              <button
+                onClick={togglePokedex}
+                className="flex items-center gap-2 bg-pokeDarkBlue border-2 border-pokeYellow/50 hover:border-pokeYellow hover:bg-pokeYellow/10 text-white px-3 sm:px-6 rounded-xl font-bold uppercase transition-all shadow-lg cursor-pointer relative animate-in zoom-in"
+              >
+                <Book size={20} className="text-pokeYellow" />
+                <span className="hidden md:inline">Pokédex</span>
+                <PokedexBadge />
+              </button>
+            )}
           </div>
         </div>
       </header>

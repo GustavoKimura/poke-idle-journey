@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useGameStore } from "../store/useGameStore";
 import { GAME_CONFIG } from "../config/gameConfig";
-import { calculatePartyMultiplier } from "../utils/calculations";
+import {
+  calculatePartyMultiplier,
+  calculateTypeSynergyMultiplier,
+} from "../utils/calculations";
 
 export function useGameLoop() {
   const requestRef = useRef<number>(0);
@@ -25,6 +28,7 @@ export function useGameLoop() {
         state.pokemonLevels,
         state.shinyPokemonIds,
       );
+      const synergyMult = calculateTypeSynergyMultiplier(state.party);
       const ascensionMult =
         1 +
         state.rareCandies * 0.1 +
@@ -34,6 +38,7 @@ export function useGameLoop() {
         state.passiveIncome *
         state.multiplier *
         partyMult *
+        synergyMult *
         ascensionMult *
         timeDiffSeconds;
 
@@ -66,6 +71,7 @@ export function useGameLoop() {
           currentState.pokemonLevels,
           currentState.shinyPokemonIds,
         );
+        const synergyMult = calculateTypeSynergyMultiplier(currentState.party);
         const ascensionMult =
           1 +
           currentState.rareCandies * 0.1 +
@@ -75,6 +81,7 @@ export function useGameLoop() {
           currentState.passiveIncome *
           currentState.multiplier *
           partyMult *
+          synergyMult *
           ascensionMult;
 
         uncommittedIncomeRef.current += incomePerSecond * deltaTime;

@@ -16,7 +16,10 @@ import {
   calculateNextPokemonCost,
 } from "../config/gameConfig";
 import { ParticleManager } from "../utils/ParticleManager";
-import { calculatePartyMultiplier } from "../utils/calculations";
+import {
+  calculatePartyMultiplier,
+  calculateTypeSynergyMultiplier,
+} from "../utils/calculations";
 
 export function useMainStageVM() {
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
@@ -147,6 +150,7 @@ export function useMainStageVM() {
         state.pokemonLevels,
         state.shinyPokemonIds,
       );
+      const synergyMult = calculateTypeSynergyMultiplier(state.party);
       const ascensionMult =
         1 +
         state.rareCandies * 0.1 +
@@ -156,6 +160,7 @@ export function useMainStageVM() {
         state.clickPower *
         state.multiplier *
         partyMult *
+        synergyMult *
         ascensionMult *
         critMultiplier *
         comboMultiplier *

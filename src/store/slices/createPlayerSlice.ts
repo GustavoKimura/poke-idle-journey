@@ -15,6 +15,7 @@ import { playCatchSound, playUpgradeSound } from "../../utils/audio";
 import {
   recalculateTotals,
   calculatePartyMultiplier,
+  calculateTypeSynergyMultiplier,
 } from "../../utils/calculations";
 
 export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
@@ -122,7 +123,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         state.pokemonLevels,
         state.shinyPokemonIds,
       );
-
+      const synergyMult = calculateTypeSynergyMultiplier(state.party);
       const ascensionMult =
         1 +
         state.rareCandies * 0.1 +
@@ -132,6 +133,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         state.clickPower *
         state.multiplier *
         partyMult *
+        synergyMult *
         ascensionMult *
         critMultiplier *
         comboMultiplier *
