@@ -58,6 +58,7 @@ export function useMainStageVM() {
   }, [pokemon, party, partyLoaded]);
 
   const advantageColor = useMemo(() => {
+    void partyLoaded;
     if (!hasTypeAdvantage || !pokemon) return null;
     const targetWeaknesses = pokemon.types.flatMap(
       (t) => TYPE_WEAKNESSES[t] || [],

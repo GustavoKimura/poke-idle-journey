@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { Sword } from "lucide-react";
 import { usePokeAPI } from "../hooks/usePokeAPI";
 import { useGameStore } from "../store/useGameStore";
-import { GAME_CONFIG, TYPE_WEAKNESSES } from "../config/gameConfig";
+import {
+  GAME_CONFIG,
+  TYPE_WEAKNESSES,
+  calculatePartyUpgradeCost,
+} from "../config/gameConfig";
 import { getAwakeningTier } from "../utils/calculations";
 
 function PartySlot({ id, index }: { id?: number; index: number }) {
@@ -19,6 +23,9 @@ function PartySlot({ id, index }: { id?: number; index: number }) {
   const score = useGameStore((state) => state.score);
   const cdEnd = useGameStore((state) =>
     id ? state.partyCooldowns[id] || 0 : 0,
+  );
+  const discountLevels = useGameStore(
+    (state) => state.ascensionUpgrades.party_discount || 0,
   );
 
   const { data: targetData } = usePokeAPI(currentPokemonId);
@@ -37,7 +44,10 @@ function PartySlot({ id, index }: { id?: number; index: number }) {
   const cdPct = isOnCd ? (cdLeft / 30000) * 100 : 0;
   const memberLevel = id ? pokemonLevels[id] || 1 : 0;
   const tier = getAwakeningTier(memberLevel);
-  const upgradeCost = id ? Math.floor(50000 * Math.pow(2, memberLevel - 1)) : 0;
+
+  const upgradeCost = id
+    ? calculatePartyUpgradeCost(memberLevel, discountLevels)
+    : 0;
   const canAfford = score >= upgradeCost;
 
   const targetWeaknesses =

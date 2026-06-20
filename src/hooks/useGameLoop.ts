@@ -20,8 +20,15 @@ export function useGameLoop() {
     const now = Date.now();
     const timeDiffSeconds = (now - state.lastSaveTime) / 1000;
 
+    const extraOfflineHours =
+      (state.ascensionUpgrades.offline_cap || 0) * 43200;
+    const maxOfflineTime =
+      GAME_CONFIG.MAX_OFFLINE_SECONDS_BASE + extraOfflineHours;
+
+    const effectiveOfflineSeconds = Math.min(timeDiffSeconds, maxOfflineTime);
+
     if (
-      timeDiffSeconds > GAME_CONFIG.OFFLINE_MIN_SECONDS &&
+      effectiveOfflineSeconds > GAME_CONFIG.OFFLINE_MIN_SECONDS &&
       state.passiveIncome > 0
     ) {
       const partyMult = calculatePartyMultiplier(
@@ -41,9 +48,9 @@ export function useGameLoop() {
         partyMult *
         synergyMult *
         ascensionMult *
-        timeDiffSeconds;
+        effectiveOfflineSeconds;
 
-      state.setOfflineEarnings(earned, timeDiffSeconds);
+      state.setOfflineEarnings(earned, effectiveOfflineSeconds);
     }
 
     state.updateSaveTime();

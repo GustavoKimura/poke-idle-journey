@@ -26,8 +26,11 @@ function PokedexEntry({
   const partyLength = useGameStore((state) => state.party.length);
   const togglePartyMember = useGameStore((state) => state.togglePartyMember);
   const upgradePokemon = useGameStore((state) => state.upgradePokemon);
+  const discountLevels = useGameStore(
+    (state) => state.ascensionUpgrades.party_discount || 0,
+  );
 
-  const upgradeCost = calculatePartyUpgradeCost(memberLevel);
+  const upgradeCost = calculatePartyUpgradeCost(memberLevel, discountLevels);
   const canAffordUpgrade = useGameStore((state) => state.score >= upgradeCost);
 
   const handleToggle = () => {

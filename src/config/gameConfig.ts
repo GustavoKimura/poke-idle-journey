@@ -3,6 +3,7 @@ import type { Upgrade } from "../types/game";
 export const GAME_CONFIG = {
   MAX_POKEMON_ID: 151,
   OFFLINE_MIN_SECONDS: 5,
+  MAX_OFFLINE_SECONDS_BASE: 43200,
   SAVE_INTERVAL_MS: 10000,
   CRIT_CHANCE: 0.05,
   CRIT_MULTIPLIER: 3,
@@ -65,6 +66,22 @@ export const ASCENSION_UPGRADES = [
     baseCost: 10,
     costMultiplier: 5,
     maxLevel: 2,
+  },
+  {
+    id: "offline_cap",
+    name: "Idle Mastery",
+    desc: "+12h Max Offline Time per level",
+    baseCost: 5,
+    costMultiplier: 3,
+    maxLevel: 5,
+  },
+  {
+    id: "party_discount",
+    name: "Trainer Discount",
+    desc: "-5% Party Upgrade Cost per level",
+    baseCost: 8,
+    costMultiplier: 2.5,
+    maxLevel: 10,
   },
 ];
 
@@ -470,6 +487,11 @@ export const calculatePrestigeReward = (
   return total;
 };
 
-export const calculatePartyUpgradeCost = (level: number): number => {
-  return Math.floor(50000 * Math.pow(1.35, level - 1));
+export const calculatePartyUpgradeCost = (
+  level: number,
+  discountLevels: number = 0,
+): number => {
+  const base = Math.floor(50000 * Math.pow(1.35, level - 1));
+  const discount = 1 - discountLevels * 0.05;
+  return Math.floor(base * Math.max(0.5, discount));
 };

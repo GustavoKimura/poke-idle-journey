@@ -59,7 +59,8 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
   upgradePokemon: (id) =>
     set((state) => {
       const currentLevel = state.pokemonLevels[id] || 1;
-      const cost = calculatePartyUpgradeCost(currentLevel);
+      const discountLevels = state.ascensionUpgrades.party_discount || 0;
+      const cost = calculatePartyUpgradeCost(currentLevel, discountLevels);
       if (state.score < cost) return state;
       playUpgradeSound();
       return {
