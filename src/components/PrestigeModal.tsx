@@ -11,7 +11,6 @@ export function PrestigeModal() {
   const togglePrestigeModal = useGameStore(
     (state) => state.togglePrestigeModal,
   );
-  const prestige = useGameStore((state) => state.prestige);
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
   const totalClicks = useGameStore((state) => state.totalClicks);
   const rareCandies = useGameStore((state) => state.rareCandies);
@@ -56,9 +55,10 @@ export function PrestigeModal() {
 
         <div className="w-full bg-pink-900/20 border border-pink-500/30 rounded-xl p-4">
           <p className="text-sm text-pink-100">
-            Each Rare Candy permanently grants a{" "}
-            <strong className="text-white">+100% Global Multiplier</strong> to
-            all your clicks and passive income forever!
+            Unspent Rare Candies grant a passive 10% global multiplier, but
+            spending them in the{" "}
+            <strong className="text-white">Skill Tree</strong> unlocks massive
+            permanent boosts!
           </p>
         </div>
 
@@ -69,7 +69,7 @@ export function PrestigeModal() {
           <Button
             variant="primary"
             fullWidth
-            onClick={prestige}
+            onClick={useGameStore.getState().prestige}
             className="bg-gradient-to-r from-pink-500 to-purple-600 text-white border-2 border-pink-300 shadow-[0_0_20px_rgba(236,72,153,0.6)]"
           >
             Confirm Prestige

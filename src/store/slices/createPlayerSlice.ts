@@ -4,10 +4,12 @@ import {
   GAME_CONFIG,
   INITIAL_UPGRADES,
   ACHIEVEMENTS,
+  ASCENSION_UPGRADES,
   calculateMultipleUpgradeCost,
   calculateNextPokemonCost,
   calculatePrestigeReward,
   calculatePartyUpgradeCost,
+  calculateAscensionCost,
 } from "../../config/gameConfig";
 import { playCatchSound, playUpgradeSound } from "../../utils/audio";
 import { recalculateTotals } from "../../utils/calculations";
@@ -28,13 +30,16 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
   pokemonLevels: {},
   totalClicks: 0,
   unlockedAchievements: [],
+  ascensionUpgrades: {},
 
   togglePartyMember: (id) =>
     set((state) => {
       if (state.party.includes(id)) {
         return { party: state.party.filter((pId) => pId !== id) };
       }
-      if (state.party.length >= GAME_CONFIG.MAX_PARTY_SIZE) return state;
+      const maxPartySize =
+        GAME_CONFIG.MAX_PARTY_SIZE + (state.ascensionUpgrades.party_size || 0);
+      if (state.party.length >= maxPartySize) return state;
       return { party: [...state.party, id] };
     }),
 
@@ -81,6 +86,30 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       };
     }),
 
+  buyAscensionUpgrade: (id) =>
+    set((state) => {
+      const upgrade = ASCENSION_UPGRADES.find((u) => u.id === id);
+      if (!upgrade) return state;
+
+      const currentLevel = state.ascensionUpgrades[id] || 0;
+      if (currentLevel >= upgrade.maxLevel) return state;
+
+      const cost = calculateAscensionCost(
+        upgrade.baseCost,
+        upgrade.costMultiplier,
+        currentLevel,
+      );
+      if (state.rareCandies < cost) return state;
+
+      return {
+        rareCandies: state.rareCandies - cost,
+        ascensionUpgrades: {
+          ...state.ascensionUpgrades,
+          [id]: currentLevel + 1,
+        },
+      };
+    }),
+
   click: (critMultiplier = 1, comboMultiplier = 1, typeMultiplier = 1) =>
     set((state) => {
       const partyMult =
@@ -92,11 +121,17 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
               (state.pokemonLevels[pId] || 1),
           0,
         );
+
+      const ascensionMult =
+        1 +
+        state.rareCandies * 0.1 +
+        (state.ascensionUpgrades.click_power || 0) * 1.0;
+
       const amount =
         state.clickPower *
         state.multiplier *
         partyMult *
-        (1 + state.rareCandies) *
+        ascensionMult *
         critMultiplier *
         comboMultiplier *
         typeMultiplier;
@@ -261,12 +296,14 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       pokemonLevels: {},
       totalClicks: 0,
       unlockedAchievements: [],
+      ascensionUpgrades: {},
       isBossActive: false,
       bossHp: 0,
       bossMaxHp: 0,
       bossTimeLeft: 0,
       isPokedexOpen: false,
       isPrestigeModalOpen: false,
+      isAscensionModalOpen: false,
       offlineEarnings: 0,
       offlineSeconds: 0,
       lastSaveTime: Date.now(),

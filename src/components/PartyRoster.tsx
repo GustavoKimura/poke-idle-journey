@@ -72,10 +72,14 @@ function PartySlot({ id, index }: { id?: number; index: number }) {
 
 export function PartyRoster() {
   const party = useGameStore((state) => state.party);
+  const extraPartySlots = useGameStore(
+    (state) => state.ascensionUpgrades.party_size || 0,
+  );
+  const maxPartySize = GAME_CONFIG.MAX_PARTY_SIZE + extraPartySlots;
 
   return (
     <div className="flex gap-1 sm:gap-2 bg-black/30 p-2 rounded-2xl border border-white/5 backdrop-blur-sm shadow-xl">
-      {Array.from({ length: GAME_CONFIG.MAX_PARTY_SIZE }).map((_, i) => (
+      {Array.from({ length: maxPartySize }).map((_, i) => (
         <PartySlot key={i} index={i} id={party[i]} />
       ))}
     </div>

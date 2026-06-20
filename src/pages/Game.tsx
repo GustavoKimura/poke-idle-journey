@@ -7,6 +7,7 @@ import { AchievementsModal } from "../components/AchievementsModal";
 import { HowToPlayModal } from "../components/HowToPlayModal";
 import { PrestigeModal } from "../components/PrestigeModal";
 import { DamageCanvas } from "../components/DamageCanvas";
+import { AscensionModal } from "../components/AscensionModal";
 import { useGameLoop } from "../hooks/useGameLoop";
 
 export function Game() {
@@ -24,6 +25,7 @@ export function Game() {
       <OfflineModal />
       <HowToPlayModal />
       <PrestigeModal />
+      <AscensionModal />
       <DamageCanvas />
     </div>
   );

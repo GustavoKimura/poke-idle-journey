@@ -129,7 +129,10 @@ export function useMainStageVM() {
   const triggerClick = useCallback(
     (clientX: number, clientY: number, targetElem: HTMLElement | null) => {
       const state = useGameStore.getState();
-      const isCritical = Math.random() < GAME_CONFIG.CRIT_CHANCE;
+
+      const extraCritChance = (state.ascensionUpgrades.crit_chance || 0) * 0.01;
+      const isCritical =
+        Math.random() < GAME_CONFIG.CRIT_CHANCE + extraCritChance;
       const critMultiplier = isCritical ? GAME_CONFIG.CRIT_MULTIPLIER : 1;
 
       comboRef.current += 1;
@@ -148,11 +151,16 @@ export function useMainStageVM() {
           0,
         );
 
+      const ascensionMult =
+        1 +
+        state.rareCandies * 0.1 +
+        (state.ascensionUpgrades.click_power || 0) * 1.0;
+
       const gainedValue =
         state.clickPower *
         state.multiplier *
         partyMult *
-        (1 + state.rareCandies) *
+        ascensionMult *
         critMultiplier *
         comboMultiplier *
         typeMultiplier;

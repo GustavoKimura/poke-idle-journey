@@ -6,6 +6,7 @@ import { recalculateTotals } from "../../utils/calculations";
 
 export const createBossSlice: StateCreator<GameState, [], [], BossSlice> = (
   set,
+  get,
 ) => ({
   isBossActive: false,
   bossHp: 0,
@@ -15,11 +16,12 @@ export const createBossSlice: StateCreator<GameState, [], [], BossSlice> = (
     set((state) => {
       const cost = calculateNextPokemonCost(state.currentPokemonId);
       const maxHp = cost * 1.5;
+      const extraTime = get().ascensionUpgrades.boss_time || 0;
       return {
         isBossActive: true,
         bossMaxHp: maxHp,
         bossHp: maxHp,
-        bossTimeLeft: 15,
+        bossTimeLeft: 15 + extraTime,
       };
     }),
   damageBoss: (amount) =>

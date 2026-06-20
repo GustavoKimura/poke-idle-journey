@@ -27,6 +27,7 @@ export interface PlayerSlice {
   pokemonLevels: Record<number, number>;
   totalClicks: number;
   unlockedAchievements: string[];
+  ascensionUpgrades: Record<string, number>;
   togglePartyMember: (id: number) => void;
   upgradePokemon: (id: number) => void;
   claimAchievement: (id: string) => void;
@@ -40,6 +41,7 @@ export interface PlayerSlice {
   unlockNextPokemon: () => void;
   prestige: () => void;
   hardReset: () => void;
+  buyAscensionUpgrade: (id: string) => void;
 }
 
 export interface BossSlice {
@@ -56,6 +58,7 @@ export interface SystemSlice {
   isPokedexOpen: boolean;
   isPrestigeModalOpen: boolean;
   isHowToPlayOpen: boolean;
+  isAscensionModalOpen: boolean;
   lastSaveTime: number;
   offlineEarnings: number;
   offlineSeconds: number;
@@ -70,6 +73,7 @@ export interface SystemSlice {
   toggleAchievements: () => void;
   togglePrestigeModal: () => void;
   toggleHowToPlay: () => void;
+  toggleAscensionModal: () => void;
   updateSaveTime: () => void;
   setOfflineEarnings: (amount: number, seconds: number) => void;
   claimOfflineEarnings: () => void;

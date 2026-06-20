@@ -56,11 +56,14 @@ function DpsDisplay() {
               (state.pokemonLevels[pId] || 1),
           0,
         );
+
+      const ascensionMultDPS =
+        1 +
+        state.rareCandies * 0.1 +
+        (state.ascensionUpgrades.click_power || 0) * 1.0;
+
       const passiveDps =
-        state.passiveIncome *
-        state.multiplier *
-        partyMult *
-        (1 + state.rareCandies);
+        state.passiveIncome * state.multiplier * partyMult * ascensionMultDPS;
 
       const clickDamage = ParticleManager.flushDamage();
 
@@ -105,8 +108,10 @@ function AchievementBadge() {
 
 function PokedexBadge() {
   const showBadge = useGameStore((state) => {
+    const maxPartySize =
+      GAME_CONFIG.MAX_PARTY_SIZE + (state.ascensionUpgrades.party_size || 0);
     return (
-      state.party.length < GAME_CONFIG.MAX_PARTY_SIZE &&
+      state.party.length < maxPartySize &&
       state.unlockedPokemonIds.length > state.party.length
     );
   });
@@ -121,6 +126,7 @@ function PokedexBadge() {
 export function Header() {
   const multiplier = useGameStore((state) => state.multiplier);
   const rareCandies = useGameStore((state) => state.rareCandies);
+  const ascensionUpgrades = useGameStore((state) => state.ascensionUpgrades);
   const partyLevelSum = useGameStore((state) =>
     state.party.reduce(
       (acc, pId) =>
@@ -135,10 +141,16 @@ export function Header() {
   const togglePokedex = useGameStore((state) => state.togglePokedex);
   const toggleAchievements = useGameStore((state) => state.toggleAchievements);
   const toggleHowToPlay = useGameStore((state) => state.toggleHowToPlay);
+  const toggleAscensionModal = useGameStore(
+    (state) => state.toggleAscensionModal,
+  );
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const partyMult = 1 + partyLevelSum;
+  const ascensionMult =
+    1 + rareCandies * 0.1 + (ascensionUpgrades.click_power || 0) * 1.0;
+  const displayMult = multiplier * partyMult * ascensionMult;
 
   return (
     <>
@@ -193,19 +205,25 @@ export function Header() {
                 Multiplier
               </span>
               <span className="text-2xl font-bold text-blue-400">
-                x{formatNumber(multiplier * partyMult * (1 + rareCandies))}
+                x
+                {displayMult < 1000
+                  ? displayMult.toFixed(1)
+                  : formatNumber(displayMult)}
               </span>
             </div>
             {rareCandies > 0 && (
-              <div className="flex flex-col items-center pl-8 border-l border-white/10">
-                <span className="text-pink-300 text-sm font-semibold uppercase flex items-center gap-1">
+              <button
+                onClick={toggleAscensionModal}
+                className="flex flex-col items-center pl-8 border-l border-white/10 hover:scale-105 transition-transform cursor-pointer"
+              >
+                <span className="text-pink-300 text-sm font-semibold uppercase flex items-center gap-1 animate-pulse">
                   <Sparkles size={14} className="text-pink-400" />
-                  Rare Candies
+                  Skill Tree
                 </span>
                 <span className="text-2xl font-black text-pink-400 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">
                   {rareCandies}
                 </span>
-              </div>
+              </button>
             )}
           </div>
 

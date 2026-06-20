@@ -14,6 +14,49 @@ export const GAME_CONFIG = {
   PARTY_MEMBER_MULTIPLIER: 0.5,
 };
 
+export const ASCENSION_UPGRADES = [
+  {
+    id: "click_power",
+    name: "Ascended Power",
+    desc: "+100% Global Multiplier per level",
+    baseCost: 1,
+    costMultiplier: 1.5,
+    maxLevel: 999,
+  },
+  {
+    id: "crit_chance",
+    name: "Precision Strike",
+    desc: "+1% Critical Hit Chance per level",
+    baseCost: 2,
+    costMultiplier: 2,
+    maxLevel: 25,
+  },
+  {
+    id: "boss_time",
+    name: "Time Dilation",
+    desc: "+1s Boss Timer per level",
+    baseCost: 3,
+    costMultiplier: 2,
+    maxLevel: 15,
+  },
+  {
+    id: "party_size",
+    name: "Leadership",
+    desc: "+1 Max Party Size",
+    baseCost: 10,
+    costMultiplier: 5,
+    maxLevel: 2,
+  },
+];
+
+export const calculateAscensionCost = (
+  baseCost: number,
+  costMultiplier: number,
+  level: number,
+): number => {
+  return Math.floor(baseCost * Math.pow(costMultiplier, level));
+};
+
 export const TYPE_BADGE_COLORS: Record<string, string> = {
   normal: "bg-[#A8A878] text-white border-[#A8A878]",
   fire: "bg-[#F08030] text-white border-[#F08030]",

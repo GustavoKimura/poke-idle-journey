@@ -11,7 +11,13 @@ import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
 import { formatNumber } from "../utils/format";
 
-function PokedexEntry({ id }: { id: number }) {
+function PokedexEntry({
+  id,
+  maxPartySize,
+}: {
+  id: number;
+  maxPartySize: number;
+}) {
   const { data, isLoading } = usePokeAPI(id);
   const isEquipped = useGameStore((state) => state.party.includes(id));
   const memberLevel = useGameStore((state) => state.pokemonLevels[id] || 1);
@@ -23,7 +29,7 @@ function PokedexEntry({ id }: { id: number }) {
   const canAffordUpgrade = useGameStore((state) => state.score >= upgradeCost);
 
   const handleToggle = () => {
-    if (!isEquipped && partyLength >= GAME_CONFIG.MAX_PARTY_SIZE) return;
+    if (!isEquipped && partyLength >= maxPartySize) return;
     togglePartyMember(id);
   };
 
@@ -83,11 +89,11 @@ function PokedexEntry({ id }: { id: number }) {
         </button>
         <button
           onClick={handleToggle}
-          disabled={!isEquipped && partyLength >= GAME_CONFIG.MAX_PARTY_SIZE}
+          disabled={!isEquipped && partyLength >= maxPartySize}
           className={`w-full py-1.5 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer ${
             isEquipped
               ? "bg-pokeRed/80 hover:bg-pokeRed text-white"
-              : partyLength >= GAME_CONFIG.MAX_PARTY_SIZE
+              : partyLength >= maxPartySize
                 ? "bg-black/50 text-gray-500 border border-white/10 cursor-not-allowed"
                 : "bg-black/60 text-white border border-white/20 hover:border-pokeYellow hover:text-pokeYellow"
           }`}
@@ -104,6 +110,9 @@ export function PokedexModal() {
   const togglePokedex = useGameStore((state) => state.togglePokedex);
   const unlockedPokemonIds = useGameStore((state) => state.unlockedPokemonIds);
   const partyLength = useGameStore((state) => state.party.length);
+  const extraPartySlots = useGameStore(
+    (state) => state.ascensionUpgrades.party_size || 0,
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 24;
@@ -115,13 +124,15 @@ export function PokedexModal() {
     startIndex + itemsPerPage,
   );
 
+  const maxPartySize = GAME_CONFIG.MAX_PARTY_SIZE + extraPartySlots;
+
   const handleNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
   const handlePrev = () => setCurrentPage((p) => Math.max(1, p - 1));
 
   const headerRight = (
     <div className="flex gap-2 ml-4">
       <span className="px-3 py-1 bg-blue-900/40 text-blue-300 font-bold rounded-full text-xs sm:text-sm border border-blue-500/30 whitespace-nowrap">
-        Party: {partyLength} / {GAME_CONFIG.MAX_PARTY_SIZE}
+        Party: {partyLength} / {maxPartySize}
       </span>
       <span className="px-3 py-1 bg-pokeYellow/20 text-pokeYellow font-bold rounded-full text-xs sm:text-sm border border-pokeYellow/30 whitespace-nowrap hidden sm:inline-block">
         {unlockedPokemonIds.length} / {GAME_CONFIG.MAX_POKEMON_ID} Captured
@@ -141,7 +152,7 @@ export function PokedexModal() {
       <div className="flex flex-col h-full">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 flex-1 min-h-[50vh]">
           {visiblePokemonIds.map((id) => (
-            <PokedexEntry key={id} id={id} />
+            <PokedexEntry key={id} id={id} maxPartySize={maxPartySize} />
           ))}
         </div>
 

@@ -25,12 +25,19 @@ export function useGameLoop() {
           (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p,
           0,
         );
+
+      const ascensionMult =
+        1 +
+        state.rareCandies * 0.1 +
+        (state.ascensionUpgrades.click_power || 0) * 1.0;
+
       const earned =
         state.passiveIncome *
         state.multiplier *
         partyMult *
-        (1 + state.rareCandies) *
+        ascensionMult *
         timeDiffSeconds;
+
       state.setOfflineEarnings(earned, timeDiffSeconds);
     }
 
@@ -61,11 +68,17 @@ export function useGameLoop() {
             (acc, p) => acc + GAME_CONFIG.PARTY_MEMBER_MULTIPLIER * p,
             0,
           );
+
+        const ascensionMult =
+          1 +
+          currentState.rareCandies * 0.1 +
+          (currentState.ascensionUpgrades.click_power || 0) * 1.0;
+
         const incomePerSecond =
           currentState.passiveIncome *
           currentState.multiplier *
           partyMult *
-          (1 + currentState.rareCandies);
+          ascensionMult;
 
         uncommittedIncomeRef.current += incomePerSecond * deltaTime;
 

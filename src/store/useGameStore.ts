@@ -17,7 +17,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 19,
+      version: 20,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -47,6 +47,12 @@ export const useGameStore = create<GameState>()(
 
         if (!state.pokemonLevels || typeof state.pokemonLevels !== "object") {
           state.pokemonLevels = {};
+        }
+        if (
+          !state.ascensionUpgrades ||
+          typeof state.ascensionUpgrades !== "object"
+        ) {
+          state.ascensionUpgrades = {};
         }
 
         if (!Array.isArray(state.party)) {
@@ -112,6 +118,8 @@ export const useGameStore = create<GameState>()(
           state.bossTimeLeft = 0;
         if (typeof state.isHowToPlayOpen !== "boolean")
           state.isHowToPlayOpen = false;
+        if (typeof state.isAscensionModalOpen !== "boolean")
+          state.isAscensionModalOpen = false;
 
         if (Array.isArray(state.upgrades)) {
           state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {
