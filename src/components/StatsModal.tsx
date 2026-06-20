@@ -5,6 +5,9 @@ import {
   Users,
   Sparkles,
   Activity,
+  Clock,
+  Tags,
+  Star,
 } from "lucide-react";
 import { Modal } from "./ui/Modal";
 import { useGameStore } from "../store/useGameStore";
@@ -13,10 +16,15 @@ import {
   calculatePartyMultiplier,
   calculateTypeSynergyMultiplier,
   getActiveSynergies,
+  calculateShinyChance,
 } from "../utils/calculations";
 import { ParticleManager } from "../utils/ParticleManager";
 import { useEffect, useState } from "react";
-import { TYPE_BADGE_COLORS, TYPE_ICONS } from "../config/gameConfig";
+import {
+  TYPE_BADGE_COLORS,
+  TYPE_ICONS,
+  GAME_CONFIG,
+} from "../config/gameConfig";
 
 export function StatsModal() {
   const isOpen = useGameStore((state) => state.isStatsOpen);
@@ -33,6 +41,7 @@ export function StatsModal() {
   const party = useGameStore((state) => state.party);
   const pokemonLevels = useGameStore((state) => state.pokemonLevels);
   const shinyPokemonIds = useGameStore((state) => state.shinyPokemonIds);
+  const upgrades = useGameStore((state) => state.upgrades);
 
   const partyMult = calculatePartyMultiplier(
     party,
@@ -45,6 +54,12 @@ export function StatsModal() {
   const displayMult = baseMultiplier * partyMult * synergyMult * ascensionMult;
 
   const activeSynergies = getActiveSynergies(party);
+
+  const offlineCapHours =
+    GAME_CONFIG.MAX_OFFLINE_SECONDS_BASE / 3600 +
+    (ascensionUpgrades.offline_cap || 0) * 12;
+  const partyDiscount = (ascensionUpgrades.party_discount || 0) * 5;
+  const shinyChance = calculateShinyChance(upgrades, ascensionUpgrades) * 100;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -115,6 +130,33 @@ export function StatsModal() {
             </span>
             <span className="text-lg font-black text-blue-400">
               {formatNumber(totalClicks)}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-black/40 border border-white/10 rounded-xl p-3 flex flex-col items-center text-center">
+            <span className="text-gray-400 text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
+              <Clock size={10} className="text-purple-400" /> Offline Cap
+            </span>
+            <span className="text-sm font-black text-purple-400">
+              {offlineCapHours}h
+            </span>
+          </div>
+          <div className="bg-black/40 border border-white/10 rounded-xl p-3 flex flex-col items-center text-center">
+            <span className="text-gray-400 text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
+              <Tags size={10} className="text-orange-400" /> Party Discount
+            </span>
+            <span className="text-sm font-black text-orange-400">
+              -{partyDiscount}%
+            </span>
+          </div>
+          <div className="bg-black/40 border border-white/10 rounded-xl p-3 flex flex-col items-center text-center">
+            <span className="text-gray-400 text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
+              <Star size={10} className="text-yellow-300" /> Shiny Chance
+            </span>
+            <span className="text-sm font-black text-yellow-300">
+              {shinyChance.toFixed(1)}%
             </span>
           </div>
         </div>
