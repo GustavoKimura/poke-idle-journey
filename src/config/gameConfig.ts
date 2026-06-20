@@ -7,11 +7,11 @@ export const GAME_CONFIG = {
   CRIT_CHANCE: 0.05,
   CRIT_MULTIPLIER: 3,
   BASE_POKEMON_COST: 1000,
-  POKEMON_COST_MULTIPLIER: 1.25,
-  PRESTIGE_MIN_ID: 50,
+  POKEMON_COST_MULTIPLIER: 1.2,
+  PRESTIGE_MIN_ID: 40,
   POKEMON_MULTIPLIER_REWARD: 0.1,
   MAX_PARTY_SIZE: 6,
-  PARTY_MEMBER_MULTIPLIER: 0.5,
+  PARTY_MEMBER_MULTIPLIER: 0.15,
   SHINY_CHANCE: 0.005,
 };
 
@@ -410,7 +410,7 @@ export const calculatePrestigeReward = (
 ): number => {
   if (currentId < GAME_CONFIG.PRESTIGE_MIN_ID) return 0;
   const clickBonus = Math.floor(Math.sqrt(totalClicks / 500));
-  const stageBonus = Math.floor((currentId - 40) / 10);
+  const stageBonus = Math.floor(Math.pow(currentId - 30, 1.2) / 5);
   const total = stageBonus + clickBonus;
   if (currentId >= GAME_CONFIG.MAX_POKEMON_ID) {
     return total + 5;
@@ -419,5 +419,5 @@ export const calculatePrestigeReward = (
 };
 
 export const calculatePartyUpgradeCost = (level: number): number => {
-  return Math.floor(50000 * Math.pow(2, level - 1));
+  return Math.floor(50000 * Math.pow(1.35, level - 1));
 };
