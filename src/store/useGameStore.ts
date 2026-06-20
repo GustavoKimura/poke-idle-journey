@@ -41,7 +41,7 @@ export const useGameStore = create<GameState>()(
     {
       name: "poke-idle-storage",
       storage: createJSONStorage(() => idbStorage),
-      version: 28,
+      version: 29,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -163,7 +163,6 @@ export const useGameStore = create<GameState>()(
             if (!initialMatch) return u as Upgrade;
             return {
               ...initialMatch,
-              ...u,
               count:
                 typeof u.count !== "number" || Number.isNaN(u.count)
                   ? 0

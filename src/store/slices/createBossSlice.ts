@@ -18,7 +18,7 @@ export const createBossSlice: StateCreator<GameState, [], [], BossSlice> = (
   startBossFight: () =>
     set((state) => {
       const cost = calculateNextPokemonCost(state.currentPokemonId);
-      const maxHp = cost * 3.0;
+      const maxHp = cost * 5.0;
       const extraTime = get().ascensionUpgrades.boss_time || 0;
       return {
         isBossActive: true,
