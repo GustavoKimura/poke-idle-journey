@@ -37,11 +37,17 @@ export const createSystemSlice: StateCreator<GameState, [], [], SystemSlice> = (
       offlineSeconds: seconds,
       isBossActive: false,
     }),
-  claimOfflineEarnings: () =>
-    set((state) => ({
-      score: state.score + state.offlineEarnings,
-      offlineEarnings: 0,
-      offlineSeconds: 0,
-      lastSaveTime: Date.now(),
-    })),
+  claimOfflineEarnings: (boost = false) =>
+    set((state) => {
+      if (boost && state.rareCandies < 1) return state;
+      const multiplier = boost ? 2 : 1;
+      const cost = boost ? 1 : 0;
+      return {
+        score: state.score + state.offlineEarnings * multiplier,
+        rareCandies: state.rareCandies - cost,
+        offlineEarnings: 0,
+        offlineSeconds: 0,
+        lastSaveTime: Date.now(),
+      };
+    }),
 });

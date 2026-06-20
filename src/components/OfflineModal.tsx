@@ -1,14 +1,16 @@
 import { useEffect, useState, useRef } from "react";
-import { Clock, Zap, TrendingUp, Timer } from "lucide-react";
+import { Clock, Zap, TrendingUp, Timer, Sparkles } from "lucide-react";
 import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
 import { Modal } from "./ui/Modal";
 import { Button } from "./ui/Button";
-import { playTickSound, playCashSound } from "../utils/audio";
+import { playTickSound, playCashSound, playUpgradeSound } from "../utils/audio";
+import { triggerHitStop } from "../utils/hitStop";
 
 export function OfflineModal() {
   const offlineEarnings = useGameStore((state) => state.offlineEarnings);
   const offlineSeconds = useGameStore((state) => state.offlineSeconds);
+  const rareCandies = useGameStore((state) => state.rareCandies);
   const claimOfflineEarnings = useGameStore(
     (state) => state.claimOfflineEarnings,
   );
@@ -63,9 +65,14 @@ export function OfflineModal() {
     return `${s}s`;
   };
 
-  const handleClaim = () => {
-    playCashSound();
-    claimOfflineEarnings();
+  const handleClaim = (boost: boolean) => {
+    if (boost) {
+      playUpgradeSound();
+      if (useGameStore.getState().isVfxEnabled) triggerHitStop(150);
+    } else {
+      playCashSound();
+    }
+    claimOfflineEarnings(boost);
   };
 
   return (
@@ -106,9 +113,29 @@ export function OfflineModal() {
           </div>
         </div>
 
-        <Button fullWidth onClick={handleClaim} className="text-lg py-4">
-          Claim & Play
-        </Button>
+        <div className="flex flex-col gap-3 w-full">
+          <Button
+            fullWidth
+            onClick={() => handleClaim(false)}
+            className="text-lg py-4"
+          >
+            Claim & Play
+          </Button>
+          <Button
+            variant={rareCandies >= 1 ? "outline" : "ghost"}
+            fullWidth
+            disabled={rareCandies < 1}
+            onClick={() => handleClaim(true)}
+            className={
+              rareCandies >= 1
+                ? "border-pink-500 text-pink-400 hover:bg-pink-500 hover:text-white shadow-[0_0_15px_rgba(236,72,153,0.3)] py-4"
+                : "py-4"
+            }
+          >
+            <Sparkles size={20} className="mr-2" />
+            Double Earnings (Cost: 1 Candy)
+          </Button>
+        </div>
       </div>
     </Modal>
   );

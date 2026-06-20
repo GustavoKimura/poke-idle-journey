@@ -14,6 +14,7 @@ import {
   GAME_CONFIG,
   TYPE_WEAKNESSES,
   calculateNextPokemonCost,
+  TYPE_HEX_COLORS,
 } from "../config/gameConfig";
 import { ParticleManager } from "../utils/ParticleManager";
 import {
@@ -55,6 +56,24 @@ export function useMainStageVM() {
     }
     return false;
   }, [pokemon, party, partyLoaded]);
+
+  const advantageColor = useMemo(() => {
+    if (!hasTypeAdvantage || !pokemon) return null;
+    const targetWeaknesses = pokemon.types.flatMap(
+      (t) => TYPE_WEAKNESSES[t] || [],
+    );
+
+    for (const pId of party) {
+      const pData = getPokemonDataSync(pId);
+      if (pData) {
+        const effectiveType = pData.types.find((pt) =>
+          targetWeaknesses.includes(pt),
+        );
+        if (effectiveType) return TYPE_HEX_COLORS[effectiveType];
+      }
+    }
+    return "#4ade80";
+  }, [hasTypeAdvantage, pokemon, party, partyLoaded]);
 
   const nextPokemonCost = useMemo(
     () => calculateNextPokemonCost(currentPokemonId),
@@ -250,10 +269,11 @@ export function useMainStageVM() {
           gainedValue,
           isCritical,
           state.isBossActive,
+          hasTypeAdvantage ? advantageColor : null,
         );
       }
     },
-    [hasTypeAdvantage],
+    [hasTypeAdvantage, advantageColor],
   );
 
   const stopHold = useCallback(() => {

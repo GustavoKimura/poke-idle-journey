@@ -80,7 +80,7 @@ export interface SystemSlice {
   toggleAscensionModal: () => void;
   updateSaveTime: () => void;
   setOfflineEarnings: (amount: number, seconds: number) => void;
-  claimOfflineEarnings: () => void;
+  claimOfflineEarnings: (boost?: boolean) => void;
 }
 
 export type GameState = PlayerSlice & BossSlice & SystemSlice;

@@ -10,6 +10,7 @@ interface Particle {
   life: number;
   maxLife: number;
   velocityY: number;
+  color: string | null;
 }
 
 class ParticleSystem {
@@ -28,6 +29,7 @@ class ParticleSystem {
       life: 0,
       maxLife: 1,
       velocityY: -2,
+      color: null,
     }));
   }
 
@@ -37,6 +39,7 @@ class ParticleSystem {
     value: number,
     isCritical: boolean,
     isBoss: boolean,
+    color: string | null = null,
   ) {
     this.damageLastSecond += value;
     const p = this.pool.find((p) => !p.active);
@@ -50,6 +53,7 @@ class ParticleSystem {
       p.life = 1;
       p.maxLife = 1;
       p.velocityY = -2;
+      p.color = color;
     }
   }
 
@@ -79,24 +83,26 @@ class ParticleSystem {
       ctx.textAlign = "center";
 
       if (p.isCritical) {
-        ctx.font = "900 20px system-ui";
-        ctx.fillStyle = "#ffffff";
-        ctx.shadowColor = "rgba(238,21,21,0.8)";
-        ctx.shadowBlur = 5;
+        ctx.font = "900 24px system-ui";
+        ctx.fillStyle = p.color || "#ffffff";
+        ctx.shadowColor = p.color || "rgba(238,21,21,0.8)";
+        ctx.shadowBlur = 8;
         ctx.fillText("CRITICAL!", p.x, p.y - 50);
 
         ctx.font = "900 48px system-ui";
-        ctx.fillStyle = "#EE1515";
+        ctx.fillStyle = p.color || "#EE1515";
       } else if (p.isBoss) {
         ctx.font = "900 30px system-ui";
-        ctx.fillStyle = "#fb923c";
+        ctx.fillStyle = p.color || "#fb923c";
+        ctx.shadowColor = p.color ? p.color : "rgba(0,0,0,0.5)";
+        ctx.shadowBlur = p.color ? 8 : 4;
       } else {
         ctx.font = "900 30px system-ui";
-        ctx.fillStyle = "#FFDE00";
+        ctx.fillStyle = p.color || "#FFDE00";
+        ctx.shadowColor = p.color ? p.color : "rgba(0,0,0,0.5)";
+        ctx.shadowBlur = p.color ? 8 : 4;
       }
 
-      ctx.shadowColor = "rgba(0,0,0,0.5)";
-      ctx.shadowBlur = 4;
       ctx.shadowOffsetX = 2;
       ctx.shadowOffsetY = 2;
       ctx.fillText(`+$${formatNumber(p.value)}`, p.x, p.y);
