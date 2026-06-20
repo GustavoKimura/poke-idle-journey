@@ -26,12 +26,14 @@ export interface PlayerSlice {
   isCurrentPokemonShiny: boolean;
   currentPokemonId: number;
   party: number[];
+  partyCooldowns: Record<number, number>;
   pokemonLevels: Record<number, number>;
   totalClicks: number;
   unlockedAchievements: string[];
   ascensionUpgrades: Record<string, number>;
   togglePartyMember: (id: number) => void;
   upgradePokemon: (id: number) => void;
+  triggerPartyAbility: (id: number) => void;
   claimAchievement: (id: string) => void;
   click: (
     critMultiplier?: number,

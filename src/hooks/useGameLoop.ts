@@ -5,6 +5,7 @@ import {
   calculatePartyMultiplier,
   calculateTypeSynergyMultiplier,
 } from "../utils/calculations";
+import { isHitStop } from "../utils/hitStop";
 
 export function useGameLoop() {
   const requestRef = useRef<number>(0);
@@ -52,6 +53,12 @@ export function useGameLoop() {
     }, GAME_CONFIG.SAVE_INTERVAL_MS);
 
     const loop = (time: number) => {
+      if (isHitStop()) {
+        lastTimeRef.current = time;
+        requestRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
       if (lastTimeRef.current === 0) {
         lastTimeRef.current = time;
         lastUptimeRef.current = time;

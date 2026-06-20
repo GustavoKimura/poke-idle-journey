@@ -11,12 +11,18 @@ import {
   calculatePartyUpgradeCost,
   calculateAscensionCost,
 } from "../../config/gameConfig";
-import { playCatchSound, playUpgradeSound } from "../../utils/audio";
+import {
+  playCatchSound,
+  playUpgradeSound,
+  playClickSound,
+} from "../../utils/audio";
 import {
   recalculateTotals,
   calculatePartyMultiplier,
   calculateTypeSynergyMultiplier,
 } from "../../utils/calculations";
+import { ParticleManager } from "../../utils/ParticleManager";
+import { triggerHitStop } from "../../utils/hitStop";
 
 export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
   set,
@@ -33,6 +39,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
   isCurrentPokemonShiny: false,
   currentPokemonId: 1,
   party: [],
+  partyCooldowns: {},
   pokemonLevels: {},
   totalClicks: 0,
   unlockedAchievements: [],
@@ -59,6 +66,106 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         score: state.score - cost,
         pokemonLevels: { ...state.pokemonLevels, [id]: currentLevel + 1 },
       };
+    }),
+
+  triggerPartyAbility: (id) =>
+    set((state) => {
+      if (!state.party.includes(id)) return state;
+      const now = Date.now();
+      if (state.partyCooldowns[id] && now < state.partyCooldowns[id])
+        return state;
+
+      const partyMult = calculatePartyMultiplier(
+        state.party,
+        state.pokemonLevels,
+        state.shinyPokemonIds,
+      );
+      const synergyMult = calculateTypeSynergyMultiplier(state.party);
+      const ascensionMult =
+        1 +
+        state.rareCandies * 0.1 +
+        (state.ascensionUpgrades.click_power || 0) * 1.0;
+
+      const dps =
+        state.passiveIncome *
+        state.multiplier *
+        partyMult *
+        synergyMult *
+        ascensionMult;
+      const baseClick =
+        state.clickPower *
+        state.multiplier *
+        partyMult *
+        synergyMult *
+        ascensionMult *
+        50;
+      const totalDamage = Math.max(dps * 30, baseClick);
+
+      const newState: Partial<GameState> = {
+        partyCooldowns: { ...state.partyCooldowns, [id]: now + 30000 },
+        score: state.score + totalDamage,
+      };
+
+      if (state.isBossActive) {
+        const newHp = state.bossHp - totalDamage;
+        if (newHp <= 0) {
+          playCatchSound();
+          const newUnlocked = [
+            ...state.unlockedPokemonIds,
+            state.currentPokemonId + 1,
+          ];
+          const newHistorical = Array.from(
+            new Set([
+              ...state.historicalUnlockedPokemonIds,
+              state.currentPokemonId + 1,
+            ]),
+          );
+          const { clickPower, passiveIncome } = recalculateTotals(
+            state.upgrades,
+            newUnlocked.length,
+          );
+
+          const newShinies = state.isCurrentPokemonShiny
+            ? Array.from(
+                new Set([...state.shinyPokemonIds, state.currentPokemonId]),
+              )
+            : state.shinyPokemonIds;
+          const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
+
+          newState.isBossActive = false;
+          newState.currentPokemonId = state.currentPokemonId + 1;
+          newState.unlockedPokemonIds = newUnlocked;
+          newState.historicalUnlockedPokemonIds = newHistorical;
+          newState.shinyPokemonIds = newShinies;
+          newState.isCurrentPokemonShiny = nextShiny;
+          newState.multiplier =
+            state.multiplier +
+            GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId;
+          newState.score = newState.score! + state.bossMaxHp * 2;
+          newState.bossHp = 0;
+          newState.clickPower = clickPower;
+          newState.passiveIncome = passiveIncome;
+        } else {
+          newState.bossHp = newHp;
+        }
+      }
+
+      if (state.isVfxEnabled) {
+        triggerHitStop(150);
+        setTimeout(() => {
+          ParticleManager.spawn(
+            window.innerWidth / 2 + (Math.random() * 100 - 50),
+            window.innerHeight / 2 + (Math.random() * 100 - 50),
+            totalDamage,
+            true,
+            state.isBossActive,
+          );
+        }, 0);
+      }
+
+      playClickSound(true, 5);
+
+      return newState;
     }),
 
   claimAchievement: (id) =>
@@ -289,6 +396,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         isCurrentPokemonShiny: Math.random() < GAME_CONFIG.SHINY_CHANCE,
         currentPokemonId: 1,
         party: [],
+        partyCooldowns: {},
         pokemonLevels: {},
         offlineEarnings: 0,
         offlineSeconds: 0,
@@ -317,6 +425,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       isCurrentPokemonShiny: false,
       currentPokemonId: 1,
       party: [],
+      partyCooldowns: {},
       pokemonLevels: {},
       totalClicks: 0,
       unlockedAchievements: [],

@@ -20,6 +20,7 @@ import {
   calculatePartyMultiplier,
   calculateTypeSynergyMultiplier,
 } from "../utils/calculations";
+import { triggerHitStop } from "../utils/hitStop";
 
 export function useMainStageVM() {
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
@@ -219,7 +220,16 @@ export function useMainStageVM() {
         });
       }
 
+      const wasBossActive = state.isBossActive;
       state.click(critMultiplier, comboMultiplier, typeMultiplier);
+      const isBossActiveNow = useGameStore.getState().isBossActive;
+
+      if (wasBossActive && !isBossActiveNow && state.isVfxEnabled) {
+        triggerHitStop(250);
+      } else if (isCritical && state.isVfxEnabled) {
+        triggerHitStop(40);
+      }
+
       playClickSound(isCritical, comboMultiplier);
 
       if (state.isVfxEnabled) {

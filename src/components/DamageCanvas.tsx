@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { ParticleManager } from "../utils/ParticleManager";
+import { isHitStop } from "../utils/hitStop";
 
 export function DamageCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,6 +24,12 @@ export function DamageCanvas() {
     let lastTime = performance.now();
 
     const render = (time: number) => {
+      if (isHitStop()) {
+        lastTime = time;
+        animationRef.current = requestAnimationFrame(render);
+        return;
+      }
+
       const dt = (time - lastTime) / 1000;
       lastTime = time;
 

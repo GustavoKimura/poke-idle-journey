@@ -17,7 +17,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: "poke-idle-storage",
-      version: 22,
+      version: 23,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -51,6 +51,9 @@ export const useGameStore = create<GameState>()(
 
         if (!state.pokemonLevels || typeof state.pokemonLevels !== "object") {
           state.pokemonLevels = {};
+        }
+        if (!state.partyCooldowns || typeof state.partyCooldowns !== "object") {
+          state.partyCooldowns = {};
         }
         if (
           !state.ascensionUpgrades ||
