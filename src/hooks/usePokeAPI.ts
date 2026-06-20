@@ -16,6 +16,17 @@ interface PokeAPIType {
 
 export const memoryCache: Record<number, PokemonData> = {};
 
+let activeRequests = 0;
+const MAX_CONCURRENT = 3;
+const queue: (() => void)[] = [];
+
+const processQueue = () => {
+  if (activeRequests < MAX_CONCURRENT && queue.length > 0) {
+    const next = queue.shift();
+    if (next) next();
+  }
+};
+
 export async function fetchAndCachePokemon(
   pokemonId: number,
 ): Promise<PokemonData | null> {
@@ -35,31 +46,43 @@ export async function fetchAndCachePokemon(
     }
   }
 
-  try {
-    const response = await fetch(
-      `https://pokeapi.co/api/v2/pokemon/${pokemonId}`,
-    );
-    const result = await response.json();
+  return new Promise((resolve) => {
+    const execute = async () => {
+      activeRequests++;
+      try {
+        const response = await fetch(
+          `https://pokeapi.co/api/v2/pokemon/${pokemonId}`,
+        );
+        if (!response.ok) throw new Error("API Rate Limit or Not Found");
+        const result = await response.json();
 
-    const pokemonData: PokemonData = {
-      name: result.name,
-      sprite:
-        result.sprites.other["official-artwork"].front_default ||
-        result.sprites.front_default,
-      shinySprite:
-        result.sprites.other["official-artwork"].front_shiny ||
-        result.sprites.front_shiny,
-      types: result.types.map((t: PokeAPIType) => t.type.name),
-      weight: result.weight,
+        const pokemonData: PokemonData = {
+          name: result.name,
+          sprite:
+            result.sprites.other["official-artwork"].front_default ||
+            result.sprites.front_default,
+          shinySprite:
+            result.sprites.other["official-artwork"].front_shiny ||
+            result.sprites.front_shiny,
+          types: result.types.map((t: PokeAPIType) => t.type.name),
+          weight: result.weight,
+        };
+
+        memoryCache[pokemonId] = pokemonData;
+        localStorage.setItem(localCacheKey, JSON.stringify(pokemonData));
+        resolve(pokemonData);
+      } catch (error) {
+        console.error(error);
+        resolve(null);
+      } finally {
+        activeRequests--;
+        processQueue();
+      }
     };
 
-    memoryCache[pokemonId] = pokemonData;
-    localStorage.setItem(localCacheKey, JSON.stringify(pokemonData));
-    return pokemonData;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
+    queue.push(execute);
+    processQueue();
+  });
 }
 
 export function getPokemonDataSync(id: number): PokemonData | null {
@@ -85,13 +108,11 @@ export function usePokeAPI(pokemonId: number) {
     let isMounted = true;
 
     const fetchData = async () => {
-      await Promise.resolve();
-
-      if (!isMounted) return;
-
       if (!pokemonId || pokemonId <= 0) {
-        setData(null);
-        setIsLoading(false);
+        if (isMounted) {
+          setData(null);
+          setIsLoading(false);
+        }
         return;
       }
 

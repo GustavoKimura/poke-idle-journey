@@ -313,10 +313,15 @@ export function useMainStageVM() {
     if (canUnlock) {
       if (useGameStore.getState().isVfxEnabled) {
         setIsCatching(true);
-        setTimeout(() => setIsCatching(false), 800);
+        setTimeout(() => {
+          setIsCatching(false);
+          useGameStore.getState().unlockNextPokemon();
+          playCatchSound();
+        }, 400);
+      } else {
+        useGameStore.getState().unlockNextPokemon();
+        playCatchSound();
       }
-      useGameStore.getState().unlockNextPokemon();
-      playCatchSound();
     }
   };
 

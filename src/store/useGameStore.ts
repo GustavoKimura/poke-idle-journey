@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { get, set, del } from "idb-keyval";
 import type { GameState, Upgrade } from "../types/game";
 import { INITIAL_UPGRADES } from "../config/gameConfig";
 import { recalculateTotals } from "../utils/calculations";
@@ -8,16 +9,39 @@ import { createPlayerSlice } from "./slices/createPlayerSlice";
 import { createBossSlice } from "./slices/createBossSlice";
 import { createSystemSlice } from "./slices/createSystemSlice";
 
+const idbStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    const idbValue = await get(name);
+    if (idbValue !== undefined) return idbValue;
+
+    const localValue = localStorage.getItem(name);
+    if (localValue !== null) {
+      await set(name, localValue);
+      localStorage.removeItem(name);
+      return localValue;
+    }
+
+    return null;
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await set(name, value);
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await del(name);
+  },
+};
+
 export const useGameStore = create<GameState>()(
   persist(
-    (set, get, api) => ({
-      ...createPlayerSlice(set, get, api),
-      ...createBossSlice(set, get, api),
-      ...createSystemSlice(set, get, api),
+    (set, getFn, api) => ({
+      ...createPlayerSlice(set, getFn, api),
+      ...createBossSlice(set, getFn, api),
+      ...createSystemSlice(set, getFn, api),
     }),
     {
       name: "poke-idle-storage",
-      version: 23,
+      storage: createJSONStorage(() => idbStorage),
+      version: 24,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),

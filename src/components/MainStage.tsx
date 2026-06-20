@@ -146,14 +146,14 @@ export function MainStage() {
         <div className="bg-black/40 border border-white/10 px-6 py-2 rounded-full flex gap-4 items-center shadow-lg mb-4 relative">
           <span className="text-pokeYellow font-bold">#{currentPokemonId}</span>
           <span className="text-white capitalize font-medium">
-            {pokemon?.name || "Loading..."}
+            {isLoading ? "???" : pokemon?.name || "Loading..."}
           </span>
-          {isCurrentPokemonShiny && (
+          {isCurrentPokemonShiny && !isLoading && (
             <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded shadow-sm bg-yellow-400 text-black border border-yellow-200">
               ✨ SHINY
             </span>
           )}
-          {pokemon?.types?.[0] && (
+          {pokemon?.types?.[0] && !isLoading && (
             <span
               className={`text-[10px] uppercase font-black px-2 py-0.5 rounded shadow-sm flex items-center gap-1 ${TYPE_BADGE_COLORS[pokemon.types[0]] || "bg-white/20 text-white border border-white/10"}`}
             >
@@ -161,7 +161,7 @@ export function MainStage() {
               {pokemon.types[0]}
             </span>
           )}
-          {hasTypeAdvantage && (
+          {hasTypeAdvantage && !isLoading && (
             <span className="absolute -top-3 -right-3 bg-green-500 text-white text-[9px] font-black uppercase px-2 py-1 rounded-full shadow-lg border border-green-300 animate-bounce whitespace-nowrap flex items-center gap-1">
               <span>🎯</span>
               Type Advantage!
@@ -173,10 +173,8 @@ export function MainStage() {
       </div>
 
       <div
-        className={`relative cursor-pointer z-10 mt-8 ${
-          isLoading ? "opacity-50" : "opacity-100"
-        }`}
-        onPointerDown={handlePointerDown}
+        className={`relative cursor-pointer z-10 mt-8`}
+        onPointerDown={!isLoading ? handlePointerDown : undefined}
         onPointerUp={stopHold}
         onPointerLeave={stopHold}
         onContextMenu={(e) => {
@@ -184,26 +182,44 @@ export function MainStage() {
           stopHold();
         }}
       >
-        {isCurrentPokemonShiny && (
-          <div className="absolute inset-0 z-0 animate-spin-slow opacity-60 flex items-center justify-center pointer-events-none">
-            <div className="w-full h-full bg-[radial-gradient(circle,rgba(255,222,0,0.5)_0%,transparent_60%)] blur-md"></div>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none relative animate-pulse">
+            <img
+              src={`${import.meta.env.BASE_URL}logo.png`}
+              alt="Who's that Pokémon?"
+              className="w-32 h-32 brightness-0 invert opacity-50"
+              draggable="false"
+            />
+            <span className="absolute -bottom-4 text-sm font-black uppercase tracking-widest text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
+              Searching...
+            </span>
           </div>
-        )}
-        {pokemon?.sprite && (
-          <img
-            src={isCurrentPokemonShiny ? pokemon.shinySprite : pokemon.sprite}
-            alt={pokemon.name}
-            className={`relative z-10 w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-transform duration-[50ms] ${
-              isCatching
-                ? "animate-suck-in"
-                : spawnFlash
-                  ? "animate-spin-in"
-                  : isClicking
-                    ? "scale-90 brightness-200 contrast-150 saturate-200"
-                    : "hover:brightness-125 hover:scale-105"
-            }`}
-            draggable="false"
-          />
+        ) : (
+          <>
+            {isCurrentPokemonShiny && (
+              <div className="absolute inset-0 z-0 animate-spin-slow opacity-60 flex items-center justify-center pointer-events-none">
+                <div className="w-full h-full bg-[radial-gradient(circle,rgba(255,222,0,0.5)_0%,transparent_60%)] blur-md"></div>
+              </div>
+            )}
+            {pokemon?.sprite && (
+              <img
+                src={
+                  isCurrentPokemonShiny ? pokemon.shinySprite : pokemon.sprite
+                }
+                alt={pokemon.name}
+                className={`relative z-10 w-64 h-64 sm:w-80 sm:h-80 drop-shadow-2xl select-none transition-transform duration-[50ms] ${
+                  isCatching
+                    ? "animate-suck-in"
+                    : spawnFlash
+                      ? "animate-spin-in"
+                      : isClicking
+                        ? "scale-90 brightness-200 contrast-150 saturate-200"
+                        : "hover:brightness-125 hover:scale-105"
+                }`}
+                draggable="false"
+              />
+            )}
+          </>
         )}
       </div>
 
@@ -240,7 +256,7 @@ export function MainStage() {
               <div className="flex gap-4">
                 <Button
                   onClick={handleCatch}
-                  disabled={!canUnlock || isCatching}
+                  disabled={!canUnlock || isCatching || isLoading}
                 >
                   Catch Next Pokemon
                 </Button>
