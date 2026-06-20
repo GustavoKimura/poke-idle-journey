@@ -110,15 +110,12 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         const newHp = state.bossHp - totalDamage;
         if (newHp <= 0) {
           playCatchSound();
-          const newUnlocked = [
-            ...state.unlockedPokemonIds,
-            state.currentPokemonId + 1,
-          ];
+          const nextId = state.currentPokemonId + 1;
+          const isVictory = nextId === GAME_CONFIG.MAX_POKEMON_ID;
+
+          const newUnlocked = [...state.unlockedPokemonIds, nextId];
           const newHistorical = Array.from(
-            new Set([
-              ...state.historicalUnlockedPokemonIds,
-              state.currentPokemonId + 1,
-            ]),
+            new Set([...state.historicalUnlockedPokemonIds, nextId]),
           );
           const { clickPower, passiveIncome } = recalculateTotals(
             state.upgrades,
@@ -133,7 +130,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
           const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
 
           newState.isBossActive = false;
-          newState.currentPokemonId = state.currentPokemonId + 1;
+          newState.currentPokemonId = nextId;
           newState.unlockedPokemonIds = newUnlocked;
           newState.historicalUnlockedPokemonIds = newHistorical;
           newState.shinyPokemonIds = newShinies;
@@ -145,6 +142,9 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
           newState.bossHp = 0;
           newState.clickPower = clickPower;
           newState.passiveIncome = passiveIncome;
+          newState.isVictoryModalOpen = isVictory
+            ? true
+            : state.isVictoryModalOpen;
         } else {
           newState.bossHp = newHp;
         }
@@ -255,15 +255,12 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         const newHp = state.bossHp - amount;
         if (newHp <= 0) {
           playCatchSound();
-          const newUnlocked = [
-            ...state.unlockedPokemonIds,
-            state.currentPokemonId + 1,
-          ];
+          const nextId = state.currentPokemonId + 1;
+          const isVictory = nextId === GAME_CONFIG.MAX_POKEMON_ID;
+
+          const newUnlocked = [...state.unlockedPokemonIds, nextId];
           const newHistorical = Array.from(
-            new Set([
-              ...state.historicalUnlockedPokemonIds,
-              state.currentPokemonId + 1,
-            ]),
+            new Set([...state.historicalUnlockedPokemonIds, nextId]),
           );
           const { clickPower, passiveIncome } = recalculateTotals(
             state.upgrades,
@@ -278,7 +275,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
           const nextShiny = Math.random() < GAME_CONFIG.SHINY_CHANCE;
 
           newState.isBossActive = false;
-          newState.currentPokemonId = state.currentPokemonId + 1;
+          newState.currentPokemonId = nextId;
           newState.unlockedPokemonIds = newUnlocked;
           newState.historicalUnlockedPokemonIds = newHistorical;
           newState.shinyPokemonIds = newShinies;
@@ -290,6 +287,9 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
           newState.bossHp = 0;
           newState.clickPower = clickPower;
           newState.passiveIncome = passiveIncome;
+          newState.isVictoryModalOpen = isVictory
+            ? true
+            : state.isVictoryModalOpen;
         } else {
           newState.bossHp = newHp;
         }
@@ -342,6 +342,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       const nextId = state.currentPokemonId + 1;
       if (state.currentPokemonId >= GAME_CONFIG.MAX_POKEMON_ID) return state;
 
+      const isVictory = nextId === GAME_CONFIG.MAX_POKEMON_ID;
       const cost = calculateNextPokemonCost(state.currentPokemonId);
       const newUnlocked = [...state.unlockedPokemonIds, nextId];
       const newHistorical = Array.from(
@@ -371,6 +372,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
           GAME_CONFIG.POKEMON_MULTIPLIER_REWARD * state.currentPokemonId,
         clickPower,
         passiveIncome,
+        isVictoryModalOpen: isVictory ? true : state.isVictoryModalOpen,
       };
     }),
 
@@ -406,6 +408,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         bossTimeLeft: 0,
         totalClicks: 0,
         isPrestigeModalOpen: false,
+        isVictoryModalOpen: false,
         lastSaveTime: Date.now(),
       };
     }),
@@ -437,6 +440,7 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
       isPokedexOpen: false,
       isPrestigeModalOpen: false,
       isAscensionModalOpen: false,
+      isVictoryModalOpen: false,
       offlineEarnings: 0,
       offlineSeconds: 0,
       lastSaveTime: Date.now(),

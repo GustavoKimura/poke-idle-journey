@@ -15,6 +15,24 @@ export const GAME_CONFIG = {
   SHINY_CHANCE: 0.005,
 };
 
+export const BIOMES = [
+  { maxId: 10, name: "Pallet Outskirts" },
+  { maxId: 25, name: "Viridian Forest" },
+  { maxId: 40, name: "Mt. Moon" },
+  { maxId: 60, name: "Route 24" },
+  { maxId: 80, name: "Vermilion Coast" },
+  { maxId: 100, name: "Rock Tunnel" },
+  { maxId: 120, name: "Safari Zone" },
+  { maxId: 140, name: "Seafoam Islands" },
+  { maxId: 150, name: "Victory Road" },
+  { maxId: 151, name: "Cerulean Cave Depths" },
+];
+
+export const getBiomeName = (id: number): string => {
+  const biome = BIOMES.find((b) => id <= b.maxId);
+  return biome ? biome.name : "Unknown Region";
+};
+
 export const ASCENSION_UPGRADES = [
   {
     id: "click_power",

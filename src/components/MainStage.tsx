@@ -6,6 +6,7 @@ import {
   GAME_CONFIG,
   TYPE_BADGE_COLORS,
   TYPE_ICONS,
+  getBiomeName,
 } from "../config/gameConfig";
 import { useGameStore } from "../store/useGameStore";
 
@@ -81,6 +82,7 @@ export function MainStage() {
   const isCurrentPokemonShiny = useGameStore(
     (state) => state.isCurrentPokemonShiny,
   );
+  const biomeName = getBiomeName(currentPokemonId);
 
   return (
     <main
@@ -138,11 +140,16 @@ export function MainStage() {
       </div>
 
       <div className="absolute top-24 flex flex-col items-center gap-2 z-10 w-full px-8">
-        <span
-          className={`font-bold tracking-widest uppercase ${isBossLevel ? "text-pokeRed" : "text-gray-400"}`}
-        >
-          {isBossLevel ? "Gym Leader Target" : "Current Target"}
-        </span>
+        <div className="flex flex-col items-center mb-1">
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+            📍 {biomeName}
+          </span>
+          <span
+            className={`font-bold tracking-widest uppercase ${isBossLevel ? "text-pokeRed" : "text-white"}`}
+          >
+            {isBossLevel ? "Gym Leader Target" : "Current Target"}
+          </span>
+        </div>
         <div className="bg-black/40 border border-white/10 px-6 py-2 rounded-full flex gap-4 items-center shadow-lg mb-4 relative">
           <span className="text-pokeYellow font-bold">#{currentPokemonId}</span>
           <span className="text-white capitalize font-medium">

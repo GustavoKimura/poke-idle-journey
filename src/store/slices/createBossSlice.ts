@@ -30,15 +30,11 @@ export const createBossSlice: StateCreator<GameState, [], [], BossSlice> = (
       const newHp = state.bossHp - amount;
       if (newHp <= 0) {
         playCatchSound();
-        const newUnlocked = [
-          ...state.unlockedPokemonIds,
-          state.currentPokemonId + 1,
-        ];
+        const nextId = state.currentPokemonId + 1;
+        const isVictory = nextId === GAME_CONFIG.MAX_POKEMON_ID;
+        const newUnlocked = [...state.unlockedPokemonIds, nextId];
         const newHistorical = Array.from(
-          new Set([
-            ...state.historicalUnlockedPokemonIds,
-            state.currentPokemonId + 1,
-          ]),
+          new Set([...state.historicalUnlockedPokemonIds, nextId]),
         );
         const { clickPower, passiveIncome } = recalculateTotals(
           state.upgrades,
@@ -54,7 +50,7 @@ export const createBossSlice: StateCreator<GameState, [], [], BossSlice> = (
 
         return {
           isBossActive: false,
-          currentPokemonId: state.currentPokemonId + 1,
+          currentPokemonId: nextId,
           unlockedPokemonIds: newUnlocked,
           historicalUnlockedPokemonIds: newHistorical,
           shinyPokemonIds: newShinies,
@@ -66,6 +62,7 @@ export const createBossSlice: StateCreator<GameState, [], [], BossSlice> = (
           bossHp: 0,
           clickPower,
           passiveIncome,
+          isVictoryModalOpen: isVictory ? true : state.isVictoryModalOpen,
         };
       }
       return { bossHp: newHp };

@@ -41,7 +41,7 @@ export const useGameStore = create<GameState>()(
     {
       name: "poke-idle-storage",
       storage: createJSONStorage(() => idbStorage),
-      version: 25,
+      version: 26,
       migrate: (persistedState: unknown) => {
         const state = {
           ...(persistedState as Record<string, unknown>),
@@ -152,6 +152,8 @@ export const useGameStore = create<GameState>()(
         if (typeof state.isAscensionModalOpen !== "boolean")
           state.isAscensionModalOpen = false;
         if (typeof state.isStatsOpen !== "boolean") state.isStatsOpen = false;
+        if (typeof state.isVictoryModalOpen !== "boolean")
+          state.isVictoryModalOpen = false;
 
         if (Array.isArray(state.upgrades)) {
           state.upgrades = state.upgrades.map((u: Partial<Upgrade>) => {

@@ -9,6 +9,7 @@ export const createSystemSlice: StateCreator<GameState, [], [], SystemSlice> = (
   isHowToPlayOpen: false,
   isAscensionModalOpen: false,
   isStatsOpen: false,
+  isVictoryModalOpen: false,
   lastSaveTime: Date.now(),
   offlineEarnings: 0,
   offlineSeconds: 0,
@@ -32,6 +33,8 @@ export const createSystemSlice: StateCreator<GameState, [], [], SystemSlice> = (
   toggleAscensionModal: () =>
     set((state) => ({ isAscensionModalOpen: !state.isAscensionModalOpen })),
   toggleStats: () => set((state) => ({ isStatsOpen: !state.isStatsOpen })),
+  toggleVictoryModal: () =>
+    set((state) => ({ isVictoryModalOpen: !state.isVictoryModalOpen })),
   updateSaveTime: () => set({ lastSaveTime: Date.now() }),
   setOfflineEarnings: (amount, seconds) =>
     set({
