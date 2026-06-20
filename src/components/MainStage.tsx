@@ -179,7 +179,7 @@ export function MainStage() {
                 : spawnFlash
                   ? "animate-spin-in"
                   : isClicking
-                    ? "scale-90"
+                    ? "scale-90 brightness-200 contrast-150 saturate-200"
                     : "hover:brightness-125 hover:scale-105"
             }`}
             draggable="false"

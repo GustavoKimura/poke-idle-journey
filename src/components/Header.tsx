@@ -12,6 +12,7 @@ import { useGameStore } from "../store/useGameStore";
 import { formatNumber } from "../utils/format";
 import { SettingsModal } from "./SettingsModal";
 import { ACHIEVEMENTS, GAME_CONFIG } from "../config/gameConfig";
+import { ParticleManager } from "../utils/ParticleManager";
 
 function ScoreDisplay() {
   const scoreRef = useRef<HTMLSpanElement>(null);
@@ -44,14 +45,6 @@ function DpsDisplay() {
   const [currentDps, setCurrentDps] = useState(0);
 
   useEffect(() => {
-    let damageLastSecond = 0;
-    const handleDamage = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      damageLastSecond += customEvent.detail.value;
-    };
-
-    window.addEventListener("SPAWN_TEXT", handleDamage);
-
     const timer = setInterval(() => {
       const state = useGameStore.getState();
       const partyMult =
@@ -69,14 +62,12 @@ function DpsDisplay() {
         partyMult *
         (1 + state.rareCandies);
 
-      setCurrentDps(damageLastSecond + passiveDps);
-      damageLastSecond = 0;
+      const clickDamage = ParticleManager.flushDamage();
+
+      setCurrentDps(clickDamage + passiveDps);
     }, 1000);
 
-    return () => {
-      window.removeEventListener("SPAWN_TEXT", handleDamage);
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, []);
 
   return (

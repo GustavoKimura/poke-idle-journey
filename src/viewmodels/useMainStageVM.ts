@@ -15,6 +15,7 @@ import {
   TYPE_WEAKNESSES,
   calculateNextPokemonCost,
 } from "../config/gameConfig";
+import { ParticleManager } from "../utils/ParticleManager";
 
 export function useMainStageVM() {
   const currentPokemonId = useGameStore((state) => state.currentPokemonId);
@@ -224,16 +225,12 @@ export function useMainStageVM() {
           }
         }
 
-        window.dispatchEvent(
-          new CustomEvent("SPAWN_TEXT", {
-            detail: {
-              x: clientX,
-              y: clientY,
-              value: gainedValue,
-              isCritical,
-              isBoss: state.isBossActive,
-            },
-          }),
+        ParticleManager.spawn(
+          clientX,
+          clientY,
+          gainedValue,
+          isCritical,
+          state.isBossActive,
         );
       }
     },
