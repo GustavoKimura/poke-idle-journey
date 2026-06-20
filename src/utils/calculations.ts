@@ -94,7 +94,8 @@ export const calculateTypeSynergyMultiplier = (party: number[]): number => {
 
   let synergyMult = 1;
   Object.values(typeCounts).forEach((count) => {
-    if (count >= 6) synergyMult += 1.0;
+    if (count >= 8) synergyMult += 2.0;
+    else if (count >= 6) synergyMult += 1.0;
     else if (count >= 3) synergyMult += 0.5;
   });
 
@@ -116,7 +117,8 @@ export const getActiveSynergies = (
 
   const active: { type: string; count: number; bonus: number }[] = [];
   Object.entries(typeCounts).forEach(([type, count]) => {
-    if (count >= 6) active.push({ type, count, bonus: 1.0 });
+    if (count >= 8) active.push({ type, count, bonus: 2.0 });
+    else if (count >= 6) active.push({ type, count, bonus: 1.0 });
     else if (count >= 3) active.push({ type, count, bonus: 0.5 });
   });
   return active;

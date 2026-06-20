@@ -98,8 +98,8 @@ export const createPlayerSlice: StateCreator<GameState, [], [], PlayerSlice> = (
         partyMult *
         synergyMult *
         ascensionMult *
-        50;
-      const totalDamage = Math.max(dps * 30, baseClick);
+        25;
+      const totalDamage = Math.max(dps * 15, baseClick);
 
       const newState: Partial<GameState> = {
         partyCooldowns: { ...state.partyCooldowns, [id]: now + 30000 },

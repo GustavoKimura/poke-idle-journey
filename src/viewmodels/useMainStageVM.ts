@@ -162,7 +162,7 @@ export function useMainStageVM() {
       comboRef.current += 1;
 
       const currentCombo = comboRef.current;
-      const comboMultiplier = 1 + currentCombo * 0.02;
+      const comboMultiplier = Math.min(1 + currentCombo * 0.02, 3.0);
       const typeMultiplier = hasTypeAdvantage ? 3 : 1;
 
       const partyMult = calculatePartyMultiplier(
